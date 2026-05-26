@@ -181,12 +181,6 @@
             font-weight: 600;
         }
 
-        /* Leaflet Interactive Popups */
-        .leaflet-popup-content b { color: var(--text-dark); font-size: 15px; display: block; margin-bottom: 5px;}
-        .leaflet-popup-content { font-size: 13px; line-height: 1.7; min-width: 240px; }
-        .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
-        .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
-
         /* Permanent Muted Tooltip Label Styles */
         .muted-champ-label {
             background: rgba(255, 255, 255, 0.9) !important;
@@ -200,11 +194,39 @@
             white-space: nowrap;
         }
 
-        /* Prevent SVG selection clipping */
-        .google-pin-container {
-            width: 28px;
-            height: 38px;
+        /* Container designed to hold both the top chain title and bottom vector teardrop pin */
+        .google-maps-composite-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 70px !important;
+            height: 60px !important;
+            margin-left: -35px !important;
+            margin-top: -60px !important;
+            text-align: center;
+        }
+
+        /* Embedded micro brand labels sitting cleanly over the pinheads */
+        .pin-chain-header {
+            font-size: 8px;
+            font-weight: 800;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-bottom: 1px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            max-width: 68px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .google-pin-svg {
+            width: 24px;
+            height: 32px;
             display: block;
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.15));
         }
         
         #map { flex-grow: 1; height: 100%; }
@@ -266,7 +288,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.8<br>
+            LS Operations Platform v3.9<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -443,51 +465,66 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // GOOGLE MAP TEARDROP VECTOR PIN PINPOINT ENGINE
+        // GOOGLE MAPS COMPOSITE RENDERING PIPELINE
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Soft desaturated palette presets
+            // Matte desaturated default fallbacks
             let brandBgColor = "#BDC3C7"; 
-            let brandCenterColor = "#7F8C8D";
+            let brandTextColor = "#7F8C8D";
+            let shortLabel = "SHOP";
 
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#2E86C1"; // Muted Carrefour Blue
-                brandCenterColor = "#154360";
+                brandBgColor = "#EBF5FB"; // Pale Powder Blue
+                brandTextColor = "#21618C"; // Dark Slate Blue
+                shortLabel = lowerChain.includes("market") ? "C4 Market" : (lowerChain.includes("express") ? "C4 Express" : "Carrefour");
             } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#27AE60"; // Soft LuLu Green
-                brandCenterColor = "#196F3D";
+                brandBgColor = "#E9F7EF"; // Light Sage Green
+                brandTextColor = "#1E8449"; // Dark Forest Green
+                shortLabel = lowerChain.includes("express") ? "Lulu Exp" : "Lulu Hyper";
             } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#E74C3C"; // Soft Viva Crimson Red
-                brandCenterColor = "#78281F";
+                brandBgColor = "#FDEDEC"; // Soft Blush Red
+                brandTextColor = "#C0392B"; // Matte Cherry Red
+                shortLabel = "Viva";
             } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#16A085"; // Soft Sava Teal
-                brandCenterColor = "#0E6251";
+                brandBgColor = "#E8F8F5"; // Light Seafoam
+                brandTextColor = "#16A085"; // Matte Dark Teal
+                shortLabel = "Sava";
             } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#1E8449"; // Soft Union Coop Olive
-                brandCenterColor = "#145A32";
+                brandBgColor = "#EAFAF1"; // Pale Mint Green
+                brandTextColor = "#145A32"; // Rich Pine Green
+                shortLabel = "Union Coop";
             } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#2E4053"; // Soft ADCOOP Dark Slate
-                brandCenterColor = "#1B2631";
+                brandBgColor = "#F2F4F4"; // Cool Gray-Blue
+                brandTextColor = "#2E4053"; // Slate Navy
+                shortLabel = "Adcoop";
             } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#3498DB"; // Soft Safeer Royal Blue
-                brandCenterColor = "#1B4F72";
+                brandBgColor = "#EBF5FB"; // Light Sky Mist
+                brandTextColor = "#2874A6"; // Classic Royal Blue
+                shortLabel = "Safeer";
+            } else {
+                shortLabel = chainName.substring(0, 10);
             }
 
-            // High precision vector coordinates representing standard Google map drops
-            const svgPin = `
-                <svg class="google-pin-container" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C5.37 0 0 5.37 0 12c0 9.3 12 20 12 20s12-10.7 12-20C24 5.37 18.63 0 12 0z" fill="${brandBgColor}"/>
-                    <circle cx="12" cy="12" r="5" fill="#FFFFFF"/>
-                    <circle cx="12" cy="12" r="3.5" fill="${supervisorColor}"/>
-                </svg>
+            // HTML structural injection rendering the text block right over the teardrop pointer body
+            const compositeHTML = `
+                <div class="google-maps-composite-marker">
+                    <div class="pin-chain-header" style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1px solid ${brandTextColor}33;">
+                        ${shortLabel}
+                    </div>
+                    <svg class="google-pin-svg" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 9.3 12 20 12 20s12-10.7 12-20C24 5.37 18.63 0 12 0z" fill="${brandBgColor}"/>
+                        <circle cx="12" cy="12" r="5" fill="#FFFFFF"/>
+                        <circle cx="12" cy="12" r="3.5" fill="${supervisorColor}"/>
+                    </svg>
+                </div>
             `;
 
             return L.divIcon({
-                className: 'custom-google-maps-drop',
-                html: svgPin,
-                iconSize: [28, 38], 
-                iconAnchor: [14, 38] // Pulls baseline projection directly to pin point anchor intersection coordinates
+                className: 'leaflet-blank-icon-container',
+                html: compositeHTML,
+                iconSize: [70, 60], 
+                iconAnchor: [35, 60] // Align the precise baseline anchor tip cleanly over geo-coordinates
             });
         }
 
@@ -570,12 +607,12 @@
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
-                        // Vertical placement adjustments configured to track Google Maps pointer styles nicely
+                        // Tooltip coordinates position configured smoothly to avoid overlap
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 5]
+                            offset: [0, -2]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
