@@ -198,4 +198,453 @@
 
         /* Permanent Muted Tooltip Label Styles (Pill Shaped) */
         .muted-champ-label {
-            background: rgba(255, 255, 255,
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            border-radius: 12px !important;
+            padding: 3px 8px !important;
+            font-size: 9px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 700 !important;
+            color: #475569 !important;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        
+        #map { flex-grow: 1; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">LS_Store Location</div>
+
+        <div class="upload-section">
+            <label for="csv-file" class="upload-btn">Upload Dataset CSV</label>
+            <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)">
+            <span class="upload-status" id="upload-status">Awaiting data...</span>
+        </div>
+
+        <div class="control-group">
+            <div class="section-header">
+                <label class="section-title">1. Supervisors</label>
+                <div>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', true)">Select All</button>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', false)">Clear All</button>
+                </div>
+            </div>
+            <div id="supervisor-list" class="checkbox-list">
+                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-header">
+                <label class="section-title">2. Filter by Chain</label>
+                <div>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', true)">Select All</button>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', false)">Clear All</button>
+                </div>
+            </div>
+            <div id="chain-list" class="checkbox-list">
+                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-header">
+                <label class="section-title">3. Focus on Champions</label>
+                <div>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', true)">Select All</button>
+                    <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', false)">Clear All</button>
+                </div>
+            </div>
+            <div id="champion-list" class="checkbox-list">
+                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above first</div>
+            </div>
+        </div>
+
+        <div class="info-panel" id="info-panel" style="display: none;">
+            <h3 id="panel-title">Overview</h3>
+            <p id="panel-stats"></p>
+        </div>
+
+        <div class="app-footer">
+            LS Operations Platform v4.0<br>
+            Developed by <strong>Soe Naing</strong>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        const map = L.map('map').setView([25.2048, 55.2708], 9);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        const markerLayer = L.layerGroup().addTo(map);
+        const routeLayer = L.layerGroup().addTo(map);
+
+        let parsedData = [];
+        let supervisorStats = {}; 
+        let supervisorColors = {}; 
+        
+        // Refined vibrant palette for supervisor borders/routes
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+
+        function getOuterBoundary(coords) {
+            if (coords.length <= 3) return coords; 
+            let points = coords.slice().sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
+            const cross = (o, a, b) => (a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1]);
+            let lower = [];
+            for (let p of points) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+                lower.push(p);
+            }
+            let upper = [];
+            for (let i = points.length - 1; i >= 0; i--) {
+                let p = points[i];
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+                upper.push(p);
+            }
+            lower.pop(); upper.pop();
+            return lower.concat(upper);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('upload-status').innerText = "Parsing columns...";
+            document.getElementById('upload-status').style.color = '#FF5A00';
+
+            Papa.parse(file, {
+                header: true, 
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processSmartData(results.data);
+                },
+                error: function(err) {
+                    alert("Error reading file structure.");
+                    console.error(err);
+                }
+            });
+        }
+
+        function processSmartData(dataRows) {
+            parsedData = []; supervisorStats = {}; supervisorColors = {};
+
+            parsedData = dataRows.map(row => {
+                const clean = (keyOptions) => {
+                    for (let key of keyOptions) {
+                        if (row[key] !== undefined) return row[key].trim();
+                        let foundKey = Object.keys(row).find(k => k.trim() === key);
+                        if (foundKey && row[foundKey] !== undefined) return row[foundKey].trim();
+                    }
+                    return "";
+                };
+
+                const lat = parseFloat(clean(["Latitude"]));
+                const lng = parseFloat(clean(["Longitude"]));
+                
+                if (isNaN(lat) || isNaN(lng)) return null;
+
+                const sup = clean(["Supervisor"]) || "Unknown";
+                const champ = clean(["Name", "Champion Name"]) || "Unknown";
+                const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
+
+                if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
+                supervisorStats[sup].add(champ);
+
+                return {
+                    championName: champ, supervisor: sup, chainName: chain,
+                    chainId: clean(["Chain ID", "Chain id"]) || "N/A",
+                    vendorId: clean(["Vendor ID", "Vendor id"]) || "N/A",
+                    vendorName: clean(["Vendor Na", "Vendor Name"]) || "Unknown",
+                    locationName: clean(["Location", "Branch Loc"]) || "Store",
+                    email: clean(["Email", "Email ID"]) || "N/A", 
+                    mobile: clean(["Mobile Num", "Mobile Number"]) || "N/A",
+                    lat: lat, lng: lng
+                };
+            }).filter(item => item !== null);
+
+            if (parsedData.length === 0) {
+                document.getElementById('upload-status').innerText = "❌ No valid coordinates found!";
+                document.getElementById('upload-status').style.color = 'red';
+                return;
+            }
+
+            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length} records.`;
+            document.getElementById('upload-status').style.color = '#10B981';
+
+            buildSupervisorFilterList();
+            buildChainFilterList(true);
+        }
+
+        function buildSupervisorFilterList() {
+            const supList = document.getElementById('supervisor-list'); supList.innerHTML = '';
+            let colorIndex = 0;
+            Object.keys(supervisorStats).sort().forEach(sup => {
+                if (sup === "Unknown") return;
+                const assignedColor = colorPalette[colorIndex % colorPalette.length];
+                supervisorColors[sup] = assignedColor; colorIndex++;
+                supList.innerHTML += `
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="${sup}" onchange="handleFiltersChange()">
+                        <span class="color-dot" style="background-color: ${assignedColor};"></span>
+                        ${sup} <span class="count-badge">${supervisorStats[sup].size} Champs</span>
+                    </label>
+                `;
+            });
+        }
+
+        function buildChainFilterList(checkAll = false) {
+            const chainList = document.getElementById('chain-list');
+            const previouslyCheckedChains = checkAll ? [] : getCheckedValues('chain-list');
+            chainList.innerHTML = '';
+
+            let selectedSups = getCheckedValues('supervisor-list');
+            let chainStoreCounts = {};
+
+            parsedData.forEach(d => {
+                if (selectedSups.length === 0 || selectedSups.includes(d.supervisor)) {
+                    if (d.chainName !== "Unknown") {
+                        chainStoreCounts[d.chainName] = (chainStoreCounts[d.chainName] || 0) + 1;
+                    }
+                }
+            });
+
+            Object.keys(chainStoreCounts).sort().forEach(chain => {
+                const isChecked = (checkAll || previouslyCheckedChains.includes(chain)) ? 'checked' : '';
+                const count = chainStoreCounts[chain];
+                chainList.innerHTML += `
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}>
+                        ${chain} <span class="count-badge">${count} Stores</span>
+                    </label>
+                `;
+            });
+        }
+
+        function toggleAllCheckboxes(listId, checkState) {
+            const checkboxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
+            checkboxes.forEach(cb => cb.checked = checkState);
+            
+            if (listId === 'supervisor-list') {
+                handleFiltersChange();
+            } else {
+                handleChainChange();
+            }
+        }
+
+        function getCheckedValues(listId) {
+            return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
+        }
+
+        // EXECUTIVE UI COLOR ENGINE (Soft Backgrounds, Rich Deep Text, White Inner Ring)
+        function getCustomIcon(chainName, supervisorColor) {
+            const lowerChain = chainName.toLowerCase();
+            
+            let brandBgColor = "#F1F5F9"; 
+            let brandTextColor = "#334155";
+
+            // Colors optimized for extremely high-end dashboard readability
+            if (lowerChain.includes("carrefour")) {
+                brandBgColor = "#EBF2FA"; 
+                brandTextColor = "#1A4971"; 
+            } else if (lowerChain.includes("lulu")) {
+                brandBgColor = "#E8F3EC"; 
+                brandTextColor = "#1E6133"; 
+            } else if (lowerChain.includes("viva")) {
+                brandBgColor = "#FCEAEB"; 
+                brandTextColor = "#8F1D2C"; 
+            } else if (lowerChain.includes("sava")) {
+                brandBgColor = "#E3F2F0"; 
+                brandTextColor = "#116A5B"; 
+            } else if (lowerChain.includes("union coop")) {
+                brandBgColor = "#E6F0E8"; 
+                brandTextColor = "#184D22"; 
+            } else if (lowerChain.includes("adcoop")) {
+                brandBgColor = "#EAECEE"; 
+                brandTextColor = "#283747"; 
+            } else if (lowerChain.includes("safeer")) {
+                brandBgColor = "#EAF2F8"; 
+                brandTextColor = "#1A5276"; 
+            }
+
+            const displayLabel = chainName.trim().toUpperCase();
+
+            // The inner box-shadow creates a "White Ring" effect inside the supervisor color border. 
+            // The outer box-shadow creates a soft, realistic hover elevation off the map.
+            return L.divIcon({
+                className: 'brand-solid-marker',
+                html: `<div style="
+                    background-color: ${brandBgColor}; 
+                    color: ${brandTextColor}; 
+                    border: 2px solid ${supervisorColor}; 
+                    border-radius: 50%; 
+                    width: 48px; 
+                    height: 48px; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 4px 10px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05); 
+                    font-family: 'Inter', sans-serif;
+                    font-size: 6.8px; 
+                    font-weight: 800; 
+                    text-align: center; 
+                    box-sizing: border-box; 
+                    word-break: break-word; 
+                    line-height: 1.15; 
+                    padding: 4px;
+                    letter-spacing: 0.2px;">${displayLabel}</div>`,
+                iconSize: [50, 50], 
+                iconAnchor: [25, 25]
+            });
+        }
+
+        function handleFiltersChange() {
+            buildChainFilterList(false);
+            updateChampionDropdownScope();
+        }
+
+        function handleChainChange() {
+            updateChampionDropdownScope();
+        }
+
+        function updateChampionDropdownScope() {
+            const selectedSups = getCheckedValues('supervisor-list');
+            const selectedChains = getCheckedValues('chain-list');
+            const previouslyCheckedChamps = getCheckedValues('champion-list');
+            const champList = document.getElementById('champion-list');
+
+            if (selectedSups.length === 0 || selectedChains.length === 0) {
+                champList.innerHTML = '<div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Select Options Above</div>';
+                document.getElementById('info-panel').style.display = 'none';
+                markerLayer.clearLayers(); routeLayer.clearLayers(); return;
+            }
+
+            champList.innerHTML = '';
+            let champStoreCounts = {};
+            parsedData.forEach(d => {
+                if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) {
+                    champStoreCounts[d.championName] = (champStoreCounts[d.championName] || 0) + 1;
+                }
+            });
+
+            Object.keys(champStoreCounts).sort().forEach(champ => {
+                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                const storeCount = champStoreCounts[champ];
+                champList.innerHTML += `
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="${champ}" onchange="renderMap()" ${isChecked}>
+                        ${champ} <span class="count-badge">${storeCount} Stores</span>
+                    </label>
+                `;
+            });
+            renderMap();
+        }
+
+        function renderMap() {
+            markerLayer.clearLayers(); routeLayer.clearLayers();
+            const selectedSups = getCheckedValues('supervisor-list');
+            const selectedChains = getCheckedValues('chain-list');
+            const selectedChamps = getCheckedValues('champion-list');
+            
+            const noChampsSelected = selectedChamps.length === 0;
+            
+            let allBounds = []; 
+            let totalStores = 0;
+            let activeChampsCount = new Set();
+
+            let supervisorStorePools = {};
+            selectedSups.forEach(sup => { supervisorStorePools[sup] = []; });
+
+            parsedData.forEach(store => {
+                if (selectedSups.includes(store.supervisor) && selectedChains.includes(store.chainName)) {
+                    if (noChampsSelected || selectedChamps.includes(store.championName)) {
+                        
+                        const supColor = supervisorColors[store.supervisor] || '#FF5A00';
+                        
+                        const popupHTML = `
+                            <b>${store.locationName}</b>
+                            <span class="popup-label">Chain ID:</span> ${store.chainId}<br>
+                            <span class="popup-label">Chain:</span> <strong style="color:var(--text-dark);">${store.chainName}</strong><br>
+                            <span class="popup-label">Vendor ID:</span> ${store.vendorId}<br>
+                            <span class="popup-label">Vendor:</span> ${store.vendorName}<br>
+                            <span class="popup-label">Champ:</span> <strong style="color:var(--primary-orange);">${store.championName}</strong><br>
+                            <span class="popup-label">Sup:</span> ${store.supervisor}<br>
+                            <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+                            <span class="popup-label">Mobile:</span> <a class="popup-link" href="tel:${store.mobile.replace(/\s/g, '')}">${store.mobile}</a><br>
+                            <span class="popup-label">Mail ID:</span> <a class="popup-link" href="mailto:${store.email}">${store.email}</a>
+                        `;
+
+                        const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
+                         .bindPopup(popupHTML)
+                         .addTo(markerLayer);
+                        
+                        storeMarker.bindTooltip(store.championName, {
+                            permanent: true,
+                            direction: 'bottom',
+                            className: 'muted-champ-label',
+                            offset: [0, 20]
+                        });
+                        
+                        allBounds.push([store.lat, store.lng]);
+                        activeChampsCount.add(store.championName);
+                        totalStores++;
+
+                        if (noChampsSelected) {
+                            supervisorStorePools[store.supervisor].push([store.lat, store.lng]);
+                        } else {
+                            if (!supervisorStorePools[store.championName]) {
+                                supervisorStorePools[store.championName] = { color: supColor, coords: [] };
+                            }
+                            supervisorStorePools[store.championName].coords.push([store.lat, store.lng]);
+                        }
+                    }
+                }
+            });
+
+            if (noChampsSelected) {
+                Object.keys(supervisorStorePools).forEach(sup => {
+                    const coords = supervisorStorePools[sup];
+                    const supColor = supervisorColors[sup] || '#FF5A00';
+
+                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 2, dashArray: '4, 6', opacity: 0.4 }).addTo(routeLayer);
+                    if (coords.length >= 3) {
+                        const outerBoundary = getOuterBoundary(coords);
+                        L.polygon(outerBoundary, { color: supColor, fillColor: supColor, fillOpacity: 0.1, weight: 1.5 }).addTo(routeLayer);
+                    } else if (coords.length > 0) {
+                        L.circle(coords[0], { color: supColor, fillColor: supColor, fillOpacity: 0.08, radius: 2500 }).addTo(routeLayer);
+                    }
+                });
+            } else {
+                Object.keys(supervisorStorePools).forEach(champ => {
+                    const group = supervisorStorePools[champ];
+                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 3, dashArray: '5, 8', opacity: 0.7 }).addTo(routeLayer);
+                    if (group.coords.length >= 3) {
+                        const outerBoundary = getOuterBoundary(group.coords);
+                        L.polygon(outerBoundary, { color: group.color, fillColor: group.color, fillOpacity: 0.2, weight: 2 }).addTo(routeLayer);
+                    } else if (group.coords.length > 0) {
+                        L.circle(group.coords[0], { color: group.color, fillColor: group.color, fillOpacity: 0.15, radius: 2000 }).addTo(routeLayer);
+                    }
+                });
+            }
+
+            const panel = document.getElementById('info-panel'); panel.style.display = 'block';
+            document.getElementById('panel-title').innerText = noChampsSelected ? `Supervisor Overview` : `Focused Operations`;
+            document.getElementById('panel-stats').innerText = `Active Champions: ${activeChampsCount.size}\nTotal Mapped Stores: ${totalStores}`;
+            
+            if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
+        }
+    </script>
+</body>
+</html>
