@@ -189,7 +189,7 @@
 
         /* Permanent Muted Label Styles */
         .muted-champ-label {
-            background: rgba(255, 255, 255, 0.85) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
             border: 1px solid var(--border-color) !important;
             border-radius: 4px !important;
             padding: 2px 5px !important;
@@ -259,7 +259,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v2.9<br>
+            LS Operations Platform v3.5<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -438,37 +438,59 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // DYNAMIC RENDERING FOR ACTUAL FULL CHAIN NAMES INSIDE LABELS
+        // DYNAMIC REAL BRAND IDENTITY MATCHING SYSTEM
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
+            
+            // Default configuration if no match is triggered
             let brandBgColor = "#95A5A6"; 
+            let brandTextColor = "#FFFFFF";
 
-            // Configuration for soft/muted pastel variants of company branding colors
-            if (lowerChain.includes("viva")) {
-                brandBgColor = "#9E5A63"; 
-            } else if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#5C7EA8"; 
-            } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#6D9E6A"; 
-            } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#4D826C"; 
-            } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#4A6FA5"; 
-            } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#C4A484"; 
-            } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#DB7F85"; 
+            // 1. CARREFOUR BRAND LOGIC (Carrefour, Carrefour Market, express)
+            if (lowerChain.includes("carrefour")) {
+                brandBgColor = "#0038A8"; // Carrefour Blue
+                brandTextColor = "#FFFFFF";
+            } 
+            // 2. LULU BRAND LOGIC (LuLu Hypermarket, express, express Fresh Market)
+            else if (lowerChain.includes("lulu")) {
+                brandBgColor = "#006B3F"; // LuLu Emerald Green
+                brandTextColor = "#FCD116"; // LuLu Corporate Gold/Yellow
+            } 
+            // 3. VIVA BRAND LOGIC (Viva Supermarket)
+            else if (lowerChain.includes("viva")) {
+                brandBgColor = "#C8102E"; // Viva Dark Crimson Red
+                brandTextColor = "#FFFFFF";
+            } 
+            // 4. UNION COOP BRAND LOGIC
+            else if (lowerChain.includes("union coop")) {
+                brandBgColor = "#1B4D3E"; // Union Coop Forest Green
+                brandTextColor = "#E5A93C"; // Soft Gold Accent
+            } 
+            // 5. ADCOOP BRAND LOGIC
+            else if (lowerChain.includes("adcoop")) {
+                brandBgColor = "#0A2540"; // ADCOOP Premium Deep Navy
+                brandTextColor = "#FFFFFF";
+            } 
+            // 6. SAFEER HYPERMARKET BRAND LOGIC
+            else if (lowerChain.includes("safeer")) {
+                brandBgColor = "#722F37"; // Safeer Wine Maroon
+                brandTextColor = "#F3E5AB"; // Cream Gold
+            } 
+            // 7. SAVA BRAND LOGIC
+            else if (lowerChain.includes("sava")) {
+                brandBgColor = "#E0115F"; // SAVA Ruby Pink
+                brandTextColor = "#FFFFFF";
             }
 
-            // Strips whitespace and forces uppercase formatting
             const displayLabel = chainName.trim().toUpperCase();
 
-            // Font-size scales down, text-wrapping handles longer enterprise names seamlessly
+            // Renders perfectly sized circular badges matching the company identity parameters.
+            // The outer border continues to use the supervisor's custom tracking territory color.
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.15); font-size: 8px; font-weight: 800; color: #FFFFFF; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
-                iconSize: [56, 56], 
-                iconAnchor: [28, 28]
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.25); font-size: 8px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
+                iconSize: [58, 58], 
+                iconAnchor: [29, 29]
             });
         }
 
@@ -551,12 +573,12 @@
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
-                        // Tooltip calculation offset automatically updated to scale evenly with larger icons
+                        // Tooltip calculation offset
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 20]
+                            offset: [0, 22]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
