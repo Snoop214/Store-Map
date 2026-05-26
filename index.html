@@ -187,7 +187,7 @@
         .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
 
-        /* Professional Permanent Muted Label Styles */
+        /* Permanent Muted Label Styles */
         .muted-champ-label {
             background: rgba(255, 255, 255, 0.85) !important;
             border: 1px solid var(--border-color) !important;
@@ -438,41 +438,37 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
+        // DYNAMIC RENDERING FOR ACTUAL FULL CHAIN NAMES INSIDE LABELS
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
-            let textLabel = "SHOP";
             let brandBgColor = "#95A5A6"; 
 
+            // Configuration for soft/muted pastel variants of company branding colors
             if (lowerChain.includes("viva")) {
-                textLabel = "VIVA";
                 brandBgColor = "#9E5A63"; 
             } else if (lowerChain.includes("carrefour")) {
-                textLabel = "C4";
                 brandBgColor = "#5C7EA8"; 
             } else if (lowerChain.includes("lulu")) {
-                textLabel = "LULU";
                 brandBgColor = "#6D9E6A"; 
             } else if (lowerChain.includes("union coop")) {
-                textLabel = "UC";
                 brandBgColor = "#4D826C"; 
             } else if (lowerChain.includes("adcoop")) {
-                textLabel = "ADCP";
                 brandBgColor = "#4A6FA5"; 
             } else if (lowerChain.includes("safeer")) {
-                textLabel = "SFIR";
                 brandBgColor = "#C4A484"; 
             } else if (lowerChain.includes("sava")) {
-                textLabel = "SAVA";
                 brandBgColor = "#DB7F85"; 
-            } else {
-                textLabel = chainName.substring(0, 4).toUpperCase();
             }
 
+            // Strips whitespace and forces uppercase formatting
+            const displayLabel = chainName.trim().toUpperCase();
+
+            // Font-size scales down, text-wrapping handles longer enterprise names seamlessly
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.15); font-size: 10px; font-weight: 800; color: #FFFFFF; text-align: center; box-sizing: border-box; letter-spacing: -0.1px; padding: 2px;">${textLabel}</div>`,
-                iconSize: [46, 46], 
-                iconAnchor: [23, 23]
+                html: `<div style="background-color: ${brandBgColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.15); font-size: 8px; font-weight: 800; color: #FFFFFF; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
+                iconSize: [56, 56], 
+                iconAnchor: [28, 28]
             });
         }
 
@@ -551,17 +547,16 @@
                             <span class="popup-label">Mail ID:</span> <a class="popup-link" href="mailto:${store.email}">${store.email}</a>
                         `;
 
-                        // 1. Drop the Interactive Map Marker Pin
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
-                        // 2. STICKY TEXT TOOLTIP ENGINE: Adds a permanent, small, short text tag floating directly underneath the marker pin
+                        // Tooltip calculation offset automatically updated to scale evenly with larger icons
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 16] // Offsets the text position perfectly so it stays beneath the round graphic
+                            offset: [0, 20]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
