@@ -320,7 +320,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.0<br>
+                        LS Operations Optimizer v15.01<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -662,7 +662,6 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // Helper to find the absolute closest store within a champion's existing territory
         function getNearestStoreData(targetLat, targetLng, targetChampStores) {
             let minDist = Infinity;
             let closestStore = null;
@@ -701,13 +700,11 @@
 
             let candidates = [];
 
-            // LOGIC A: Selected Champion is Underutilized -> Find Overloaded stores to TAKE
             if (d.status === 'Underutilized' || d.status === 'Optimal') {
                 parsedData.forEach(store => {
                     let ownerData = championUtilizationData[store.championName];
                     if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
                         
-                        // Find distance to the NEAREST store the taking champion already has
                         let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
                         
                         if (nearestData.distance < 15 && nearestData.anchorStore) {
@@ -723,14 +720,12 @@
                     }
                 });
             } 
-            // LOGIC B: Selected Champion is Overloaded -> Find Underutilized champions to GIVE TO
             else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
                 d.stores.forEach(store => {
                     Object.keys(championUtilizationData).forEach(otherChampName => {
                         let otherData = championUtilizationData[otherChampName];
                         if (otherData.supervisor === d.supervisor && otherData.status === 'Underutilized' && otherChampName !== champName) {
                             
-                            // Find distance to the NEAREST store the receiving champion already has
                             let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
                             
                             if (nearestData.distance < 15 && nearestData.anchorStore) {
@@ -765,14 +760,12 @@
                 return;
             }
 
-            // Render Cards and Nearest-Store Mini-Maps
             uniqueCandidates.forEach((c, index) => {
                 let card = document.createElement('div');
                 card.className = 'suggestion-card';
                 let mapId = `minimap-${index}`;
                 
                 if (c.type === 'take') {
-                    // Underutilized taking from Overloaded
                     card.innerHTML = `
                         <div class="sc-title">${c.store.locationName}</div>
                         <div class="sc-sub">${c.store.chainName}</div>
@@ -788,7 +781,6 @@
                         </div>
                     `;
                 } else {
-                    // Overloaded giving to Underutilized
                     card.innerHTML = `
                         <div class="sc-title">${c.store.locationName}</div>
                         <div class="sc-sub">${c.store.chainName}</div>
@@ -807,7 +799,6 @@
 
                 sWrapper.appendChild(card);
 
-                // Initialize Precision Mini Map
                 setTimeout(() => {
                     let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
                     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
@@ -815,15 +806,12 @@
                     let storeLatLng = [c.store.lat, c.store.lng];
                     let anchorLatLng = [c.anchorStore.lat, c.anchorStore.lng];
 
-                    // Blue pin for the Suggested Store (The one moving)
                     L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
                     
-                    // Orange dot for the specific Nearest Existing Store of the target champion
                     L.circleMarker(anchorLatLng, {
                         radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
                     }).bindTooltip("Nearest current store: " + c.anchorStore.locationName).addTo(mmap);
 
-                    // Connecting Line showing true distance
                     L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
                     
                     mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
