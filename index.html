@@ -18,7 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
-            --sidebar-width: 370px; /* Widened to prevent wrapping */
+            --sidebar-width: 370px;
         }
 
         body {
@@ -46,12 +46,10 @@
             display: flex;
         }
 
-        /* Leaves a clean 35px vertical blank strip visible when hidden */
         .sidebar-container.collapsed {
             width: 35px; 
         }
 
-        /* Prevents content squishing during the slide animation */
         .sidebar-content-wrapper {
             width: 100%;
             height: 100%;
@@ -69,13 +67,12 @@
             transition: opacity 0.2s ease;
         }
 
-        /* Fades out the text smoothly when collapsing */
         .sidebar-container.collapsed .sidebar-content {
             opacity: 0;
             pointer-events: none;
         }
 
-        /* The Minimize/Maximize Arrow Button - Larger and Bolder */
+        /* The Minimize/Maximize Arrow Button */
         .sidebar-toggle {
             position: absolute;
             top: 50%;
@@ -102,12 +99,11 @@
         }
 
         .sidebar-toggle svg {
-            width: 30px; /* Scaled up icon */
+            width: 30px; 
             height: 30px;
             transition: transform 0.3s ease;
         }
 
-        /* Flips arrow direction based on panel state */
         .sidebar-container.collapsed .sidebar-toggle svg {
             transform: rotate(180deg);
         }
@@ -223,8 +219,8 @@
             padding: 3px 8px;
             border-radius: 10px;
             font-weight: 700;
-            white-space: nowrap; /* Forces text to stay on one line */
-            flex-shrink: 0; /* Prevents the badge from squishing */
+            white-space: nowrap; 
+            flex-shrink: 0; 
         }
 
         .info-panel {
@@ -333,7 +329,7 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v8.5<br>
+                    LS Operations v9.0<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
@@ -355,7 +351,6 @@
     <script>
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
-        // Forced English tiles via standard Voyager implementation
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors',
             subdomains: 'abcd',
@@ -371,7 +366,6 @@
         
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
 
-        // Animation logic for handling the map expansion
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
@@ -477,7 +471,6 @@
                 const assignedColor = colorPalette[colorIndex % colorPalette.length];
                 supervisorColors[sup] = assignedColor; colorIndex++;
                 
-                // Text wrapper span ensures proper flex behavior so the pill doesn't squish
                 supList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${sup}" onchange="handleFiltersChange()">
@@ -529,35 +522,35 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // Reduced-tone pastel backgrounds with deep-contrast text colors
+        // TINTED PASTEL BACKGROUNDS WITH BOLD BRAND TEXT COLORS
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Soft slate default
+            // Default styling
             let brandBgColor = "#E2E8F0"; 
-            let brandTextColor = "#334155";
+            let brandTextColor = "#475569";
 
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#DBEAFE"; // Pale Blue
-                brandTextColor = "#1E3A8A"; 
+                brandBgColor = "#DCE9F9"; // Light Blue
+                brandTextColor = "#0054A6"; // Carrefour Blue
             } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#DCFCE7"; // Pale Green
-                brandTextColor = "#14532D"; 
+                brandBgColor = "#D5EEDD"; // Light Green
+                brandTextColor = "#007B3A"; // Lulu Green
             } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FEE2E2"; // Pale Red
-                brandTextColor = "#7F1D1D"; 
+                brandBgColor = "#FAD2D8"; // Light Red
+                brandTextColor = "#B71234"; // Viva Red
             } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#CCFBF1"; // Pale Teal
-                brandTextColor = "#134E4A"; 
+                brandBgColor = "#FEF0B5"; // Light SAVA Yellow
+                brandTextColor = "#0047BB"; // SAVA Strong Blue
             } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#D1FAE5"; // Pale Mint
-                brandTextColor = "#064E3B"; 
+                brandBgColor = "#D4E6DB"; // Light Pine
+                brandTextColor = "#0B4226"; // Union Coop Pine
             } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#F1F5F9"; // Pale Gray
-                brandTextColor = "#0F172A"; 
+                brandBgColor = "#D7DFE8"; // Light Navy
+                brandTextColor = "#102640"; // Adcoop Navy
             } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#E0F2FE"; // Pale Sky
-                brandTextColor = "#0C4A6E"; 
+                brandBgColor = "#D8EEFA"; // Light Cyan-Blue
+                brandTextColor = "#0B6B99"; // Safeer Blue
             }
 
             const displayLabel = chainName.trim().toUpperCase();
@@ -567,16 +560,16 @@
                 html: `<div style="
                     background-color: ${brandBgColor}; 
                     color: ${brandTextColor}; 
-                    border: 2px solid ${supervisorColor}; 
+                    border: 2.5px solid ${supervisorColor}; 
                     border-radius: 50%; 
-                    width: 46px; 
-                    height: 46px; 
+                    width: 44px; 
+                    height: 44px; 
                     display: flex; 
                     align-items: center; 
                     justify-content: center; 
-                    box-shadow: inset 0 0 0 1px #FFFFFF, 0 3px 6px rgba(0,0,0,0.12); 
+                    box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); 
                     font-family: 'Inter', sans-serif;
-                    font-size: 6.5px; 
+                    font-size: 6.2px; 
                     font-weight: 800; 
                     text-align: center; 
                     box-sizing: border-box; 
@@ -584,8 +577,8 @@
                     line-height: 1.1; 
                     padding: 3px;
                     letter-spacing: 0.1px;">${displayLabel}</div>`,
-                iconSize: [48, 48], 
-                iconAnchor: [24, 24]
+                iconSize: [46, 46], 
+                iconAnchor: [23, 23]
             });
         }
 
