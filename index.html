@@ -117,30 +117,31 @@
             letter-spacing: -0.5px;
         }
 
-        .upload-section {
-            background-color: #FFF7F5;
-            border: 1px dashed #FFD0B8;
+        /* New sleek Database Status Section instead of Upload Button */
+        .database-section {
+            background-color: #F8FAFC;
+            border: 1px solid var(--border-color);
             padding: 14px;
             border-radius: 8px;
             text-align: center;
             margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .upload-section input[type="file"] { display: none; }
-
-        .upload-btn {
-            background-color: var(--primary-orange);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-block;
+        .db-title {
+            font-weight: 800;
             font-size: 13px;
-            box-shadow: 0 2px 6px rgba(255, 90, 0, 0.2);
+            color: var(--text-dark);
+            margin-bottom: 4px;
         }
 
-        .upload-status { font-size: 12px; color: var(--text-muted); margin-top: 8px; display: block; font-weight: 500;}
+        .upload-status { 
+            font-size: 12px; 
+            color: var(--primary-orange); 
+            font-weight: 600;
+        }
 
         .control-group { margin-bottom: 24px; }
 
@@ -278,10 +279,9 @@
             <div class="sidebar-content">
                 <div class="logo">LS_Store Location</div>
 
-                <div class="upload-section">
-                    <label for="csv-file" class="upload-btn">Upload Dataset</label>
-                    <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)">
-                    <span class="upload-status" id="upload-status">Awaiting CSV...</span>
+                <div class="database-section">
+                    <div class="db-title">Operations Database</div>
+                    <span class="upload-status" id="upload-status">Connecting to server...</span>
                 </div>
 
                 <div class="control-group">
@@ -293,7 +293,7 @@
                         </div>
                     </div>
                     <div id="supervisor-list" class="checkbox-list">
-                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Loading data...</div>
                     </div>
                 </div>
 
@@ -306,7 +306,7 @@
                         </div>
                     </div>
                     <div id="chain-list" class="checkbox-list">
-                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Loading data...</div>
                     </div>
                 </div>
 
@@ -319,7 +319,7 @@
                         </div>
                     </div>
                     <div id="champion-list" class="checkbox-list">
-                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above</div>
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Loading data...</div>
                     </div>
                 </div>
 
@@ -329,7 +329,7 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v9.1<br>
+                    LS Operations v9.5<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
@@ -351,7 +351,6 @@
     <script>
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
-        // STRICT ENGLISH MAP TILES (Google Maps)
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
             attribution: '© Google Maps',
             maxZoom: 20
@@ -365,6 +364,36 @@
         let supervisorColors = {}; 
         
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+
+        // ====== ADMIN CONFIGURATION ======
+        // Ensure your CSV file is named exactly this, and is in the same folder as this HTML file.
+        const CSV_FILE_PATH = "data.csv"; 
+        // Manually update this string whenever you upload a new data.csv file to your server
+        const LAST_UPDATED_DATE = "May 26, 2026"; 
+        // ==================================
+
+        // Auto-fetch data when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHostedData();
+        });
+
+        function fetchHostedData() {
+            Papa.parse(CSV_FILE_PATH, {
+                download: true,
+                header: true, 
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processSmartData(results.data);
+                    document.getElementById('upload-status').innerText = `Last Updated: ${LAST_UPDATED_DATE}`;
+                    document.getElementById('upload-status').style.color = '#10B981'; // Turn green on success
+                },
+                error: function(err) {
+                    document.getElementById('upload-status').innerText = "⚠️ Missing data.csv on server";
+                    document.getElementById('upload-status').style.color = 'red';
+                    console.error("Make sure data.csv is in the same directory as index.html", err);
+                }
+            });
+        }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -392,25 +421,6 @@
             }
             lower.pop(); upper.pop();
             return lower.concat(upper);
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            document.getElementById('upload-status').innerText = "Parsing...";
-            document.getElementById('upload-status').style.color = '#FF5A00';
-
-            Papa.parse(file, {
-                header: true, 
-                skipEmptyLines: true,
-                complete: function(results) {
-                    processSmartData(results.data);
-                },
-                error: function(err) {
-                    alert("Error reading file.");
-                }
-            });
         }
 
         function processSmartData(dataRows) {
@@ -449,15 +459,6 @@
                     lat: lat, lng: lng
                 };
             }).filter(item => item !== null);
-
-            if (parsedData.length === 0) {
-                document.getElementById('upload-status').innerText = "❌ Error";
-                document.getElementById('upload-status').style.color = 'red';
-                return;
-            }
-
-            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length}`;
-            document.getElementById('upload-status').style.color = '#10B981';
 
             buildSupervisorFilterList();
             buildChainFilterList(true);
@@ -522,35 +523,33 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // TINTED PASTEL BACKGROUNDS WITH BOLD BRAND TEXT COLORS
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Default styling
             let brandBgColor = "#E2E8F0"; 
             let brandTextColor = "#475569";
 
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#DCE9F9"; // Light Blue
-                brandTextColor = "#0054A6"; // Carrefour Blue
+                brandBgColor = "#DCE9F9"; 
+                brandTextColor = "#0054A6"; 
             } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#D5EEDD"; // Light Green
-                brandTextColor = "#007B3A"; // Lulu Green
+                brandBgColor = "#D5EEDD"; 
+                brandTextColor = "#007B3A"; 
             } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FAD2D8"; // Light Red
-                brandTextColor = "#B71234"; // Viva Red
+                brandBgColor = "#FAD2D8"; 
+                brandTextColor = "#B71234"; 
             } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#FEF0B5"; // Light SAVA Yellow
-                brandTextColor = "#0047BB"; // SAVA Strong Blue
+                brandBgColor = "#FEF0B5"; 
+                brandTextColor = "#0047BB"; 
             } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#D4E6DB"; // Light Pine
-                brandTextColor = "#0B4226"; // Union Coop Pine
+                brandBgColor = "#D4E6DB"; 
+                brandTextColor = "#0B4226"; 
             } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#D7DFE8"; // Light Navy
-                brandTextColor = "#102640"; // Adcoop Navy
+                brandBgColor = "#D7DFE8"; 
+                brandTextColor = "#102640"; 
             } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#D8EEFA"; // Light Cyan-Blue
-                brandTextColor = "#0B6B99"; // Safeer Blue
+                brandBgColor = "#D8EEFA"; 
+                brandTextColor = "#0B6B99"; 
             }
 
             const displayLabel = chainName.trim().toUpperCase();
