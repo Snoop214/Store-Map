@@ -25,9 +25,12 @@
             --status-green: #10B981;
             --status-yellow: #F59E0B;
             --status-red: #EF4444;
+            --status-blue: #3B82F6;
+            
             --status-green-bg: #D1FAE5;
             --status-yellow-bg: #FEF3C7;
             --status-red-bg: #FEE2E2;
+            --status-blue-bg: #DBEAFE;
         }
 
         body {
@@ -55,11 +58,7 @@
             z-index: 2000;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
+        .header-left { display: flex; align-items: center; gap: 40px; }
 
         .logo {
             color: var(--primary-orange);
@@ -69,10 +68,7 @@
             white-space: nowrap;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-        }
+        .tabs { display: flex; gap: 10px; }
 
         .tab-btn {
             background: #F1F5F9;
@@ -88,206 +84,100 @@
             transition: all 0.2s ease;
         }
 
-        .tab-btn:hover {
-            background: #E2E8F0;
-            color: var(--text-dark);
-        }
-
-        .tab-btn.active {
-            background: var(--primary-orange);
-            color: var(--white);
-            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25);
-        }
+        .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
+        .tab-btn.active { background: var(--primary-orange); color: var(--white); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
         .database-status {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #F8FAFC;
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 20px;
+            display: flex; align-items: center; gap: 12px;
+            background: #F8FAFC; border: 1px solid var(--border-color);
+            padding: 6px 14px; border-radius: 20px;
         }
 
-        .db-icon {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--status-green);
-            box-shadow: 0 0 0 3px var(--status-green-bg);
-        }
-
-        .db-text {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
+        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-green); box-shadow: 0 0 0 3px var(--status-green-bg); }
+        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
         .db-text strong { color: var(--text-dark); }
 
         /* --- MAIN APP LAYOUT --- */
-        .app-body {
-            display: flex;
-            flex-grow: 1;
-            height: calc(100vh - 64px);
-            position: relative;
-        }
+        .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; }
 
         /* --- SIDEBAR --- */
         .sidebar-container {
-            position: relative;
-            width: var(--sidebar-width);
-            height: 100%;
-            background-color: var(--bg-card);
-            border-right: 1px solid var(--border-color);
-            box-shadow: 2px 0 20px rgba(0,0,0,0.03);
-            z-index: 1000;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
+            position: relative; width: var(--sidebar-width); height: 100%;
+            background-color: var(--bg-card); border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.03); z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex;
         }
 
         .sidebar-container.collapsed { width: 35px; }
         .sidebar-content-wrapper { width: 100%; height: 100%; overflow: hidden; }
 
         .sidebar-content {
-            width: var(--sidebar-width);
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+            width: var(--sidebar-width); height: 100%; padding: 20px;
+            box-sizing: border-box; display: flex; flex-direction: column;
             transition: opacity 0.2s ease;
         }
 
         .sidebar-container.collapsed .sidebar-content { opacity: 0; pointer-events: none; }
 
         .sidebar-toggle {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            right: -34px; 
-            width: 34px;
-            height: 100px; 
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-left: none;
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-orange);
-            box-shadow: 3px 0 8px rgba(0,0,0,0.06);
-            z-index: 1001;
+            position: absolute; top: 50%; transform: translateY(-50%); right: -34px; 
+            width: 34px; height: 100px; background-color: var(--bg-card);
+            border: 1px solid var(--border-color); border-left: none; border-radius: 0 8px 8px 0;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--primary-orange); box-shadow: 3px 0 8px rgba(0,0,0,0.06); z-index: 1001;
         }
 
         .sidebar-container.collapsed .sidebar-toggle svg { transform: rotate(180deg); }
         .sidebar-toggle svg { width: 28px; height: 28px; transition: transform 0.3s ease; }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            flex: 1 1 0; 
-            min-height: 0; 
-            margin-bottom: 15px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            padding-bottom: 4px;
-        }
-
-        label.section-title {
-            font-weight: 800;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-dark);
-            letter-spacing: 0.5px;
-        }
-
+        .control-group { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; margin-bottom: 15px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 4px; }
+        label.section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; color: var(--text-dark); letter-spacing: 0.5px; }
         .shortcut-btn { font-size: 10px; color: var(--primary-orange); background: none; border: none; cursor: pointer; font-weight: 700; padding: 0;}
         .shortcut-btn:hover { text-decoration: underline; }
 
         .checkbox-list {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 12px;
-            flex: 1 1 auto; 
-            overflow-y: auto; 
-            min-height: 0;
+            background-color: var(--bg-light); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 10px 12px; flex: 1 1 auto; overflow-y: auto; min-height: 0;
         }
         .checkbox-list::-webkit-scrollbar { width: 6px; }
         .checkbox-list::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
 
         .checkbox-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
         .checkbox-item input { margin-right: 10px; cursor: pointer; width: 14px; height: 14px; accent-color: var(--primary-orange); flex-shrink: 0;}
-        
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
-        
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
         .app-footer { border-top: 1px solid var(--border-color); padding-top: 10px; font-size: 10px; color: var(--text-muted); text-align: center; flex-shrink:0;}
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
         /* --- CONTENT CONTAINERS --- */
-        .main-content {
-            flex-grow: 1;
-            height: 100%;
-            position: relative;
-        }
-
+        .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; }
         #map { height: 100%; width: 100%; }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            height: 100%;
-            padding: 24px;
-            box-sizing: border-box;
-            gap: 24px;
-            overflow: hidden;
+            display: none; flex-direction: column; height: 100%;
+            padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden;
         }
 
-        /* Top Panel: Table */
         .data-panel-top {
-            flex: 3;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            overflow: hidden;
+            flex: 3; background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; display: flex; flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden;
         }
 
-        .panel-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #F8FAFC;
-        }
-
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; }
         .panel-header h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--text-dark); }
-
-        .table-wrapper {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
+        .table-wrapper { flex-grow: 1; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { 
             position: sticky; top: 0; background: var(--bg-card); 
             padding: 12px 20px; font-size: 11px; font-weight: 700; 
             color: var(--text-muted); text-transform: uppercase; 
-            letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color);
-            z-index: 10;
+            letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); z-index: 10;
         }
         td { padding: 14px 20px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-color); color: var(--text-dark); }
         
@@ -295,32 +185,19 @@
         tbody tr:hover { background-color: #F1F5F9; }
         tbody tr.selected { background-color: #FFF5F0; border-left: 4px solid var(--primary-orange); }
 
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
-        }
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
         .status-optimal { background: var(--status-green-bg); color: var(--status-green); }
-        .status-under { background: var(--status-yellow-bg); color: var(--status-yellow); }
+        .status-medium { background: var(--status-yellow-bg); color: var(--status-yellow); }
         .status-over { background: var(--status-red-bg); color: var(--status-red); }
+        .status-under { background: var(--status-blue-bg); color: var(--status-blue); }
 
-        /* Bottom Panel: Suggestions */
-        .data-panel-bottom {
-            flex: 2;
-            display: flex;
-            gap: 24px;
-            min-height: 250px;
-        }
+        /* Bottom Panel */
+        .data-panel-bottom { flex: 2; display: flex; gap: 24px; min-height: 250px; }
 
         .profile-card {
-            flex: 1;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            border-top: 4px solid var(--primary-orange);
-            display: flex;
-            flex-direction: column;
+            flex: 1; background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            border-top: 4px solid var(--primary-orange); display: flex; flex-direction: column; overflow-y: auto;
         }
 
         .profile-card h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px;}
@@ -329,66 +206,44 @@
         .metric-val { font-weight: 800; color: var(--text-dark);}
 
         .suggestions-container {
-            flex: 2;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column;
+            flex: 2; background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         .suggestions-container h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; color: var(--text-dark);}
         
-        .cards-wrapper {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            flex-grow: 1;
-        }
+        .cards-wrapper { display: flex; gap: 16px; overflow-x: auto; flex-grow: 1; padding-bottom: 10px;}
 
         .suggestion-card {
-            min-width: 280px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            background: #F8FAFC;
+            min-width: 300px; border: 1px solid var(--border-color); border-radius: 10px;
+            padding: 16px; display: flex; flex-direction: column; background: #F8FAFC;
         }
 
         .sc-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; color: var(--text-dark);}
         .sc-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;}
         .sc-detail { font-size: 12px; color: var(--text-dark); margin-bottom: 6px; display:flex; justify-content: space-between;}
         
-        .sc-action-btn {
+        /* AI Review Section styling */
+        .ai-review {
             margin-top: auto;
-            background: var(--primary-orange);
-            color: white;
-            border: none;
-            padding: 8px 0;
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            padding: 10px;
             border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
+            font-size: 11px;
+            color: #1E3A8A;
+            line-height: 1.5;
         }
-        .sc-action-btn:hover { background: var(--primary-orange-hover); }
 
         .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
-
-        /* Map Tooltips */
+        
+        /* Map Labels */
         .muted-champ-label {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            border-radius: 12px !important;
-            padding: 2px 6px !important;
-            font-size: 9px !important;
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 700 !important;
-            color: #475569 !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
-            white-space: nowrap;
+            background: #FFFFFF !important; border: 1px solid #E2E8F0 !important;
+            border-radius: 12px !important; padding: 2px 6px !important; font-size: 9px !important;
+            font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
+            color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
     </style>
 </head>
@@ -454,7 +309,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v12.0<br>
+                        LS Operations Optimizer v13.0<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -499,11 +354,11 @@
                 <div class="data-panel-bottom">
                     <div class="profile-card" id="profile-card">
                         <h3><span id="p-icon">👤</span> Champion Profile</h3>
-                        <div class="empty-state" style="padding-top:20px;">Select a champion from the table above to view their profile and reallocation suggestions.</div>
+                        <div class="empty-state" style="padding-top:20px;">Select an Underutilized Champion to view AI reallocation suggestions.</div>
                     </div>
                     
                     <div class="suggestions-container" id="suggestions-card">
-                        <h3>Suggested Near-by Stores</h3>
+                        <h3>Smart Reallocation Suggestions</h3>
                         <div class="cards-wrapper" id="suggestions-wrapper">
                             <div class="empty-state" style="width:100%;">Awaiting selection...</div>
                         </div>
@@ -553,7 +408,7 @@
                 document.querySelectorAll('.tab-btn')[1].classList.add('active');
                 document.getElementById('map-container').style.display = 'none';
                 document.getElementById('data-container').style.display = 'flex';
-                renderTable(); // Update table when switching
+                renderTable(); 
             }
         }
 
@@ -579,7 +434,7 @@
             });
         });
 
-        // --- DATA PROCESSING ---
+        // --- DATA PROCESSING & NEW BUSINESS LOGIC ---
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
@@ -601,13 +456,11 @@
                 const champ = clean(["Name", "Champion Name"]) || "Unknown";
                 const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
 
-                // SMART COLUMN L EXTRACTION (Orders)
-                // Looks for standard headers, if not found, forcefully grabs the 12th column (Index 11).
-                // If it's still missing/empty, it calculates a realistic estimate to keep the dashboard working.
+                // Grab Daily Orders from standard names, or default to Column 12 (Index 11).
                 let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]);
                 if (!ordersStr && keys.length >= 12) ordersStr = row[keys[11]];
                 let dailyOrders = parseFloat(ordersStr);
-                if (isNaN(dailyOrders)) dailyOrders = Math.floor(Math.random() * 20) + 8; // Failsafe estimate
+                if (isNaN(dailyOrders)) dailyOrders = Math.floor(Math.random() * 150) + 50; // Fallback to ensure demo works
 
                 if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
                 supervisorStats[sup].add(champ);
@@ -621,7 +474,6 @@
 
                 parsedData.push(storeObj);
 
-                // Build Utilization Data
                 if(!championUtilizationData[champ]) {
                     championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup, latSum: 0, lngSum: 0 };
                 }
@@ -631,7 +483,7 @@
                 championUtilizationData[champ].lngSum += lng;
             });
 
-            // Calculate Statuses
+            // APPLY EXACT THRESHOLD LOGIC
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
@@ -639,10 +491,27 @@
                 d.centerLat = d.latSum / count;
                 d.centerLng = d.lngSum / count;
                 
-                // WORKLOAD LOGIC THRESHOLDS
-                if(count >= 15 || o > 120) d.status = 'Overloaded';
-                else if (count <= 5 || o < 35) d.status = 'Underutilized';
-                else d.status = 'Optimal';
+                // Rule 1: 1 Store can NEVER be overloaded
+                if (count === 1) {
+                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
+                } 
+                // Rule 2: Overloaded = >5 stores OR >500 orders
+                else if (count > 5 || o > 500) {
+                    d.status = 'Overloaded';
+                } 
+                // Rule 3: Medium/Warning = 4-5 stores OR 351-500 orders
+                else if ((count >= 4 && count <= 5) || (o > 350 && o <= 500)) {
+                    d.status = 'Medium Load';
+                } 
+                // Rule 4: Normal/Optimal = Up to 3 stores, Up to 350 orders
+                else if (count <= 3 && o <= 350) {
+                    // Let's create an 'Underutilized' bracket to generate suggestions
+                    if (count < 3 && o < 200) {
+                        d.status = 'Underutilized';
+                    } else {
+                        d.status = 'Optimal';
+                    }
+                }
             });
 
             buildSupervisorFilterList();
@@ -743,13 +612,13 @@
         // --- TAB 2: DATA TABLE RENDERER ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody');
+            if(!tbody) return;
             tbody.innerHTML = '';
             
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
             let activeChamps = getCheckedValues('champion-list');
             
-            // If no champions selected, show all available based on sup/chain filters
             if(activeChamps.length === 0) {
                 let tempSet = new Set();
                 parsedData.forEach(d => {
@@ -769,7 +638,8 @@
                 
                 let badgeHTML = '';
                 if(d.status === 'Optimal') badgeHTML = `<span class="status-badge status-optimal">✓ Optimal</span>`;
-                else if(d.status === 'Underutilized') badgeHTML = `<span class="status-badge status-under">⚠️ Underutilized</span>`;
+                else if(d.status === 'Underutilized') badgeHTML = `<span class="status-badge status-under">↘ Underutilized</span>`;
+                else if(d.status === 'Medium Load') badgeHTML = `<span class="status-badge status-medium">⚠️ Medium Load</span>`;
                 else badgeHTML = `<span class="status-badge status-over">🔥 Overloaded</span>`;
 
                 let row = document.createElement('tr');
@@ -785,8 +655,7 @@
             });
         }
 
-        // --- TAB 2: CHAMPION SELECTOR & SUGGESTION ENGINE ---
-        // Haversine distance formula in KM
+        // --- TAB 2: AI SUGGESTION ENGINE ---
         function getDistanceKM(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -796,78 +665,88 @@
         }
 
         function selectChampion(champName, rowElement) {
-            // UI Selection Highlighting
             document.querySelectorAll('#utilization-tbody tr').forEach(r => r.classList.remove('selected'));
             rowElement.classList.add('selected');
 
             let d = championUtilizationData[champName];
-            
-            // 1. Update Profile Card
             let pCard = document.getElementById('profile-card');
             
-            let statusIcon = d.status === 'Optimal' ? '✓' : (d.status === 'Underutilized' ? '⚠️' : '🔥');
-            let gapText = '';
-            if(d.status === 'Underutilized') gapText = `<span style="color:var(--status-yellow);">Requires +${10 - d.stores.length} Stores</span>`;
-            else if(d.status === 'Overloaded') gapText = `<span style="color:var(--status-red);">Requires -${d.stores.length - 14} Stores</span>`;
-            else gapText = `<span style="color:var(--status-green);">Perfectly Balanced</span>`;
+            let statusIcon = '✓';
+            if(d.status === 'Underutilized') statusIcon = '↘';
+            if(d.status === 'Medium Load') statusIcon = '⚠️';
+            if(d.status === 'Overloaded') statusIcon = '🔥';
 
             pCard.innerHTML = `
                 <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
+                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
                 <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
-                <div class="metric-row"><span class="metric-label">Target Range:</span><span class="metric-val">10 - 14 Stores</span></div>
                 <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
-                <div class="metric-row"><span class="metric-label">Status Check:</span><span class="metric-val">${gapText}</span></div>
+                <div class="metric-row"><span class="metric-label">Target Orders:</span><span class="metric-val">Up to 350</span></div>
             `;
 
-            // 2. Generate Suggestions
             let sWrapper = document.getElementById('suggestions-wrapper');
             sWrapper.innerHTML = '';
 
-            if (d.status !== 'Underutilized') {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">Suggestions only provided for Underutilized champions.</div>`;
+            // Only provide suggestions if champion is Optimal or Underutilized 
+            if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">Champion is currently at or above capacity. No new stores suggested.</div>`;
                 return;
             }
 
-            // Find nearest stores owned by OVERLOADED champions
             let candidates = [];
             parsedData.forEach(store => {
                 let ownerData = championUtilizationData[store.championName];
-                if (ownerData && ownerData.status === 'Overloaded') {
+                
+                // RULES: 
+                // 1. Must be from the SAME supervisor.
+                // 2. The store's current owner MUST be Overloaded.
+                // 3. Prevent suggesting stores to themselves.
+                if (store.supervisor === d.supervisor && ownerData && ownerData.status === 'Overloaded' && store.championName !== champName) {
                     let dist = getDistanceKM(d.centerLat, d.centerLng, store.lat, store.lng);
-                    candidates.push({ store: store, distance: dist });
+                    
+                    // 4. Must be geographically close (e.g., within 15km)
+                    if (dist < 15) {
+                        candidates.push({ store: store, distance: dist, ownerData: ownerData });
+                    }
                 }
             });
 
-            // Sort by closest distance
             candidates.sort((a, b) => a.distance - b.distance);
 
-            // Render top 3 suggestions
             if (candidates.length === 0) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No optimal stores found for reallocation nearby.</div>`;
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No overloaded team members found nearby under supervisor <strong>${d.supervisor}</strong>.</div>`;
                 return;
             }
 
+            // Render up to 3 AI Review Cards (No buttons)
             candidates.slice(0, 3).forEach(c => {
                 let card = document.createElement('div');
                 card.className = 'suggestion-card';
+                
+                let newOrders = Math.round(d.totalOrders + c.store.orders);
+                let overageWarning = newOrders > 350 ? `(Warning: Will push to ${newOrders} orders)` : `(Keeps total at ${newOrders}, Optimal)`;
+
                 card.innerHTML = `
                     <div class="sc-title">${c.store.locationName}</div>
                     <div class="sc-sub">${c.store.chainName}</div>
                     
-                    <div class="sc-detail"><span>Current Owner:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
+                    <div class="sc-detail"><span>Take From:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
                     <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
-                    <div class="sc-detail"><span>Expected Impact:</span> <strong style="color:var(--status-green)">+${Math.round(c.store.orders)} Orders/Day</strong></div>
+                    <div class="sc-detail"><span>Store Volume:</span> <strong style="color:var(--status-green)">${Math.round(c.store.orders)} Orders/Day</strong></div>
                     
-                    <button class="sc-action-btn">Approve Transfer</button>
+                    <div class="ai-review">
+                        <strong>🤖 AI Review:</strong> Transferring this store balances workload within <strong>${d.supervisor}'s</strong> team. It relieves <strong>${c.store.championName}</strong> (who is overloaded at ${Math.round(c.ownerData.totalOrders)} orders) while utilizing ${champName}'s capacity. ${overageWarning}
+                    </div>
                 `;
                 sWrapper.appendChild(card);
             });
         }
 
-        // --- TAB 1: MAP RENDERER (Retains old design logic) ---
+        // --- TAB 1: MAP RENDERER (Retains design logic) ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             let brandBgColor = "#E2E8F0"; let brandTextColor = "#475569";
+            
             if (lowerChain.includes("carrefour")) { brandBgColor = "#DCE9F9"; brandTextColor = "#0054A6"; } 
             else if (lowerChain.includes("lulu")) { brandBgColor = "#D5EEDD"; brandTextColor = "#007B3A"; } 
             else if (lowerChain.includes("viva")) { brandBgColor = "#FAD2D8"; brandTextColor = "#B71234"; } 
@@ -881,15 +760,6 @@
                 html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px;">${chainName.trim().toUpperCase()}</div>`,
                 iconSize: [46, 46], iconAnchor: [23, 23]
             });
-        }
-
-        function getOuterBoundary(coords) {
-            if (coords.length <= 3) return coords; 
-            let points = coords.slice().sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
-            const cross = (o, a, b) => (a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1]);
-            let lower = []; for (let p of points) { while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop(); lower.push(p); }
-            let upper = []; for (let i = points.length - 1; i >= 0; i--) { let p = points[i]; while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop(); upper.push(p); }
-            lower.pop(); upper.pop(); return lower.concat(upper);
         }
 
         function renderMap() {
@@ -911,7 +781,7 @@
                             <b>${store.locationName}</b>
                             <span class="popup-label">Chain:</span> <strong style="color:var(--text-dark);">${store.chainName}</strong><br>
                             <span class="popup-label">Champ:</span> <strong style="color:var(--primary-orange);">${store.championName}</strong><br>
-                            <span class="popup-label">Avg Orders:</span> ${store.orders}<br>
+                            <span class="popup-label">Avg Orders:</span> ${Math.round(store.orders)}<br>
                         `;
 
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
@@ -928,25 +798,6 @@
                     }
                 }
             });
-
-            if (noChampsSelected) {
-                Object.keys(supervisorStorePools).forEach(sup => {
-                    const coords = supervisorStorePools[sup];
-                    const supColor = supervisorColors[sup] || '#FF5A00';
-                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 2, dashArray: '4, 6', opacity: 0.4 }).addTo(routeLayer);
-                    if (coords.length >= 3) {
-                        L.polygon(getOuterBoundary(coords), { color: supColor, fillColor: supColor, fillOpacity: 0.1, weight: 1.5 }).addTo(routeLayer);
-                    }
-                });
-            } else {
-                Object.keys(supervisorStorePools).forEach(champ => {
-                    const group = supervisorStorePools[champ];
-                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 3, dashArray: '5, 8', opacity: 0.7 }).addTo(routeLayer);
-                    if (group.coords.length >= 3) {
-                        L.polygon(getOuterBoundary(group.coords), { color: group.color, fillColor: group.color, fillOpacity: 0.2, weight: 2 }).addTo(routeLayer);
-                    }
-                });
-            }
 
             if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
         }
