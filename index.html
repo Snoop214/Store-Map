@@ -187,16 +187,16 @@
         .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
 
-        /* Permanent Muted Tooltip Label Styles */
+        /* Permanent Muted Tooltip Configuration */
         .muted-champ-label {
-            background: rgba(255, 255, 255, 0.8) !important;
-            border: 1px solid #ddd !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid var(--border-color) !important;
             border-radius: 4px !important;
-            padding: 1px 4px !important;
-            font-size: 9px !important;
-            font-weight: 600 !important;
-            color: #666 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+            padding: 2px 5px !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            color: #444 !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
             white-space: nowrap;
         }
         
@@ -259,7 +259,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.7<br>
+            LS Operations Platform v3.6<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -436,58 +436,57 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // REDUCED TONE LIGHT BRAND IDENTITIES
+        // ACCURATE UAE RETAIL BRAND IDENTITY STYLING ENGINE
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Matte muted gray defaults
-            let brandBgColor = "#F2F4F4"; 
-            let brandTextColor = "#7F8C8D";
+            // Matte business palette presets
+            let brandBgColor = "#7F8C8D"; 
+            let brandTextColor = "#FFFFFF";
 
-            // 1. CARREFOUR (Reduced Pale Blue)
+            // 1. CARREFOUR VARIANTS (Carrefour, Carrefour Market, Carrefour express)
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#EBF5FB"; // Pale Powder Blue
-                brandTextColor = "#2E86C1"; // Muted Deep Blue
+                brandBgColor = "#104F9E"; // Muted Classic Blue
+                brandTextColor = "#FFFFFF";
             } 
-            // 2. LULU (Reduced Pale Green)
+            // 2. LULU VARIANTS (LuLu Hypermarket, LuLu express, Lulu Express Fresh Market)
             else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#E9F7EF"; // Light Sage Green
-                brandTextColor = "#1E8449"; // Organic Forest Green
+                brandBgColor = "#1E7E34"; // Organic Leaf Green
+                brandTextColor = "#EAA812"; // Warm Corporate Yellow
             } 
-            // 3. VIVA (Reduced Pale Red)
+            // 3. VIVA VARIANTS (Viva Supermarket)
             else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FDEDEC"; // Soft Blush Pink/Red
-                brandTextColor = "#C0392B"; // Matte Brick Red
+                brandBgColor = "#A6192E"; // Deep Crimson Dark Red
+                brandTextColor = "#FFFFFF";
             } 
-            // 4. SAVA (Reduced Light Teal)
+            // 4. SAVA BRAND IDENTITY (MAF's Discount Format - Verified Teal Asset Profile)
             else if (lowerChain.includes("sava")) {
-                brandBgColor = "#E8F8F5"; // Light Seafoam
-                brandTextColor = "#16A085"; // Matte Deep Teal
+                brandBgColor = "#005F54"; // Rich Matte Dark Teal
+                brandTextColor = "#FFFFFF";
             }
-            // 5. UNION COOP (Reduced Light Forest)
+            // 5. UNION COOP VARIANTS
             else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#EAFAF1"; // Pale Mint
-                brandTextColor = "#196F3D"; // Pine Green Tone
+                brandBgColor = "#1C3F24"; // British Racing Dark Pine Green
+                brandTextColor = "#F4E2BB"; // Premium Soft Cream
             } 
-            // 6. ADCOOP (Reduced Light Navy)
+            // 6. ADCOOP VARIANTS
             else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#EBF5FB"; // Steel Mist
-                brandTextColor = "#21618C"; // Dark Slate Navy
+                brandBgColor = "#0A1D37"; // Modern Rebranded Navy Blue Midnight
+                brandTextColor = "#FFFFFF";
             } 
-            // 7. SAFEER (Reduced Light Royal Blue)
+            // 7. SAFEER VARIANTS (Safeer Hypermarket)
             else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#F4F6F7"; // Cool Gray-Blue
-                brandTextColor = "#2874A6"; // Corporate Blue Tone
+                brandBgColor = "#0F4C81"; // Safeer Corporate Royal Blue
+                brandTextColor = "#FFFFFF";
             }
 
             const displayLabel = chainName.trim().toUpperCase();
 
-            // Lightweight pin logic: thin border, soft shadows, matte colors
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-size: 7.5px; font-weight: 700; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
-                iconSize: [54, 54], 
-                iconAnchor: [27, 27]
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); font-size: 8px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
+                iconSize: [58, 58], 
+                iconAnchor: [29, 29]
             });
         }
 
@@ -574,7 +573,7 @@
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 20]
+                            offset: [0, 22]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
@@ -598,23 +597,23 @@
                     const coords = supervisorStorePools[sup];
                     const supColor = supervisorColors[sup] || '#FF5A00';
 
-                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 1.2, dashArray: '3, 6', opacity: 0.35 }).addTo(routeLayer);
+                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 1.5, dashArray: '4, 4', opacity: 0.5 }).addTo(routeLayer);
                     if (coords.length >= 3) {
                         const outerBoundary = getOuterBoundary(coords);
-                        L.polygon(outerBoundary, { color: supColor, fillColor: supColor, fillOpacity: 0.08, weight: 1.5 }).addTo(routeLayer);
+                        L.polygon(outerBoundary, { color: supColor, fillColor: supColor, fillOpacity: 0.12, weight: 2 }).addTo(routeLayer);
                     } else if (coords.length > 0) {
-                        L.circle(coords[0], { color: supColor, fillColor: supColor, fillOpacity: 0.05, radius: 2200 }).addTo(routeLayer);
+                        L.circle(coords[0], { color: supColor, fillColor: supColor, fillOpacity: 0.1, radius: 2500 }).addTo(routeLayer);
                     }
                 });
             } else {
                 Object.keys(supervisorStorePools).forEach(champ => {
                     const group = supervisorStorePools[champ];
-                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 2, dashArray: '5, 10', opacity: 0.6 }).addTo(routeLayer);
+                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 3, dashArray: '6, 8', opacity: 0.8 }).addTo(routeLayer);
                     if (group.coords.length >= 3) {
                         const outerBoundary = getOuterBoundary(group.coords);
-                        L.polygon(outerBoundary, { color: group.color, fillColor: group.color, fillOpacity: 0.15, weight: 2 }).addTo(routeLayer);
+                        L.polygon(outerBoundary, { color: group.color, fillColor: group.color, fillOpacity: 0.25, weight: 2 }).addTo(routeLayer);
                     } else if (group.coords.length > 0) {
-                        L.circle(group.coords[0], { color: group.color, fillColor: group.color, fillOpacity: 0.12, radius: 1800 }).addTo(routeLayer);
+                        L.circle(group.coords[0], { color: group.color, fillColor: group.color, fillOpacity: 0.2, radius: 2000 }).addTo(routeLayer);
                     }
                 });
             }
