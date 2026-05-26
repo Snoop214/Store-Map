@@ -117,7 +117,7 @@
             letter-spacing: -0.5px;
         }
 
-        /* New sleek Database Status Section instead of Upload Button */
+        /* Sleek Database Read-Only Section */
         .database-section {
             background-color: #F8FAFC;
             border: 1px solid var(--border-color);
@@ -173,13 +173,12 @@
         }
         .shortcut-btn:hover { text-decoration: underline; }
 
+        /* Full expanded list style without inner scrolling */
         .checkbox-list {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
-            max-height: 160px;
-            overflow-y: auto;
         }
 
         .checkbox-item {
@@ -329,7 +328,7 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v9.5<br>
+                    LS Operations v10.0<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
@@ -367,7 +366,9 @@
 
         // ====== ADMIN CONFIGURATION ======
         // Ensure your CSV file is named exactly this, and is in the same folder as this HTML file.
+        // OR paste your Google Sheets CSV publish URL inside the quotes below!
         const CSV_FILE_PATH = "data.csv"; 
+        
         // Manually update this string whenever you upload a new data.csv file to your server
         const LAST_UPDATED_DATE = "May 26, 2026"; 
         // ==================================
