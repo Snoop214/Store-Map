@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* UI/UX & Design System - Ultra Compact & Clean Theme */
+        /* UI/UX & Design System - Ultra Compact & Collapsible */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
@@ -18,6 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
+            --sidebar-width: 250px; /* Reduced width */
         }
 
         body {
@@ -32,35 +33,79 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar Layout - Scaled Down */
+        /* Scaled Down Sidebar with Animation */
         .sidebar {
-            width: 300px;
-            min-width: 300px;
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
             background-color: var(--white);
-            padding: 20px;
+            padding: 15px;
             box-shadow: 2px 0 20px rgba(0,0,0,0.05);
             z-index: 1000;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
+            transition: margin-left 0.3s ease; /* Smooth slide animation */
         }
 
+        .sidebar.collapsed {
+            margin-left: calc(var(--sidebar-width) * -1);
+        }
+
+        /* The Minimize/Maximize Arrow Button */
+        .sidebar-toggle {
+            position: absolute;
+            top: 15px;
+            left: var(--sidebar-width);
+            z-index: 2000;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            padding: 12px 6px;
+            cursor: pointer;
+            border-radius: 0 6px 6px 0;
+            box-shadow: 3px 0 6px rgba(0,0,0,0.05);
+            transition: left 0.3s ease, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-orange);
+        }
+
+        .sidebar-toggle:hover { background-color: #FFF7F5; }
+
+        .sidebar-toggle.collapsed {
+            left: 0;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .sidebar-toggle svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-toggle.collapsed svg {
+            transform: rotate(180deg); /* Flips the arrow */
+        }
+
+        /* Sidebar Inner Elements scaled to fit narrow panel */
         .logo {
             color: var(--primary-orange);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             letter-spacing: -0.5px;
         }
 
         .upload-section {
             background-color: #FFF7F5;
             border: 1px dashed #FFD0B8;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .upload-section input[type="file"] { display: none; }
@@ -68,31 +113,31 @@
         .upload-btn {
             background-color: var(--primary-orange);
             color: white;
-            padding: 8px 14px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             display: inline-block;
-            font-size: 12px;
+            font-size: 11px;
             box-shadow: 0 2px 6px rgba(255, 90, 0, 0.2);
         }
 
-        .upload-status { font-size: 11px; color: var(--text-muted); margin-top: 8px; display: block; font-weight: 500;}
+        .upload-status { font-size: 10px; color: var(--text-muted); margin-top: 6px; display: block; font-weight: 500;}
 
-        .control-group { margin-bottom: 20px; }
+        .control-group { margin-bottom: 15px; }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 5px;
+            padding-bottom: 4px;
         }
 
         label.section-title {
             font-weight: 700;
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 0.5px;
@@ -105,16 +150,15 @@
             border: none;
             cursor: pointer;
             font-weight: 700;
-            padding: 0 2px;
+            padding: 0;
         }
         .shortcut-btn:hover { text-decoration: underline; }
 
-        /* Checkbox Containers - Compact */
         .checkbox-list {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 8px;
             max-height: 150px;
             overflow-y: auto;
         }
@@ -122,8 +166,8 @@
         .checkbox-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 11px;
+            margin-bottom: 6px;
+            font-size: 10px;
             cursor: pointer;
             font-weight: 600;
             color: var(--text-dark);
@@ -131,72 +175,69 @@
         .checkbox-item:last-child { margin-bottom: 0; }
 
         .checkbox-item input {
-            margin-right: 8px;
+            margin-right: 6px;
             cursor: pointer;
-            width: 13px;
-            height: 13px;
+            width: 12px;
+            height: 12px;
             accent-color: var(--primary-orange);
         }
 
         .color-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 6px;
             display: inline-block;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
         }
 
         .count-badge {
             color: var(--text-muted);
-            font-size: 9px;
+            font-size: 8px;
             margin-left: auto;
             background: #E2E8F0;
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 2px 5px;
+            border-radius: 8px;
             font-weight: 700;
         }
 
-        /* Information Panel */
         .info-panel {
             background-color: var(--white);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
             border-left: 3px solid var(--primary-orange);
             margin-top: auto;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .info-panel h3 { color: var(--text-dark); margin: 0 0 6px 0; font-size: 12px; font-weight: 800; }
-        .info-panel p { margin: 0; font-size: 11px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
+        .info-panel h3 { color: var(--text-dark); margin: 0 0 4px 0; font-size: 11px; font-weight: 800; }
+        .info-panel p { margin: 0; font-size: 10px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
 
-        /* Footer Attribution */
         .app-footer {
             border-top: 1px solid var(--border-color);
-            padding-top: 12px;
+            padding-top: 10px;
             margin-top: auto;
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-muted);
             text-align: center;
             font-weight: 500;
         }
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
-        /* Leaflet Interactive Popups */
-        .leaflet-popup-content b { color: var(--text-dark); font-size: 13px; font-weight: 800; display: block; margin-bottom: 4px;}
-        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 11px; line-height: 1.6; min-width: 220px; color: #334155; }
-        .popup-label { color: var(--text-muted); font-weight: 600; width: 75px; display: inline-block; font-size: 10px; text-transform: uppercase;}
+        /* Leaflet Elements */
+        .leaflet-popup-content b { color: var(--text-dark); font-size: 12px; font-weight: 800; display: block; margin-bottom: 4px;}
+        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 10px; line-height: 1.6; min-width: 200px; color: #334155; }
+        .popup-label { color: var(--text-muted); font-weight: 600; width: 65px; display: inline-block; font-size: 9px; text-transform: uppercase;}
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: 600; }
 
-        /* Permanent Muted Tooltip Label Styles */
         .muted-champ-label {
             background: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
             padding: 2px 6px !important;
-            font-size: 8.5px !important;
+            font-size: 8px !important;
             font-family: 'Inter', sans-serif !important;
             font-weight: 700 !important;
             color: #475569 !important;
@@ -204,12 +245,12 @@
             white-space: nowrap;
         }
         
-        #map { flex-grow: 1; height: 100%; }
+        #map { flex-grow: 1; height: 100%; transition: width 0.3s ease; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="logo">LS_Store Location</div>
 
         <div class="upload-section">
@@ -227,7 +268,7 @@
                 </div>
             </div>
             <div id="supervisor-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                <div style="color: #94A3B8; font-size: 10px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
             </div>
         </div>
 
@@ -240,7 +281,7 @@
                 </div>
             </div>
             <div id="chain-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                <div style="color: #94A3B8; font-size: 10px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
             </div>
         </div>
 
@@ -253,7 +294,7 @@
                 </div>
             </div>
             <div id="champion-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above first</div>
+                <div style="color: #94A3B8; font-size: 10px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above</div>
             </div>
         </div>
 
@@ -263,10 +304,16 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v5.0<br>
+            LS Operations v6.0<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
+
+    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <svg viewBox="0 0 24 24">
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+        </svg>
+    </button>
 
     <div id="map"></div>
 
@@ -277,7 +324,7 @@
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO',
+            attribution: '© OpenStreetMap contributors',
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
@@ -290,6 +337,20 @@
         let supervisorColors = {}; 
         
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+
+        // Minimize / Maximize logic
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('collapsed');
+            
+            // Allow CSS transition to finish before recalculating map size
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        }
 
         function getOuterBoundary(coords) {
             if (coords.length <= 3) return coords; 
@@ -314,7 +375,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            document.getElementById('upload-status').innerText = "Parsing columns...";
+            document.getElementById('upload-status').innerText = "Parsing...";
             document.getElementById('upload-status').style.color = '#FF5A00';
 
             Papa.parse(file, {
@@ -324,8 +385,7 @@
                     processSmartData(results.data);
                 },
                 error: function(err) {
-                    alert("Error reading file structure.");
-                    console.error(err);
+                    alert("Error reading file.");
                 }
             });
         }
@@ -368,12 +428,12 @@
             }).filter(item => item !== null);
 
             if (parsedData.length === 0) {
-                document.getElementById('upload-status').innerText = "❌ No valid coordinates found!";
+                document.getElementById('upload-status').innerText = "❌ Error";
                 document.getElementById('upload-status').style.color = 'red';
                 return;
             }
 
-            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length} records.`;
+            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length}`;
             document.getElementById('upload-status').style.color = '#10B981';
 
             buildSupervisorFilterList();
@@ -419,7 +479,7 @@
                 chainList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}>
-                        ${chain} <span class="count-badge">${count} Stores</span>
+                        ${chain} <span class="count-badge">${count}</span>
                     </label>
                 `;
             });
@@ -428,46 +488,28 @@
         function toggleAllCheckboxes(listId, checkState) {
             const checkboxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
             checkboxes.forEach(cb => cb.checked = checkState);
-            
-            if (listId === 'supervisor-list') {
-                handleFiltersChange();
-            } else {
-                handleChainChange();
-            }
+            if (listId === 'supervisor-list') handleFiltersChange();
+            else handleChainChange();
         }
 
         function getCheckedValues(listId) {
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // ULTRA-CLEAN PURE WHITE PINPOINT ENGINE
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
-            
-            // Default dark slate text for unmatched chains
             let brandTextColor = "#475569";
 
-            // Crisp, bold corporate colors strictly applied to the text only.
-            if (lowerChain.includes("carrefour")) {
-                brandTextColor = "#0054A6"; // Carrefour True Blue
-            } else if (lowerChain.includes("lulu")) {
-                brandTextColor = "#007B3A"; // Lulu True Green
-            } else if (lowerChain.includes("viva")) {
-                brandTextColor = "#B71234"; // Viva True Red
-            } else if (lowerChain.includes("sava")) {
-                brandTextColor = "#00645A"; // Sava Teal
-            } else if (lowerChain.includes("union coop")) {
-                brandTextColor = "#0B4226"; // Union Coop Dark Pine
-            } else if (lowerChain.includes("adcoop")) {
-                brandTextColor = "#102640"; // Adcoop Deep Navy
-            } else if (lowerChain.includes("safeer")) {
-                brandTextColor = "#155084"; // Safeer Royal Blue
-            }
+            if (lowerChain.includes("carrefour")) brandTextColor = "#0054A6"; 
+            else if (lowerChain.includes("lulu")) brandTextColor = "#007B3A"; 
+            else if (lowerChain.includes("viva")) brandTextColor = "#B71234"; 
+            else if (lowerChain.includes("sava")) brandTextColor = "#00645A"; 
+            else if (lowerChain.includes("union coop")) brandTextColor = "#0B4226"; 
+            else if (lowerChain.includes("adcoop")) brandTextColor = "#102640"; 
+            else if (lowerChain.includes("safeer")) brandTextColor = "#155084"; 
 
             const displayLabel = chainName.trim().toUpperCase();
 
-            // The background is pure white (#FFFFFF). 
-            // This provides maximum contrast against the map and looks incredibly clean and professional.
             return L.divIcon({
                 className: 'brand-solid-marker',
                 html: `<div style="
@@ -488,8 +530,7 @@
                     box-sizing: border-box; 
                     word-break: break-word; 
                     line-height: 1.1; 
-                    padding: 3px;
-                    letter-spacing: 0.1px;">${displayLabel}</div>`,
+                    padding: 3px;">${displayLabel}</div>`,
                 iconSize: [46, 46], 
                 iconAnchor: [23, 23]
             });
@@ -511,7 +552,7 @@
             const champList = document.getElementById('champion-list');
 
             if (selectedSups.length === 0 || selectedChains.length === 0) {
-                champList.innerHTML = '<div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select Options Above</div>';
+                champList.innerHTML = '<div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0;">Select Options Above</div>';
                 document.getElementById('info-panel').style.display = 'none';
                 markerLayer.clearLayers(); routeLayer.clearLayers(); return;
             }
@@ -530,7 +571,7 @@
                 champList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${champ}" onchange="renderMap()" ${isChecked}>
-                        ${champ} <span class="count-badge">${storeCount} Stores</span>
+                        ${champ} <span class="count-badge">${storeCount}</span>
                     </label>
                 `;
             });
