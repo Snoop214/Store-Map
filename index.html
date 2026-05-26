@@ -18,7 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
-            --sidebar-width: 340px; 
+            --sidebar-width: 370px; /* Widened to prevent wrapping */
         }
 
         body {
@@ -80,7 +80,7 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            right: -34px; /* Widened slightly to accommodate bigger arrow */
+            right: -34px; 
             width: 34px;
             height: 110px; 
             background-color: var(--white);
@@ -102,8 +102,8 @@
         }
 
         .sidebar-toggle svg {
-            width: 26px; /* Larger arrow */
-            height: 26px;
+            width: 30px; /* Scaled up icon */
+            height: 30px;
             transition: transform 0.3s ease;
         }
 
@@ -202,6 +202,7 @@
             width: 14px;
             height: 14px;
             accent-color: var(--primary-orange);
+            flex-shrink: 0;
         }
 
         .color-dot {
@@ -211,6 +212,7 @@
             margin-right: 10px;
             display: inline-block;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+            flex-shrink: 0;
         }
 
         .count-badge {
@@ -218,9 +220,11 @@
             font-size: 10px;
             margin-left: auto;
             background: #E2E8F0;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 10px;
             font-weight: 700;
+            white-space: nowrap; /* Forces text to stay on one line */
+            flex-shrink: 0; /* Prevents the badge from squishing */
         }
 
         .info-panel {
@@ -329,14 +333,14 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v7.1<br>
+                    LS Operations v7.2<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
         </div>
 
         <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
@@ -471,11 +475,14 @@
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length];
                 supervisorColors[sup] = assignedColor; colorIndex++;
+                
+                // Text wrapper span ensures proper flex behavior so the pill doesn't squish
                 supList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${sup}" onchange="handleFiltersChange()">
                         <span class="color-dot" style="background-color: ${assignedColor};"></span>
-                        ${sup} <span class="count-badge">${supervisorStats[sup].size} Champs</span>
+                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${sup}</span> 
+                        <span class="count-badge">${supervisorStats[sup].size} Champs</span>
                     </label>
                 `;
             });
@@ -503,7 +510,8 @@
                 chainList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}>
-                        ${chain} <span class="count-badge">${count}</span>
+                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${chain}</span>
+                        <span class="count-badge">${count} Stores</span>
                     </label>
                 `;
             });
@@ -596,7 +604,8 @@
                 champList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${champ}" onchange="renderMap()" ${isChecked}>
-                        ${champ} <span class="count-badge">${storeCount}</span>
+                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${champ}</span>
+                        <span class="count-badge">${storeCount} Stores</span>
                     </label>
                 `;
             });
