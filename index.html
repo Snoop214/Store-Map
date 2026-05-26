@@ -18,7 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
-            --sidebar-width: 340px; /* Increased slightly for better breathing room */
+            --sidebar-width: 340px; 
         }
 
         body {
@@ -75,14 +75,14 @@
             pointer-events: none;
         }
 
-        /* The Minimize/Maximize Arrow Button - Centered and Elongated */
+        /* The Minimize/Maximize Arrow Button - Larger and Bolder */
         .sidebar-toggle {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            right: -26px;
-            width: 26px;
-            height: 100px; /* Made longer for clear visibility */
+            right: -34px; /* Widened slightly to accommodate bigger arrow */
+            width: 34px;
+            height: 110px; 
             background-color: var(--white);
             border: 1px solid var(--border-color);
             border-left: none;
@@ -102,9 +102,8 @@
         }
 
         .sidebar-toggle svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
+            width: 26px; /* Larger arrow */
+            height: 26px;
             transition: transform 0.3s ease;
         }
 
@@ -330,15 +329,15 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v7.0<br>
+                    LS Operations v7.1<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
         </div>
 
         <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
-            <svg viewBox="0 0 24 24">
-                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
         
