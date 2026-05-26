@@ -232,7 +232,7 @@
             margin-top: 10px;
             margin-bottom: 12px;
             border: 1px solid var(--border-color);
-            z-index: 1; /* Keep below dropdowns */
+            z-index: 1; 
         }
 
         /* AI Review Section styling */
@@ -320,7 +320,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v14.0<br>
+                        LS Operations Optimizer v15.0<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -485,12 +485,10 @@
                 parsedData.push(storeObj);
 
                 if(!championUtilizationData[champ]) {
-                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup, latSum: 0, lngSum: 0 };
+                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
                 }
                 championUtilizationData[champ].stores.push(storeObj);
                 championUtilizationData[champ].totalOrders += dailyOrders;
-                championUtilizationData[champ].latSum += lat;
-                championUtilizationData[champ].lngSum += lng;
             });
 
             // APPLY EXACT THRESHOLD LOGIC
@@ -498,8 +496,6 @@
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
                 let o = d.totalOrders;
-                d.centerLat = d.latSum / count;
-                d.centerLng = d.lngSum / count;
                 
                 // Rule 1: 1 Store can NEVER be overloaded
                 if (count === 1) {
@@ -657,13 +653,27 @@
             });
         }
 
-        // --- TAB 2: AI DUAL-DIRECTION SUGGESTION ENGINE & MINIMAPS ---
+        // --- TAB 2: AI DUAL-DIRECTION SUGGESTION ENGINE & NEAREST-STORE MINIMAPS ---
         function getDistanceKM(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        // Helper to find the absolute closest store within a champion's existing territory
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
         }
 
         function selectChampion(champName, rowElement) {
@@ -696,9 +706,19 @@
                 parsedData.forEach(store => {
                     let ownerData = championUtilizationData[store.championName];
                     if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
-                        let dist = getDistanceKM(d.centerLat, d.centerLng, store.lat, store.lng);
-                        if (dist < 15) {
-                            candidates.push({ type: 'take', store: store, targetChamp: d, sourceChamp: ownerData, distance: dist });
+                        
+                        // Find distance to the NEAREST store the taking champion already has
+                        let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
+                        
+                        if (nearestData.distance < 15 && nearestData.anchorStore) {
+                            candidates.push({ 
+                                type: 'take', 
+                                store: store, 
+                                targetChamp: d, 
+                                sourceChamp: ownerData, 
+                                distance: nearestData.distance,
+                                anchorStore: nearestData.anchorStore
+                            });
                         }
                     }
                 });
@@ -709,9 +729,19 @@
                     Object.keys(championUtilizationData).forEach(otherChampName => {
                         let otherData = championUtilizationData[otherChampName];
                         if (otherData.supervisor === d.supervisor && otherData.status === 'Underutilized' && otherChampName !== champName) {
-                            let dist = getDistanceKM(otherData.centerLat, otherData.centerLng, store.lat, store.lng);
-                            if (dist < 15) {
-                                candidates.push({ type: 'give', store: store, targetChamp: otherData, targetChampName: otherChampName, distance: dist });
+                            
+                            // Find distance to the NEAREST store the receiving champion already has
+                            let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                            
+                            if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                candidates.push({ 
+                                    type: 'give', 
+                                    store: store, 
+                                    targetChamp: otherData, 
+                                    targetChampName: otherChampName, 
+                                    distance: nearestData.distance,
+                                    anchorStore: nearestData.anchorStore
+                                });
                             }
                         }
                     });
@@ -720,7 +750,6 @@
 
             candidates.sort((a, b) => a.distance - b.distance);
 
-            // Deduplicate to show varied options
             let uniqueCandidates = [];
             let seenStores = new Set();
             for (let c of candidates) {
@@ -736,7 +765,7 @@
                 return;
             }
 
-            // Render Cards and Mini-Maps
+            // Render Cards and Nearest-Store Mini-Maps
             uniqueCandidates.forEach((c, index) => {
                 let card = document.createElement('div');
                 card.className = 'suggestion-card';
@@ -771,34 +800,34 @@
                         <div class="sc-detail"><span>Load Reduction:</span> <strong style="color:var(--status-red)">-${Math.round(c.store.orders)} Orders/Day</strong></div>
                         
                         <div class="ai-review">
-                            <strong>🤖 AI Review:</strong> Transferring this store relieves <strong>${champName}'s</strong> overload and reassigns it to <strong>${c.targetChampName}</strong> (Underutilized), who is nearby.
+                            <strong>🤖 AI Review:</strong> Transferring this store relieves <strong>${champName}'s</strong> overload and reassigns it to <strong>${c.targetChampName}</strong> (Underutilized), who operates nearby.
                         </div>
                     `;
                 }
 
                 sWrapper.appendChild(card);
 
-                // Initialize Mini Map for the card
+                // Initialize Precision Mini Map
                 setTimeout(() => {
                     let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
                     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
 
                     let storeLatLng = [c.store.lat, c.store.lng];
-                    let champLatLng = [c.targetChamp.centerLat, c.targetChamp.centerLng];
+                    let anchorLatLng = [c.anchorStore.lat, c.anchorStore.lng];
 
-                    // Standard Blue marker for Store
-                    L.marker(storeLatLng).addTo(mmap);
+                    // Blue pin for the Suggested Store (The one moving)
+                    L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
                     
-                    // Orange dot for Champion's Territory Center
-                    L.circleMarker(champLatLng, {
+                    // Orange dot for the specific Nearest Existing Store of the target champion
+                    L.circleMarker(anchorLatLng, {
                         radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                    }).addTo(mmap);
+                    }).bindTooltip("Nearest current store: " + c.anchorStore.locationName).addTo(mmap);
 
-                    // Connecting Line
-                    L.polyline([storeLatLng, champLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                    // Connecting Line showing true distance
+                    L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
                     
-                    mmap.fitBounds(L.latLngBounds([storeLatLng, champLatLng]), {padding: [15, 15]});
-                }, 50); // Small delay ensures DOM element is rendered before Leaflet attaches
+                    mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                }, 50); 
             });
         }
 
@@ -820,6 +849,25 @@
                 html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px; letter-spacing: 0.1px;">${chainName.trim().toUpperCase()}</div>`,
                 iconSize: [46, 46], iconAnchor: [23, 23]
             });
+        }
+
+        function getOuterBoundary(coords) {
+            if (coords.length <= 3) return coords; 
+            let points = coords.slice().sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
+            const cross = (o, a, b) => (a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1]);
+            let lower = [];
+            for (let p of points) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+                lower.push(p);
+            }
+            let upper = [];
+            for (let i = points.length - 1; i >= 0; i--) {
+                let p = points[i];
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+                upper.push(p);
+            }
+            lower.pop(); upper.pop();
+            return lower.concat(upper);
         }
 
         function renderMap() {
@@ -858,6 +906,25 @@
                     }
                 }
             });
+
+            if (noChampsSelected) {
+                Object.keys(supervisorStorePools).forEach(sup => {
+                    const coords = supervisorStorePools[sup];
+                    const supColor = supervisorColors[sup] || '#FF5A00';
+                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 2, dashArray: '4, 6', opacity: 0.4 }).addTo(routeLayer);
+                    if (coords.length >= 3) {
+                        L.polygon(getOuterBoundary(coords), { color: supColor, fillColor: supColor, fillOpacity: 0.1, weight: 1.5 }).addTo(routeLayer);
+                    }
+                });
+            } else {
+                Object.keys(supervisorStorePools).forEach(champ => {
+                    const group = supervisorStorePools[champ];
+                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 3, dashArray: '5, 8', opacity: 0.7 }).addTo(routeLayer);
+                    if (group.coords.length >= 3) {
+                        L.polygon(getOuterBoundary(group.coords), { color: group.color, fillColor: group.color, fillOpacity: 0.2, weight: 2 }).addTo(routeLayer);
+                    }
+                });
+            }
 
             if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
         }
