@@ -181,12 +181,6 @@
             font-weight: 600;
         }
 
-        /* Leaflet Interactive Popups */
-        .leaflet-popup-content b { color: var(--text-dark); font-size: 15px; display: block; margin-bottom: 5px;}
-        .leaflet-popup-content { font-size: 13px; line-height: 1.7; min-width: 240px; }
-        .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
-        .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
-
         /* Permanent Muted Tooltip Configuration */
         .muted-champ-label {
             background: rgba(255, 255, 255, 0.9) !important;
@@ -259,7 +253,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.6<br>
+            LS Operations Platform v3.9.6<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -436,57 +430,66 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // ACCURATE UAE RETAIL BRAND IDENTITY STYLING ENGINE
+        // ACCURATE UAE RETAIL BRAND IDENTITY STYLING ENGINE - LIGHTENED/DESATURATED
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Matte business palette presets
-            let brandBgColor = "#7F8C8D"; 
-            let brandTextColor = "#FFFFFF";
+            // Ultra-light desaturated defaults
+            let brandBgColor = "#F4F6F6"; 
+            let brandTextColor = "#95A5A6";
+            let shortLabel = "SHOP";
 
-            // 1. CARREFOUR VARIANTS (Carrefour, Carrefour Market, Carrefour express)
+            // 1. CARREFOUR VARIANTS (Light Powder Blue Tint)
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#104F9E"; // Muted Classic Blue
-                brandTextColor = "#FFFFFF";
+                brandBgColor = "#F0F4F8"; 
+                brandTextColor = "#2E75B6"; 
+                shortLabel = lowerChain.includes("market") ? "C4 Mkt" : (lowerChain.includes("express") ? "C4 Exp" : "C4");
             } 
-            // 2. LULU VARIANTS (LuLu Hypermarket, LuLu express, Lulu Express Fresh Market)
+            // 2. LULU VARIANTS (Light Pastel Sage Green Tint)
             else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#1E7E34"; // Organic Leaf Green
-                brandTextColor = "#EAA812"; // Warm Corporate Yellow
+                brandBgColor = "#EDF7ED"; 
+                brandTextColor = "#2E7D32"; 
+                shortLabel = lowerChain.includes("express") ? "Lulu Exp" : "Lulu";
             } 
-            // 3. VIVA VARIANTS (Viva Supermarket)
+            // 3. VIVA VARIANTS (Light Soft Rose Red Tint)
             else if (lowerChain.includes("viva")) {
-                brandBgColor = "#A6192E"; // Deep Crimson Dark Red
-                brandTextColor = "#FFFFFF";
+                brandBgColor = "#FDF2F4"; 
+                brandTextColor = "#C0392B"; 
+                shortLabel = "Viva";
             } 
-            // 4. SAVA BRAND IDENTITY (MAF's Discount Format - Verified Teal Asset Profile)
+            // 4. SAVA BRAND IDENTITY (Light Soft Mint Teal Tint)
             else if (lowerChain.includes("sava")) {
-                brandBgColor = "#005F54"; // Rich Matte Dark Teal
-                brandTextColor = "#FFFFFF";
+                brandBgColor = "#E6F4F1"; 
+                brandTextColor = "#16A085"; 
+                shortLabel = "Sava";
             }
-            // 5. UNION COOP VARIANTS
+            // 5. UNION COOP VARIANTS (Light Soft Olive Green Tint)
             else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#1C3F24"; // British Racing Dark Pine Green
-                brandTextColor = "#F4E2BB"; // Premium Soft Cream
+                brandBgColor = "#E8F5E9"; 
+                brandTextColor = "#1B5E20"; 
+                shortLabel = "Union";
             } 
-            // 6. ADCOOP VARIANTS
+            // 6. ADCOOP VARIANTS (Light Soft Blue-Slate Tint)
             else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#0A1D37"; // Modern Rebranded Navy Blue Midnight
-                brandTextColor = "#FFFFFF";
+                brandBgColor = "#F0F2F5"; 
+                brandTextColor = "#34495E"; 
+                shortLabel = "ADCP";
             } 
-            // 7. SAFEER VARIANTS (Safeer Hypermarket)
+            // 7. SAFEER VARIANTS (Light Soft Royal Blue Tint)
             else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#0F4C81"; // Safeer Corporate Royal Blue
-                brandTextColor = "#FFFFFF";
+                brandBgColor = "#EBF3F9"; 
+                brandTextColor = "#2980B9"; 
+                shortLabel = "Safeer";
+            } else {
+                shortLabel = chainName.substring(0, 5).toUpperCase();
             }
 
-            const displayLabel = chainName.trim().toUpperCase();
-
+            // High clarity 38px circle layout with micro 6.8px text matrix config
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 3px solid ${supervisorColor}; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); font-size: 8px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
-                iconSize: [58, 58], 
-                iconAnchor: [29, 29]
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 6.8px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 2px;">${shortLabel}</div>`,
+                iconSize: [40, 40], 
+                iconAnchor: [20, 20]
             });
         }
 
@@ -573,7 +576,7 @@
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 22]
+                            offset: [0, 14]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
