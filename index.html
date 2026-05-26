@@ -29,7 +29,7 @@
             height: 100vh;
             background-color: var(--bg-light);
             color: var(--text-dark);
-            overflow: hidden;
+            overflow: hidden; /* Locks body */
             -webkit-font-smoothing: antialiased;
         }
 
@@ -44,6 +44,7 @@
             z-index: 1000;
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
+            overflow: hidden; /* NEVER allow the container to scroll */
         }
 
         .sidebar-container.collapsed {
@@ -58,12 +59,12 @@
 
         .sidebar-content {
             width: var(--sidebar-width);
-            height: 100%;
-            padding: 24px;
+            height: 100vh;
+            padding: 20px; /* Tighter padding to fit smaller screens */
             box-sizing: border-box;
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* NEVER allow the content to scroll */
             transition: opacity 0.2s ease;
         }
 
@@ -108,12 +109,16 @@
             transform: rotate(180deg);
         }
 
-        /* Internal Panel Styling */
+        /* Prevent these elements from shrinking */
+        .logo, .database-section, .section-header, .info-panel, .app-footer {
+            flex-shrink: 0;
+        }
+
         .logo {
             color: var(--primary-orange);
             font-size: 22px;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             letter-spacing: -0.5px;
         }
 
@@ -121,10 +126,10 @@
         .database-section {
             background-color: #F8FAFC;
             border: 1px solid var(--border-color);
-            padding: 14px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -143,13 +148,20 @@
             font-weight: 600;
         }
 
-        .control-group { margin-bottom: 24px; }
+        /* Flexbox Magic: These groups will equally share remaining screen height */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0; /* Grow and shrink dynamically */
+            min-height: 0; /* Crucial for scrolling to work inside flex */
+            margin-bottom: 15px;
+        }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 6px;
         }
@@ -173,13 +185,21 @@
         }
         .shortcut-btn:hover { text-decoration: underline; }
 
-        /* Full expanded list style without inner scrolling */
+        /* The lists themselves will scroll internally */
         .checkbox-list {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px;
+            padding: 10px 12px;
+            flex: 1 1 auto; /* Fills the control group */
+            overflow-y: auto; /* ONLY the list scrolls */
+            min-height: 0;
         }
+
+        /* Custom thin scrollbar for a cleaner look */
+        .checkbox-list::-webkit-scrollbar { width: 6px; }
+        .checkbox-list::-webkit-scrollbar-track { background: transparent; }
+        .checkbox-list::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 10px; }
 
         .checkbox-item {
             display: flex;
@@ -225,22 +245,21 @@
 
         .info-panel {
             background-color: var(--white);
-            padding: 18px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             border-left: 3px solid var(--primary-orange);
             margin-top: auto;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .info-panel h3 { color: var(--text-dark); margin: 0 0 8px 0; font-size: 13px; font-weight: 800; }
+        .info-panel h3 { color: var(--text-dark); margin: 0 0 6px 0; font-size: 13px; font-weight: 800; }
         .info-panel p { margin: 0; font-size: 12px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
 
         .app-footer {
             border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            margin-top: auto;
+            padding-top: 10px;
             font-size: 11px;
             color: var(--text-muted);
             text-align: center;
@@ -328,7 +347,7 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v10.0<br>
+                    LS Operations v11.0<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
@@ -365,15 +384,10 @@
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
 
         // ====== ADMIN CONFIGURATION ======
-        // Ensure your CSV file is named exactly this, and is in the same folder as this HTML file.
-        // OR paste your Google Sheets CSV publish URL inside the quotes below!
         const CSV_FILE_PATH = "data.csv"; 
-        
-        // Manually update this string whenever you upload a new data.csv file to your server
         const LAST_UPDATED_DATE = "May 26, 2026"; 
         // ==================================
 
-        // Auto-fetch data when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             fetchHostedData();
         });
@@ -386,7 +400,7 @@
                 complete: function(results) {
                     processSmartData(results.data);
                     document.getElementById('upload-status').innerText = `Last Updated: ${LAST_UPDATED_DATE}`;
-                    document.getElementById('upload-status').style.color = '#10B981'; // Turn green on success
+                    document.getElementById('upload-status').style.color = '#10B981';
                 },
                 error: function(err) {
                     document.getElementById('upload-status').innerText = "⚠️ Missing data.csv on server";
@@ -399,10 +413,7 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
-            
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 300);
+            setTimeout(() => { map.invalidateSize(); }, 300);
         }
 
         function getOuterBoundary(coords) {
