@@ -246,7 +246,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.1<br>
+            LS Operations Platform v2.9<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -260,7 +260,7 @@
         // Initialize Map View
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
-        // Forced English Map Tiles
+        // FORCED ENGLISH MAP TILES
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors © CARTO',
             subdomains: 'abcd',
@@ -273,6 +273,7 @@
         let parsedData = [];
         let supervisorStats = {}; 
         let supervisorColors = {}; 
+        
         const colorPalette = ['#FF5A00', '#4A90E2', '#2ECC71', '#9B59B6', '#E74C3C', '#1ABC9C', '#F1C40F', '#E84855'];
 
         function getOuterBoundary(coords) {
@@ -298,87 +299,61 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            document.getElementById('upload-status').innerText = "Analyzing file contents...";
+            document.getElementById('upload-status').innerText = "Parsing columns...";
             document.getElementById('upload-status').style.color = '#FF5A00';
 
             Papa.parse(file, {
-                header: false, 
+                header: true, 
                 skipEmptyLines: true,
                 complete: function(results) {
-                    processUniversalData(results.data);
+                    processSmartData(results.data);
                 },
                 error: function(err) {
-                    alert("Error processing file contents.");
+                    alert("Error reading file structure.");
                     console.error(err);
                 }
             });
         }
 
-        function processUniversalData(rawRows) {
-            if (rawRows.length < 2) return;
-
+        function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {};
-            
-            const headers = rawRows[0].map(h => h ? h.trim().toLowerCase() : "");
 
-            const findIndex = (nameOptions, absoluteFallbackIndex) => {
-                for (let option of nameOptions) {
-                    let foundIndex = headers.findIndex(h => h.includes(option.toLowerCase()) || option.toLowerCase().includes(h) && h.length > 2);
-                    if (foundIndex !== -1) return foundIndex;
-                }
-                return absoluteFallbackIndex; 
-            };
+            parsedData = dataRows.map(row => {
+                const clean = (keyOptions) => {
+                    for (let key of keyOptions) {
+                        if (row[key] !== undefined) return row[key].trim();
+                        let foundKey = Object.keys(row).find(k => k.trim() === key);
+                        if (foundKey && row[foundKey] !== undefined) return row[foundKey].trim();
+                    }
+                    return "";
+                };
 
-            // Hardcoded fallback indices precisely adjusted to match AA (26) and AB (27) structures
-            const idx = {
-                champ: findIndex(["champion", "name"], 1),
-                sup: findIndex(["supervisor"], 2),
-                chainId: findIndex(["chain id", "chain_id"], 6),
-                chainName: findIndex(["chain nam", "chain name"], 7),
-                vendorId: findIndex(["vendor id", "vendor_id"], 8),
-                vendorName: findIndex(["vendor na", "vendor name"], 10),
-                locName: findIndex(["location", "branch"], 11),
-                mail: findIndex(["email", "mail id", "mail_id"], 16),
-                phone: findIndex(["mobile", "phone", "num"], 17),
-                lat: findIndex(["latitude", "lat", "y"], 26),  // Column AA priority
-                lng: findIndex(["longitude", "lng", "x"], 27)  // Column AB priority
-            };
+                const lat = parseFloat(clean(["Latitude"]));
+                const lng = parseFloat(clean(["Longitude"]));
+                
+                if (isNaN(lat) || isNaN(lng)) return null;
 
-            for (let i = 1; i < rawRows.length; i++) {
-                const row = rawRows[i];
-                if (!row || row.length <= Math.max(idx.lat, idx.lng)) continue;
+                const sup = clean(["Supervisor"]) || "Unknown";
+                const champ = clean(["Name", "Champion Name"]) || "Unknown";
+                const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
 
-                const getVal = (index) => row[index] ? row[index].trim() : "";
+                if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
+                supervisorStats[sup].add(champ);
 
-                const lat = parseFloat(getVal(idx.lat));
-                const lng = parseFloat(getVal(idx.lng));
-
-                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) continue;
-
-                const supervisorVal = getVal(idx.sup) || "Unknown";
-                const championVal = getVal(idx.champ) || "Unknown";
-                const chainVal = getVal(idx.chainName) || "Unknown";
-
-                if (!supervisorStats[supervisorVal]) supervisorStats[supervisorVal] = new Set();
-                supervisorStats[supervisorVal].add(championVal);
-
-                parsedData.push({
-                    championName: championVal,
-                    supervisor: supervisorVal,
-                    chainName: chainVal,
-                    chainId: getVal(idx.chainId) || "N/A",
-                    vendorId: getVal(idx.vendorId) || "N/A",
-                    vendorName: getVal(idx.vendorName) || "Unknown",
-                    locationName: getVal(idx.locName) || "Store",
-                    email: getVal(idx.mail) || "N/A",
-                    mobile: getVal(idx.phone) || "N/A",
-                    lat: lat,
-                    lng: lng
-                });
-            }
+                return {
+                    championName: champ, supervisor: sup, chainName: chain,
+                    chainId: clean(["Chain ID", "Chain id"]) || "N/A",
+                    vendorId: clean(["Vendor ID", "Vendor id"]) || "N/A",
+                    vendorName: clean(["Vendor Na", "Vendor Name"]) || "Unknown",
+                    locationName: clean(["Location", "Branch Loc"]) || "Store",
+                    email: clean(["Email", "Email ID"]) || "N/A", 
+                    mobile: clean(["Mobile Num", "Mobile Number"]) || "N/A",
+                    lat: lat, lng: lng
+                };
+            }).filter(item => item !== null);
 
             if (parsedData.length === 0) {
-                document.getElementById('upload-status').innerText = "❌ Verification failed. Ensure Latitude is in AA and Longitude is in AB.";
+                document.getElementById('upload-status').innerText = "❌ No valid coordinates found!";
                 document.getElementById('upload-status').style.color = 'red';
                 return;
             }
@@ -446,7 +421,6 @@
             }
         }
 
-        // Checklist lookup configuration utility
         function getCheckedValues(listId) {
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
