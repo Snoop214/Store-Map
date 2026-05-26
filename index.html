@@ -189,45 +189,9 @@
             padding: 1px 4px !important;
             font-size: 9px !important;
             font-weight: 600 !important;
-            color: #555 !important;
+            color: #666 !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
             white-space: nowrap;
-        }
-
-        /* Compact Container for Micro Google Maps-style markers */
-        .google-maps-composite-marker {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            width: 60px !important;
-            height: 50px !important;
-            margin-left: -30px !important;
-            margin-top: -50px !important;
-            text-align: center;
-        }
-
-        /* Scaled Down Compact Micro Brand Labels */
-        .pin-chain-header {
-            font-size: 6.5px;
-            font-weight: 800;
-            padding: 0.5px 3px;
-            border-radius: 2px;
-            margin-bottom: 1px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-            max-width: 58px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            text-transform: uppercase;
-        }
-
-        /* Precision Reduced Teardrop SVG sizing */
-        .google-pin-svg {
-            width: 20px;
-            height: 28px;
-            display: block;
-            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.15));
         }
         
         #map { flex-grow: 1; height: 100%; }
@@ -289,7 +253,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.9.1<br>
+            LS Operations Platform v3.9.5<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -466,65 +430,53 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // REDUCED TONE GOOGLE MAPS PIN DROP ARCHITECTURE (SCALED DOWN footprint)
+        // BACK TO THE BASE CIRCLE SCRIPT - COMPACT WITH MUTED BRANDING COLORS
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            let brandBgColor = "#BDC3C7"; 
+            // Matte desaturated base defaults
+            let brandBgColor = "#F2F4F4"; 
             let brandTextColor = "#7F8C8D";
             let shortLabel = "SHOP";
 
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#EBF5FB"; 
-                brandTextColor = "#21618C"; 
-                shortLabel = lowerChain.includes("market") ? "C4 Market" : (lowerChain.includes("express") ? "C4 Exp" : "C4");
+                brandBgColor = "#EBF5FB"; // Pale Powder Blue
+                brandTextColor = "#21618C"; // Dark Slate Blue
+                shortLabel = lowerChain.includes("market") ? "C4 Mkt" : (lowerChain.includes("express") ? "C4 Exp" : "C4");
             } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#E9F7EF"; 
-                brandTextColor = "#1E8449"; 
+                brandBgColor = "#E9F7EF"; // Light Sage Green
+                brandTextColor = "#1E8449"; // Dark Forest Green
                 shortLabel = lowerChain.includes("express") ? "Lulu Exp" : "Lulu";
             } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FDEDEC"; 
-                brandTextColor = "#C0392B"; 
+                brandBgColor = "#FDEDEC"; // Soft Blush Red
+                brandTextColor = "#C0392B"; // Matte Cherry Red
                 shortLabel = "Viva";
             } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#E8F8F5"; 
-                brandTextColor = "#16A085"; 
+                brandBgColor = "#E8F8F5"; // Light Seafoam
+                brandTextColor = "#16A085"; // Matte Dark Teal
                 shortLabel = "Sava";
             } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#EAFAF1"; 
-                brandTextColor = "#145A32"; 
+                brandBgColor = "#EAFAF1"; // Pale Mint Green
+                brandTextColor = "#145A32"; // Rich Pine Green
                 shortLabel = "Union";
             } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#F2F4F4"; 
-                brandTextColor = "#2E4053"; 
-                shortLabel = "Adcoop";
+                brandBgColor = "#F2F4F4"; // Cool Gray-Blue
+                brandTextColor = "#2E4053"; // Slate Navy
+                shortLabel = "ADCP";
             } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#EBF5FB"; 
-                brandTextColor = "#2874A6"; 
+                brandBgColor = "#EBF5FB"; // Light Sky Mist
+                brandTextColor = "#2874A6"; // Classic Royal Blue
                 shortLabel = "Safeer";
             } else {
-                shortLabel = chainName.substring(0, 8);
+                shortLabel = chainName.substring(0, 5).toUpperCase();
             }
 
-            // Injected dynamic composite SVG string tracking miniature pinpoint dimensions (20px x 28px)
-            const compositeHTML = `
-                <div class="google-maps-composite-marker">
-                    <div class="pin-chain-header" style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1px solid ${brandTextColor}25;">
-                        ${shortLabel}
-                    </div>
-                    <svg class="google-pin-svg" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 9.3 12 20 12 20s12-10.7 12-20C24 5.37 18.63 0 12 0z" fill="${brandBgColor}"/>
-                        <circle cx="12" cy="12" r="4.5" fill="#FFFFFF"/>
-                        <circle cx="12" cy="12" r="3" fill="${supervisorColor}"/>
-                    </svg>
-                </div>
-            `;
-
+            // Clean 38px circle base format with a micro font profile
             return L.divIcon({
-                className: 'leaflet-blank-icon-container',
-                html: compositeHTML,
-                iconSize: [60, 50], 
-                iconAnchor: [30, 50] 
+                className: 'brand-solid-marker',
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.12); font-size: 6.5px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 2px;">${shortLabel}</div>`,
+                iconSize: [40, 40], 
+                iconAnchor: [20, 20]
             });
         }
 
@@ -607,12 +559,12 @@
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
-                        // Clean positioning offsets matching tighter pointer thresholds seamlessly
+                        // Tooltip offsets perfectly adjusted to align right under the shrunken 38px circles
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, -4]
+                            offset: [0, 14]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
