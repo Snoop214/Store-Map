@@ -186,6 +186,19 @@
         .leaflet-popup-content { font-size: 13px; line-height: 1.7; min-width: 240px; }
         .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
+
+        /* Professional Permanent Muted Label Styles */
+        .muted-champ-label {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 4px !important;
+            padding: 2px 5px !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            color: #444 !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
+            white-space: nowrap;
+        }
         
         #map { flex-grow: 1; height: 100%; }
     </style>
@@ -538,9 +551,18 @@
                             <span class="popup-label">Mail ID:</span> <a class="popup-link" href="mailto:${store.email}">${store.email}</a>
                         `;
 
-                        L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
+                        // 1. Drop the Interactive Map Marker Pin
+                        const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
+                        
+                        // 2. STICKY TEXT TOOLTIP ENGINE: Adds a permanent, small, short text tag floating directly underneath the marker pin
+                        storeMarker.bindTooltip(store.championName, {
+                            permanent: true,
+                            direction: 'bottom',
+                            className: 'muted-champ-label',
+                            offset: [0, 16] // Offsets the text position perfectly so it stays beneath the round graphic
+                        });
                         
                         allBounds.push([store.lat, store.lng]);
                         activeChampsCount.add(store.championName);
