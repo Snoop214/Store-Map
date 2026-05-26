@@ -253,7 +253,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.9.6<br>
+            LS Operations Platform v3.9.7<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -430,66 +430,59 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // ACCURATE UAE RETAIL BRAND IDENTITY STYLING ENGINE - LIGHTENED/DESATURATED
+        // FULL CHAIN NAME READ OUT WITH LIGHT BALANCED TONAL BACKGROUNDS
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Ultra-light desaturated defaults
+            // Matte desaturated base profile defaults
             let brandBgColor = "#F4F6F6"; 
             let brandTextColor = "#95A5A6";
-            let shortLabel = "SHOP";
 
-            // 1. CARREFOUR VARIANTS (Light Powder Blue Tint)
+            // 1. CARREFOUR VARIANTS (Light Powder Blue Base / Muted Blue Text)
             if (lowerChain.includes("carrefour")) {
                 brandBgColor = "#F0F4F8"; 
                 brandTextColor = "#2E75B6"; 
-                shortLabel = lowerChain.includes("market") ? "C4 Mkt" : (lowerChain.includes("express") ? "C4 Exp" : "C4");
             } 
-            // 2. LULU VARIANTS (Light Pastel Sage Green Tint)
+            // 2. LULU VARIANTS (Light Sage Base / Deep Forest Text)
             else if (lowerChain.includes("lulu")) {
                 brandBgColor = "#EDF7ED"; 
                 brandTextColor = "#2E7D32"; 
-                shortLabel = lowerChain.includes("express") ? "Lulu Exp" : "Lulu";
             } 
-            // 3. VIVA VARIANTS (Light Soft Rose Red Tint)
+            // 3. VIVA VARIANTS (Light Blush Pink Base / Brick Red Text)
             else if (lowerChain.includes("viva")) {
                 brandBgColor = "#FDF2F4"; 
                 brandTextColor = "#C0392B"; 
-                shortLabel = "Viva";
             } 
-            // 4. SAVA BRAND IDENTITY (Light Soft Mint Teal Tint)
+            // 4. SAVA VARIANTS (Light Mint Base / Deep Teal Text)
             else if (lowerChain.includes("sava")) {
                 brandBgColor = "#E6F4F1"; 
                 brandTextColor = "#16A085"; 
-                shortLabel = "Sava";
             }
-            // 5. UNION COOP VARIANTS (Light Soft Olive Green Tint)
+            // 5. UNION COOP VARIANTS (Light Mint-Sage Base / Dark Pine Text)
             else if (lowerChain.includes("union coop")) {
                 brandBgColor = "#E8F5E9"; 
                 brandTextColor = "#1B5E20"; 
-                shortLabel = "Union";
             } 
-            // 6. ADCOOP VARIANTS (Light Soft Blue-Slate Tint)
+            // 6. ADCOOP VARIANTS (Light Slate Base / Cool Charcoal Text)
             else if (lowerChain.includes("adcoop")) {
                 brandBgColor = "#F0F2F5"; 
                 brandTextColor = "#34495E"; 
-                shortLabel = "ADCP";
             } 
-            // 7. SAFEER VARIANTS (Light Soft Royal Blue Tint)
+            // 7. SAFEER VARIANTS (Light Sky Base / Soft Corporate Blue Text)
             else if (lowerChain.includes("safeer")) {
                 brandBgColor = "#EBF3F9"; 
                 brandTextColor = "#2980B9"; 
-                shortLabel = "Safeer";
-            } else {
-                shortLabel = chainName.substring(0, 5).toUpperCase();
             }
 
-            // High clarity 38px circle layout with micro 6.8px text matrix config
+            // Strips extra white spaces, leaves structural components completely full and raw
+            const displayLabel = chainName.trim().toUpperCase();
+
+            // Sized exactly to 48px to cleanly fit full text layers while text is sized to an ultra-crisp 7px Matrix wrap
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 6.8px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 2px;">${shortLabel}</div>`,
-                iconSize: [40, 40], 
-                iconAnchor: [20, 20]
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.12); font-size: 7px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px;">${displayLabel}</div>`,
+                iconSize: [50, 50], 
+                iconAnchor: [25, 25]
             });
         }
 
@@ -572,11 +565,12 @@
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
+                        // Vertical map tracking label positioning thresholds matched cleanly
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 14]
+                            offset: [0, 18]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
