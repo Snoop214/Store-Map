@@ -181,9 +181,15 @@
             font-weight: 600;
         }
 
+        /* Leaflet Interactive Popups */
+        .leaflet-popup-content b { color: var(--text-dark); font-size: 15px; display: block; margin-bottom: 5px;}
+        .leaflet-popup-content { font-size: 13px; line-height: 1.7; min-width: 240px; }
+        .popup-label { color: #888; font-weight: 600; width: 85px; display: inline-block; }
+        .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: bold; }
+
         /* Permanent Muted Tooltip Label Styles */
         .muted-champ-label {
-            background: rgba(255, 255, 255, 0.9) !important;
+            background: rgba(255, 255, 255, 0.8) !important;
             border: 1px solid #ddd !important;
             border-radius: 4px !important;
             padding: 1px 4px !important;
@@ -253,7 +259,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v3.9.5<br>
+            LS Operations Platform v3.7<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -430,53 +436,58 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // BACK TO THE BASE CIRCLE SCRIPT - COMPACT WITH MUTED BRANDING COLORS
+        // REDUCED TONE LIGHT BRAND IDENTITIES
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            // Matte desaturated base defaults
+            // Matte muted gray defaults
             let brandBgColor = "#F2F4F4"; 
             let brandTextColor = "#7F8C8D";
-            let shortLabel = "SHOP";
 
+            // 1. CARREFOUR (Reduced Pale Blue)
             if (lowerChain.includes("carrefour")) {
                 brandBgColor = "#EBF5FB"; // Pale Powder Blue
-                brandTextColor = "#21618C"; // Dark Slate Blue
-                shortLabel = lowerChain.includes("market") ? "C4 Mkt" : (lowerChain.includes("express") ? "C4 Exp" : "C4");
-            } else if (lowerChain.includes("lulu")) {
+                brandTextColor = "#2E86C1"; // Muted Deep Blue
+            } 
+            // 2. LULU (Reduced Pale Green)
+            else if (lowerChain.includes("lulu")) {
                 brandBgColor = "#E9F7EF"; // Light Sage Green
-                brandTextColor = "#1E8449"; // Dark Forest Green
-                shortLabel = lowerChain.includes("express") ? "Lulu Exp" : "Lulu";
-            } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FDEDEC"; // Soft Blush Red
-                brandTextColor = "#C0392B"; // Matte Cherry Red
-                shortLabel = "Viva";
-            } else if (lowerChain.includes("sava")) {
+                brandTextColor = "#1E8449"; // Organic Forest Green
+            } 
+            // 3. VIVA (Reduced Pale Red)
+            else if (lowerChain.includes("viva")) {
+                brandBgColor = "#FDEDEC"; // Soft Blush Pink/Red
+                brandTextColor = "#C0392B"; // Matte Brick Red
+            } 
+            // 4. SAVA (Reduced Light Teal)
+            else if (lowerChain.includes("sava")) {
                 brandBgColor = "#E8F8F5"; // Light Seafoam
-                brandTextColor = "#16A085"; // Matte Dark Teal
-                shortLabel = "Sava";
-            } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#EAFAF1"; // Pale Mint Green
-                brandTextColor = "#145A32"; // Rich Pine Green
-                shortLabel = "Union";
-            } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#F2F4F4"; // Cool Gray-Blue
-                brandTextColor = "#2E4053"; // Slate Navy
-                shortLabel = "ADCP";
-            } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#EBF5FB"; // Light Sky Mist
-                brandTextColor = "#2874A6"; // Classic Royal Blue
-                shortLabel = "Safeer";
-            } else {
-                shortLabel = chainName.substring(0, 5).toUpperCase();
+                brandTextColor = "#16A085"; // Matte Deep Teal
+            }
+            // 5. UNION COOP (Reduced Light Forest)
+            else if (lowerChain.includes("union coop")) {
+                brandBgColor = "#EAFAF1"; // Pale Mint
+                brandTextColor = "#196F3D"; // Pine Green Tone
+            } 
+            // 6. ADCOOP (Reduced Light Navy)
+            else if (lowerChain.includes("adcoop")) {
+                brandBgColor = "#EBF5FB"; // Steel Mist
+                brandTextColor = "#21618C"; // Dark Slate Navy
+            } 
+            // 7. SAFEER (Reduced Light Royal Blue)
+            else if (lowerChain.includes("safeer")) {
+                brandBgColor = "#F4F6F7"; // Cool Gray-Blue
+                brandTextColor = "#2874A6"; // Corporate Blue Tone
             }
 
-            // Clean 38px circle base format with a micro font profile
+            const displayLabel = chainName.trim().toUpperCase();
+
+            // Lightweight pin logic: thin border, soft shadows, matte colors
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.12); font-size: 6.5px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 2px;">${shortLabel}</div>`,
-                iconSize: [40, 40], 
-                iconAnchor: [20, 20]
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 1.5px solid ${supervisorColor}; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-size: 7.5px; font-weight: 700; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 4px;">${displayLabel}</div>`,
+                iconSize: [54, 54], 
+                iconAnchor: [27, 27]
             });
         }
 
@@ -559,12 +570,11 @@
                          .bindPopup(popupHTML)
                          .addTo(markerLayer);
                         
-                        // Tooltip offsets perfectly adjusted to align right under the shrunken 38px circles
                         storeMarker.bindTooltip(store.championName, {
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 14]
+                            offset: [0, 20]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
