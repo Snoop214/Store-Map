@@ -192,7 +192,7 @@
         .status-under { background: var(--status-blue-bg); color: var(--status-blue); }
 
         /* Bottom Panel */
-        .data-panel-bottom { flex: 2; display: flex; gap: 24px; min-height: 250px; }
+        .data-panel-bottom { flex: 2.5; display: flex; gap: 24px; min-height: 320px; }
 
         .profile-card {
             flex: 1; background: var(--bg-card); border: 1px solid var(--border-color);
@@ -206,7 +206,7 @@
         .metric-val { font-weight: 800; color: var(--text-dark);}
 
         .suggestions-container {
-            flex: 2; background: var(--bg-card); border: 1px solid var(--border-color);
+            flex: 2.5; background: var(--bg-card); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -216,7 +216,7 @@
         .cards-wrapper { display: flex; gap: 16px; overflow-x: auto; flex-grow: 1; padding-bottom: 10px;}
 
         .suggestion-card {
-            min-width: 300px; border: 1px solid var(--border-color); border-radius: 10px;
+            min-width: 330px; border: 1px solid var(--border-color); border-radius: 10px;
             padding: 16px; display: flex; flex-direction: column; background: #F8FAFC;
         }
 
@@ -224,6 +224,17 @@
         .sc-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;}
         .sc-detail { font-size: 12px; color: var(--text-dark); margin-bottom: 6px; display:flex; justify-content: space-between;}
         
+        /* Mini-Map specific styling */
+        .mini-map {
+            height: 120px;
+            width: 100%;
+            border-radius: 6px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            z-index: 1; /* Keep below dropdowns */
+        }
+
         /* AI Review Section styling */
         .ai-review {
             margin-top: auto;
@@ -309,7 +320,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v13.0<br>
+                        LS Operations Optimizer v14.0<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -354,7 +365,7 @@
                 <div class="data-panel-bottom">
                     <div class="profile-card" id="profile-card">
                         <h3><span id="p-icon">👤</span> Champion Profile</h3>
-                        <div class="empty-state" style="padding-top:20px;">Select an Underutilized Champion to view AI reallocation suggestions.</div>
+                        <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
                     </div>
                     
                     <div class="suggestions-container" id="suggestions-card">
@@ -456,11 +467,10 @@
                 const champ = clean(["Name", "Champion Name"]) || "Unknown";
                 const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
 
-                // Grab Daily Orders from standard names, or default to Column 12 (Index 11).
                 let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]);
                 if (!ordersStr && keys.length >= 12) ordersStr = row[keys[11]];
                 let dailyOrders = parseFloat(ordersStr);
-                if (isNaN(dailyOrders)) dailyOrders = Math.floor(Math.random() * 150) + 50; // Fallback to ensure demo works
+                if (isNaN(dailyOrders)) dailyOrders = Math.floor(Math.random() * 150) + 50; 
 
                 if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
                 supervisorStats[sup].add(champ);
@@ -505,12 +515,8 @@
                 } 
                 // Rule 4: Normal/Optimal = Up to 3 stores, Up to 350 orders
                 else if (count <= 3 && o <= 350) {
-                    // Let's create an 'Underutilized' bracket to generate suggestions
-                    if (count < 3 && o < 200) {
-                        d.status = 'Underutilized';
-                    } else {
-                        d.status = 'Optimal';
-                    }
+                    if (count < 3 && o < 200) d.status = 'Underutilized';
+                    else d.status = 'Optimal';
                 }
             });
 
@@ -603,11 +609,7 @@
             renderDashboard();
         }
 
-        // --- DASHBOARD RENDERER ---
-        function renderDashboard() {
-            renderMap();
-            renderTable();
-        }
+        function renderDashboard() { renderMap(); renderTable(); }
 
         // --- TAB 2: DATA TABLE RENDERER ---
         function renderTable() {
@@ -655,7 +657,7 @@
             });
         }
 
-        // --- TAB 2: AI SUGGESTION ENGINE ---
+        // --- TAB 2: AI DUAL-DIRECTION SUGGESTION ENGINE & MINIMAPS ---
         function getDistanceKM(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -681,64 +683,122 @@
                 <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
                 <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
                 <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
-                <div class="metric-row"><span class="metric-label">Target Orders:</span><span class="metric-val">Up to 350</span></div>
+                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-3 Stores / <350 Orders</span></div>
             `;
 
             let sWrapper = document.getElementById('suggestions-wrapper');
             sWrapper.innerHTML = '';
 
-            // Only provide suggestions if champion is Optimal or Underutilized 
-            if (d.status === 'Overloaded' || d.status === 'Medium Load') {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">Champion is currently at or above capacity. No new stores suggested.</div>`;
-                return;
-            }
-
             let candidates = [];
-            parsedData.forEach(store => {
-                let ownerData = championUtilizationData[store.championName];
-                
-                // RULES: 
-                // 1. Must be from the SAME supervisor.
-                // 2. The store's current owner MUST be Overloaded.
-                // 3. Prevent suggesting stores to themselves.
-                if (store.supervisor === d.supervisor && ownerData && ownerData.status === 'Overloaded' && store.championName !== champName) {
-                    let dist = getDistanceKM(d.centerLat, d.centerLng, store.lat, store.lng);
-                    
-                    // 4. Must be geographically close (e.g., within 15km)
-                    if (dist < 15) {
-                        candidates.push({ store: store, distance: dist, ownerData: ownerData });
+
+            // LOGIC A: Selected Champion is Underutilized -> Find Overloaded stores to TAKE
+            if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                parsedData.forEach(store => {
+                    let ownerData = championUtilizationData[store.championName];
+                    if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                        let dist = getDistanceKM(d.centerLat, d.centerLng, store.lat, store.lng);
+                        if (dist < 15) {
+                            candidates.push({ type: 'take', store: store, targetChamp: d, sourceChamp: ownerData, distance: dist });
+                        }
                     }
-                }
-            });
+                });
+            } 
+            // LOGIC B: Selected Champion is Overloaded -> Find Underutilized champions to GIVE TO
+            else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                d.stores.forEach(store => {
+                    Object.keys(championUtilizationData).forEach(otherChampName => {
+                        let otherData = championUtilizationData[otherChampName];
+                        if (otherData.supervisor === d.supervisor && otherData.status === 'Underutilized' && otherChampName !== champName) {
+                            let dist = getDistanceKM(otherData.centerLat, otherData.centerLng, store.lat, store.lng);
+                            if (dist < 15) {
+                                candidates.push({ type: 'give', store: store, targetChamp: otherData, targetChampName: otherChampName, distance: dist });
+                            }
+                        }
+                    });
+                });
+            }
 
             candidates.sort((a, b) => a.distance - b.distance);
 
-            if (candidates.length === 0) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No overloaded team members found nearby under supervisor <strong>${d.supervisor}</strong>.</div>`;
+            // Deduplicate to show varied options
+            let uniqueCandidates = [];
+            let seenStores = new Set();
+            for (let c of candidates) {
+                if (!seenStores.has(c.store.locationName)) {
+                    uniqueCandidates.push(c);
+                    seenStores.add(c.store.locationName);
+                }
+                if (uniqueCandidates.length >= 3) break;
+            }
+
+            if (uniqueCandidates.length === 0) {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No viable reallocation options found nearby under supervisor <strong>${d.supervisor}</strong>.</div>`;
                 return;
             }
 
-            // Render up to 3 AI Review Cards (No buttons)
-            candidates.slice(0, 3).forEach(c => {
+            // Render Cards and Mini-Maps
+            uniqueCandidates.forEach((c, index) => {
                 let card = document.createElement('div');
                 card.className = 'suggestion-card';
+                let mapId = `minimap-${index}`;
                 
-                let newOrders = Math.round(d.totalOrders + c.store.orders);
-                let overageWarning = newOrders > 350 ? `(Warning: Will push to ${newOrders} orders)` : `(Keeps total at ${newOrders}, Optimal)`;
+                if (c.type === 'take') {
+                    // Underutilized taking from Overloaded
+                    card.innerHTML = `
+                        <div class="sc-title">${c.store.locationName}</div>
+                        <div class="sc-sub">${c.store.chainName}</div>
+                        
+                        <div id="${mapId}" class="mini-map"></div>
 
-                card.innerHTML = `
-                    <div class="sc-title">${c.store.locationName}</div>
-                    <div class="sc-sub">${c.store.chainName}</div>
-                    
-                    <div class="sc-detail"><span>Take From:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
-                    <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
-                    <div class="sc-detail"><span>Store Volume:</span> <strong style="color:var(--status-green)">${Math.round(c.store.orders)} Orders/Day</strong></div>
-                    
-                    <div class="ai-review">
-                        <strong>🤖 AI Review:</strong> Transferring this store balances workload within <strong>${d.supervisor}'s</strong> team. It relieves <strong>${c.store.championName}</strong> (who is overloaded at ${Math.round(c.ownerData.totalOrders)} orders) while utilizing ${champName}'s capacity. ${overageWarning}
-                    </div>
-                `;
+                        <div class="sc-detail"><span>Take From:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
+                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
+                        <div class="sc-detail"><span>Store Volume:</span> <strong style="color:var(--status-green)">${Math.round(c.store.orders)} Orders/Day</strong></div>
+                        
+                        <div class="ai-review">
+                            <strong>🤖 AI Review:</strong> Transfer balances workload within <strong>${d.supervisor}'s</strong> team. Relieves <strong>${c.store.championName}</strong> (Overloaded) while utilizing ${champName}'s capacity.
+                        </div>
+                    `;
+                } else {
+                    // Overloaded giving to Underutilized
+                    card.innerHTML = `
+                        <div class="sc-title">${c.store.locationName}</div>
+                        <div class="sc-sub">${c.store.chainName}</div>
+                        
+                        <div id="${mapId}" class="mini-map"></div>
+
+                        <div class="sc-detail"><span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong></div>
+                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
+                        <div class="sc-detail"><span>Load Reduction:</span> <strong style="color:var(--status-red)">-${Math.round(c.store.orders)} Orders/Day</strong></div>
+                        
+                        <div class="ai-review">
+                            <strong>🤖 AI Review:</strong> Transferring this store relieves <strong>${champName}'s</strong> overload and reassigns it to <strong>${c.targetChampName}</strong> (Underutilized), who is nearby.
+                        </div>
+                    `;
+                }
+
                 sWrapper.appendChild(card);
+
+                // Initialize Mini Map for the card
+                setTimeout(() => {
+                    let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                    let storeLatLng = [c.store.lat, c.store.lng];
+                    let champLatLng = [c.targetChamp.centerLat, c.targetChamp.centerLng];
+
+                    // Standard Blue marker for Store
+                    L.marker(storeLatLng).addTo(mmap);
+                    
+                    // Orange dot for Champion's Territory Center
+                    L.circleMarker(champLatLng, {
+                        radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                    }).addTo(mmap);
+
+                    // Connecting Line
+                    L.polyline([storeLatLng, champLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                    
+                    mmap.fitBounds(L.latLngBounds([storeLatLng, champLatLng]), {padding: [15, 15]});
+                }, 50); // Small delay ensures DOM element is rendered before Leaflet attaches
             });
         }
 
@@ -757,7 +817,7 @@
 
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px;">${chainName.trim().toUpperCase()}</div>`,
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px; letter-spacing: 0.1px;">${chainName.trim().toUpperCase()}</div>`,
                 iconSize: [46, 46], iconAnchor: [23, 23]
             });
         }
