@@ -18,6 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
+            --sidebar-width: 340px; /* Increased slightly for better breathing room */
         }
 
         body {
@@ -32,42 +33,56 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar Wrapper ensures the toggle button is always visible */
-        .sidebar-wrapper {
+        /* Advanced Sidebar Container Architecture */
+        .sidebar-container {
             position: relative;
+            width: var(--sidebar-width);
             height: 100vh;
-            z-index: 1000;
-            display: flex;
-            transition: transform 0.3s ease;
-        }
-
-        /* When collapsed, slide the entire wrapper to the left */
-        .sidebar-wrapper.collapsed {
-            transform: translateX(-300px);
-        }
-
-        /* Sidebar Layout - Scaled Down */
-        .sidebar {
-            width: 300px;
-            min-width: 300px;
             background-color: var(--white);
-            padding: 20px;
+            border-right: 1px solid var(--border-color);
             box-shadow: 2px 0 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+        }
+
+        /* Leaves a clean 35px vertical blank strip visible when hidden */
+        .sidebar-container.collapsed {
+            width: 35px; 
+        }
+
+        /* Prevents content squishing during the slide animation */
+        .sidebar-content-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .sidebar-content {
+            width: var(--sidebar-width);
+            height: 100%;
+            padding: 24px;
+            box-sizing: border-box;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--border-color);
-            height: 100%;
-            box-sizing: border-box;
+            transition: opacity 0.2s ease;
         }
 
-        /* The Minimize/Maximize Arrow Button */
+        /* Fades out the text smoothly when collapsing */
+        .sidebar-container.collapsed .sidebar-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* The Minimize/Maximize Arrow Button - Centered and Elongated */
         .sidebar-toggle {
             position: absolute;
-            top: 20px;
-            right: -28px; /* Sticks out past the sidebar */
-            width: 28px;
-            height: 44px;
+            top: 50%;
+            transform: translateY(-50%);
+            right: -26px;
+            width: 26px;
+            height: 100px; /* Made longer for clear visibility */
             background-color: var(--white);
             border: 1px solid var(--border-color);
             border-left: none;
@@ -77,8 +92,8 @@
             align-items: center;
             justify-content: center;
             color: var(--primary-orange);
-            box-shadow: 3px 0 8px rgba(0,0,0,0.08);
-            z-index: 1001; /* Ensure it stays above the map */
+            box-shadow: 3px 0 8px rgba(0,0,0,0.06);
+            z-index: 1001;
             transition: background-color 0.2s;
         }
 
@@ -87,32 +102,33 @@
         }
 
         .sidebar-toggle svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
             transition: transform 0.3s ease;
         }
 
-        /* Flip the arrow when collapsed */
-        .sidebar-wrapper.collapsed .sidebar-toggle svg {
+        /* Flips arrow direction based on panel state */
+        .sidebar-container.collapsed .sidebar-toggle svg {
             transform: rotate(180deg);
         }
 
+        /* Internal Panel Styling */
         .logo {
             color: var(--primary-orange);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             letter-spacing: -0.5px;
         }
 
         .upload-section {
             background-color: #FFF7F5;
             border: 1px dashed #FFD0B8;
-            padding: 12px;
+            padding: 14px;
             border-radius: 8px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .upload-section input[type="file"] { display: none; }
@@ -120,38 +136,38 @@
         .upload-btn {
             background-color: var(--primary-orange);
             color: white;
-            padding: 8px 14px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             display: inline-block;
-            font-size: 12px;
+            font-size: 13px;
             box-shadow: 0 2px 6px rgba(255, 90, 0, 0.2);
         }
 
-        .upload-status { font-size: 11px; color: var(--text-muted); margin-top: 8px; display: block; font-weight: 500;}
+        .upload-status { font-size: 12px; color: var(--text-muted); margin-top: 8px; display: block; font-weight: 500;}
 
-        .control-group { margin-bottom: 20px; }
+        .control-group { margin-bottom: 24px; }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 5px;
+            padding-bottom: 6px;
         }
 
         label.section-title {
             font-weight: 700;
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 0.5px;
         }
 
         .shortcut-btn {
-            font-size: 9px;
+            font-size: 10px;
             color: var(--primary-orange);
             background: none;
             border: none;
@@ -161,21 +177,20 @@
         }
         .shortcut-btn:hover { text-decoration: underline; }
 
-        /* Checkbox Containers - Compact */
         .checkbox-list {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 10px;
-            max-height: 150px;
+            padding: 12px;
+            max-height: 160px;
             overflow-y: auto;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 11px;
+            margin-bottom: 10px;
+            font-size: 12px;
             cursor: pointer;
             font-weight: 600;
             color: var(--text-dark);
@@ -183,36 +198,35 @@
         .checkbox-item:last-child { margin-bottom: 0; }
 
         .checkbox-item input {
-            margin-right: 8px;
+            margin-right: 10px;
             cursor: pointer;
-            width: 13px;
-            height: 13px;
+            width: 14px;
+            height: 14px;
             accent-color: var(--primary-orange);
         }
 
         .color-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 10px;
             display: inline-block;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
         }
 
         .count-badge {
             color: var(--text-muted);
-            font-size: 9px;
+            font-size: 10px;
             margin-left: auto;
             background: #E2E8F0;
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 10px;
             font-weight: 700;
         }
 
-        /* Information Panel */
         .info-panel {
             background-color: var(--white);
-            padding: 15px;
+            padding: 18px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             border-left: 3px solid var(--primary-orange);
@@ -221,34 +235,32 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .info-panel h3 { color: var(--text-dark); margin: 0 0 6px 0; font-size: 12px; font-weight: 800; }
-        .info-panel p { margin: 0; font-size: 11px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
+        .info-panel h3 { color: var(--text-dark); margin: 0 0 8px 0; font-size: 13px; font-weight: 800; }
+        .info-panel p { margin: 0; font-size: 12px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
 
-        /* Footer Attribution */
         .app-footer {
             border-top: 1px solid var(--border-color);
             padding-top: 12px;
             margin-top: auto;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-muted);
             text-align: center;
             font-weight: 500;
         }
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
-        /* Leaflet Interactive Popups */
-        .leaflet-popup-content b { color: var(--text-dark); font-size: 13px; font-weight: 800; display: block; margin-bottom: 4px;}
-        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 11px; line-height: 1.6; min-width: 220px; color: #334155; }
-        .popup-label { color: var(--text-muted); font-weight: 600; width: 75px; display: inline-block; font-size: 10px; text-transform: uppercase;}
+        /* Leaflet Map Interactive Layout */
+        .leaflet-popup-content b { color: var(--text-dark); font-size: 14px; font-weight: 800; display: block; margin-bottom: 4px;}
+        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.6; min-width: 230px; color: #334155; }
+        .popup-label { color: var(--text-muted); font-weight: 600; width: 80px; display: inline-block; font-size: 10px; text-transform: uppercase;}
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: 600; }
 
-        /* Permanent Muted Tooltip Label Styles */
         .muted-champ-label {
             background: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
             padding: 2px 6px !important;
-            font-size: 8.5px !important;
+            font-size: 9px !important;
             font-family: 'Inter', sans-serif !important;
             font-weight: 700 !important;
             color: #475569 !important;
@@ -261,71 +273,75 @@
 </head>
 <body>
 
-    <div class="sidebar-wrapper" id="sidebar-wrapper">
-        <div class="sidebar">
-            <div class="logo">LS_Store Location</div>
+    <div class="sidebar-container" id="sidebar">
+        
+        <div class="sidebar-content-wrapper">
+            <div class="sidebar-content">
+                <div class="logo">LS_Store Location</div>
 
-            <div class="upload-section">
-                <label for="csv-file" class="upload-btn">Upload Dataset</label>
-                <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)">
-                <span class="upload-status" id="upload-status">Awaiting CSV...</span>
-            </div>
+                <div class="upload-section">
+                    <label for="csv-file" class="upload-btn">Upload Dataset</label>
+                    <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)">
+                    <span class="upload-status" id="upload-status">Awaiting CSV...</span>
+                </div>
 
-            <div class="control-group">
-                <div class="section-header">
-                    <label class="section-title">1. Supervisors</label>
-                    <div>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', true)">Select All</button>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', false)">Clear All</button>
+                <div class="control-group">
+                    <div class="section-header">
+                        <label class="section-title">1. Supervisors</label>
+                        <div>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', true)">Select All</button>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('supervisor-list', false)">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="supervisor-list" class="checkbox-list">
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
                     </div>
                 </div>
-                <div id="supervisor-list" class="checkbox-list">
-                    <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
-                </div>
-            </div>
 
-            <div class="control-group">
-                <div class="section-header">
-                    <label class="section-title">2. Filter by Chain</label>
-                    <div>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', true)">Select All</button>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', false)">Clear All</button>
+                <div class="control-group">
+                    <div class="section-header">
+                        <label class="section-title">2. Filter by Chain</label>
+                        <div>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', true)">Select All</button>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('chain-list', false)">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="chain-list" class="checkbox-list">
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
                     </div>
                 </div>
-                <div id="chain-list" class="checkbox-list">
-                    <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
-                </div>
-            </div>
 
-            <div class="control-group">
-                <div class="section-header">
-                    <label class="section-title">3. Focus on Champions</label>
-                    <div>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', true)">Select All</button>
-                        <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', false)">Clear All</button>
+                <div class="control-group">
+                    <div class="section-header">
+                        <label class="section-title">3. Focus on Champions</label>
+                        <div>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', true)">Select All</button>
+                            <button class="shortcut-btn" onclick="toggleAllCheckboxes('champion-list', false)">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="champion-list" class="checkbox-list">
+                        <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above</div>
                     </div>
                 </div>
-                <div id="champion-list" class="checkbox-list">
-                    <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above first</div>
+
+                <div class="info-panel" id="info-panel" style="display: none;">
+                    <h3 id="panel-title">Overview</h3>
+                    <p id="panel-stats"></p>
                 </div>
-            </div>
 
-            <div class="info-panel" id="info-panel" style="display: none;">
-                <h3 id="panel-title">Overview</h3>
-                <p id="panel-stats"></p>
-            </div>
-
-            <div class="app-footer">
-                LS Operations Platform v6.1<br>
-                Developed by <strong>Soe Naing</strong>
+                <div class="app-footer">
+                    LS Operations v7.0<br>
+                    Developed by <strong>Soe Naing</strong>
+                </div>
             </div>
         </div>
-        
+
         <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
             <svg viewBox="0 0 24 24">
                 <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
             </svg>
         </button>
+        
     </div>
 
     <div id="map"></div>
@@ -337,7 +353,7 @@
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO',
+            attribution: '© OpenStreetMap contributors',
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
@@ -351,12 +367,11 @@
         
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
 
-        // Sidebar Toggle Function
+        // Animation logic for handling the map expansion
         function toggleSidebar() {
-            const sidebarWrapper = document.getElementById('sidebar-wrapper');
-            sidebarWrapper.classList.toggle('collapsed');
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
             
-            // Re-center map to fill the newly freed space smoothly
             setTimeout(() => {
                 map.invalidateSize();
             }, 300);
@@ -385,7 +400,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            document.getElementById('upload-status').innerText = "Parsing columns...";
+            document.getElementById('upload-status').innerText = "Parsing...";
             document.getElementById('upload-status').style.color = '#FF5A00';
 
             Papa.parse(file, {
@@ -395,8 +410,7 @@
                     processSmartData(results.data);
                 },
                 error: function(err) {
-                    alert("Error reading file structure.");
-                    console.error(err);
+                    alert("Error reading file.");
                 }
             });
         }
@@ -439,12 +453,12 @@
             }).filter(item => item !== null);
 
             if (parsedData.length === 0) {
-                document.getElementById('upload-status').innerText = "❌ No valid coordinates found!";
+                document.getElementById('upload-status').innerText = "❌ Error";
                 document.getElementById('upload-status').style.color = 'red';
                 return;
             }
 
-            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length} records.`;
+            document.getElementById('upload-status').innerText = `✅ Loaded ${parsedData.length}`;
             document.getElementById('upload-status').style.color = '#10B981';
 
             buildSupervisorFilterList();
@@ -490,7 +504,7 @@
                 chainList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}>
-                        ${chain} <span class="count-badge">${count} Stores</span>
+                        ${chain} <span class="count-badge">${count}</span>
                     </label>
                 `;
             });
@@ -499,45 +513,29 @@
         function toggleAllCheckboxes(listId, checkState) {
             const checkboxes = document.querySelectorAll(`#${listId} input[type="checkbox"]`);
             checkboxes.forEach(cb => cb.checked = checkState);
-            
-            if (listId === 'supervisor-list') {
-                handleFiltersChange();
-            } else {
-                handleChainChange();
-            }
+            if (listId === 'supervisor-list') handleFiltersChange();
+            else handleChainChange();
         }
 
         function getCheckedValues(listId) {
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // ULTRA-CLEAN PURE WHITE PINPOINT ENGINE
+        // Pure white background mapping pins matching professional enterprise designs
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
-            
-            // Default dark slate text for unmatched chains
             let brandTextColor = "#475569";
 
-            // Crisp, bold corporate colors strictly applied to the text only.
-            if (lowerChain.includes("carrefour")) {
-                brandTextColor = "#0054A6"; // Carrefour True Blue
-            } else if (lowerChain.includes("lulu")) {
-                brandTextColor = "#007B3A"; // Lulu True Green
-            } else if (lowerChain.includes("viva")) {
-                brandTextColor = "#B71234"; // Viva True Red
-            } else if (lowerChain.includes("sava")) {
-                brandTextColor = "#00645A"; // Sava Teal
-            } else if (lowerChain.includes("union coop")) {
-                brandTextColor = "#0B4226"; // Union Coop Dark Pine
-            } else if (lowerChain.includes("adcoop")) {
-                brandTextColor = "#102640"; // Adcoop Deep Navy
-            } else if (lowerChain.includes("safeer")) {
-                brandTextColor = "#155084"; // Safeer Royal Blue
-            }
+            if (lowerChain.includes("carrefour")) brandTextColor = "#0054A6"; 
+            else if (lowerChain.includes("lulu")) brandTextColor = "#007B3A"; 
+            else if (lowerChain.includes("viva")) brandTextColor = "#B71234"; 
+            else if (lowerChain.includes("sava")) brandTextColor = "#00645A"; 
+            else if (lowerChain.includes("union coop")) brandTextColor = "#0B4226"; 
+            else if (lowerChain.includes("adcoop")) brandTextColor = "#102640"; 
+            else if (lowerChain.includes("safeer")) brandTextColor = "#155084"; 
 
             const displayLabel = chainName.trim().toUpperCase();
 
-            // The background is pure white (#FFFFFF). 
             return L.divIcon({
                 className: 'brand-solid-marker',
                 html: `<div style="
@@ -558,8 +556,7 @@
                     box-sizing: border-box; 
                     word-break: break-word; 
                     line-height: 1.1; 
-                    padding: 3px;
-                    letter-spacing: 0.1px;">${displayLabel}</div>`,
+                    padding: 3px;">${displayLabel}</div>`,
                 iconSize: [46, 46], 
                 iconAnchor: [23, 23]
             });
@@ -600,7 +597,7 @@
                 champList.innerHTML += `
                     <label class="checkbox-item">
                         <input type="checkbox" value="${champ}" onchange="renderMap()" ${isChecked}>
-                        ${champ} <span class="count-badge">${storeCount} Stores</span>
+                        ${champ} <span class="count-badge">${storeCount}</span>
                     </label>
                 `;
             });
