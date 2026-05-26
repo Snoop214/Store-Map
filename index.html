@@ -18,7 +18,7 @@
             --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
-            --sidebar-width: 370px; /* Widened to prevent wrapping */
+            --sidebar-width: 370px;
         }
 
         body {
@@ -46,12 +46,10 @@
             display: flex;
         }
 
-        /* Leaves a clean 35px vertical blank strip visible when hidden */
         .sidebar-container.collapsed {
             width: 35px; 
         }
 
-        /* Prevents content squishing during the slide animation */
         .sidebar-content-wrapper {
             width: 100%;
             height: 100%;
@@ -69,13 +67,12 @@
             transition: opacity 0.2s ease;
         }
 
-        /* Fades out the text smoothly when collapsing */
         .sidebar-container.collapsed .sidebar-content {
             opacity: 0;
             pointer-events: none;
         }
 
-        /* The Minimize/Maximize Arrow Button - Larger and Bolder */
+        /* The Minimize/Maximize Arrow Button */
         .sidebar-toggle {
             position: absolute;
             top: 50%;
@@ -102,12 +99,11 @@
         }
 
         .sidebar-toggle svg {
-            width: 30px; /* Scaled up icon */
+            width: 30px; 
             height: 30px;
             transition: transform 0.3s ease;
         }
 
-        /* Flips arrow direction based on panel state */
         .sidebar-container.collapsed .sidebar-toggle svg {
             transform: rotate(180deg);
         }
@@ -223,8 +219,8 @@
             padding: 3px 8px;
             border-radius: 10px;
             font-weight: 700;
-            white-space: nowrap; /* Forces text to stay on one line */
-            flex-shrink: 0; /* Prevents the badge from squishing */
+            white-space: nowrap; 
+            flex-shrink: 0; 
         }
 
         .info-panel {
@@ -333,7 +329,7 @@
                 </div>
 
                 <div class="app-footer">
-                    LS Operations v7.2<br>
+                    LS Operations v8.0<br>
                     Developed by <strong>Soe Naing</strong>
                 </div>
             </div>
@@ -355,7 +351,8 @@
     <script>
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+        // Forced English tiles via standard Voyager implementation
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors',
             subdomains: 'abcd',
             maxZoom: 20
@@ -528,42 +525,55 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // Pure white background mapping pins matching professional enterprise designs
+        // Distinct, saturated brand colors with white text for maximum visibility and clear differentiation
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
-            let brandTextColor = "#475569";
+            
+            // Default dark slate background with white text
+            let brandBgColor = "#475569";
+            let brandTextColor = "#FFFFFF";
 
-            if (lowerChain.includes("carrefour")) brandTextColor = "#0054A6"; 
-            else if (lowerChain.includes("lulu")) brandTextColor = "#007B3A"; 
-            else if (lowerChain.includes("viva")) brandTextColor = "#B71234"; 
-            else if (lowerChain.includes("sava")) brandTextColor = "#00645A"; 
-            else if (lowerChain.includes("union coop")) brandTextColor = "#0B4226"; 
-            else if (lowerChain.includes("adcoop")) brandTextColor = "#102640"; 
-            else if (lowerChain.includes("safeer")) brandTextColor = "#155084"; 
+            if (lowerChain.includes("carrefour")) {
+                brandBgColor = "#1D4ED8"; // Bold Blue
+            } else if (lowerChain.includes("lulu")) {
+                brandBgColor = "#15803D"; // Bold Green
+            } else if (lowerChain.includes("viva")) {
+                brandBgColor = "#B91C1C"; // Bold Red
+            } else if (lowerChain.includes("sava")) {
+                brandBgColor = "#0F766E"; // Bold Teal
+            } else if (lowerChain.includes("union coop")) {
+                brandBgColor = "#065F46"; // Deep Pine
+            } else if (lowerChain.includes("adcoop")) {
+                brandBgColor = "#1E293B"; // Dark Navy
+            } else if (lowerChain.includes("safeer")) {
+                brandBgColor = "#0369A1"; // Bright Indigo
+            }
 
             const displayLabel = chainName.trim().toUpperCase();
 
+            // The inner box-shadow creates a neat separation ring
             return L.divIcon({
                 className: 'brand-solid-marker',
                 html: `<div style="
-                    background-color: #FFFFFF; 
+                    background-color: ${brandBgColor}; 
                     color: ${brandTextColor}; 
-                    border: 2px solid ${supervisorColor}; 
+                    border: 2.5px solid ${supervisorColor}; 
                     border-radius: 50%; 
                     width: 44px; 
                     height: 44px; 
                     display: flex; 
                     align-items: center; 
                     justify-content: center; 
-                    box-shadow: 0 3px 8px rgba(0,0,0,0.15); 
+                    box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); 
                     font-family: 'Inter', sans-serif;
-                    font-size: 6.5px; 
+                    font-size: 6.2px; 
                     font-weight: 800; 
                     text-align: center; 
                     box-sizing: border-box; 
                     word-break: break-word; 
                     line-height: 1.1; 
-                    padding: 3px;">${displayLabel}</div>`,
+                    padding: 3px;
+                    letter-spacing: 0.1px;">${displayLabel}</div>`,
                 iconSize: [46, 46], 
                 iconAnchor: [23, 23]
             });
