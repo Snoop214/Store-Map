@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* UI/UX & Design System - Premium Executive Theme */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
+        /* UI/UX & Design System - Ultra Compact & Clean Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
             --primary-orange: #FF5A00;
-            --bg-light: #F4F6F8;
+            --bg-light: #F8FAFC;
             --white: #FFFFFF;
-            --text-dark: #1E293B;
+            --text-dark: #0F172A;
             --text-muted: #64748B;
             --border-color: #E2E8F0;
         }
@@ -32,13 +32,13 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar Layout */
+        /* Sidebar Layout - Scaled Down */
         .sidebar {
-            width: 380px;
-            min-width: 380px;
+            width: 300px;
+            min-width: 300px;
             background-color: var(--white);
-            padding: 25px;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.04);
+            padding: 20px;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.05);
             z-index: 1000;
             overflow-y: auto;
             display: flex;
@@ -48,86 +48,82 @@
 
         .logo {
             color: var(--primary-orange);
-            font-size: 26px;
+            font-size: 20px;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             letter-spacing: -0.5px;
         }
 
         .upload-section {
             background-color: #FFF7F5;
-            border: 1.5px dashed #FFD0B8;
-            padding: 16px;
-            border-radius: 10px;
+            border: 1px dashed #FFD0B8;
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
-            margin-bottom: 24px;
-            transition: all 0.2s ease;
+            margin-bottom: 20px;
         }
 
-        .upload-section:hover { background-color: #FFF2ED; }
         .upload-section input[type="file"] { display: none; }
 
         .upload-btn {
             background-color: var(--primary-orange);
             color: white;
-            padding: 10px 18px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             display: inline-block;
-            font-size: 13px;
-            letter-spacing: 0.2px;
-            box-shadow: 0 4px 10px rgba(255, 90, 0, 0.2);
+            font-size: 12px;
+            box-shadow: 0 2px 6px rgba(255, 90, 0, 0.2);
         }
 
-        .upload-status { font-size: 12px; color: var(--text-muted); margin-top: 10px; display: block; font-weight: 600;}
+        .upload-status { font-size: 11px; color: var(--text-muted); margin-top: 8px; display: block; font-weight: 500;}
 
-        .control-group { margin-bottom: 25px; }
+        .control-group { margin-bottom: 20px; }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+            padding-bottom: 5px;
         }
 
         label.section-title {
             font-weight: 700;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
         }
 
         .shortcut-btn {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--primary-orange);
             background: none;
             border: none;
             cursor: pointer;
             font-weight: 700;
-            padding: 0 4px;
-            letter-spacing: 0.3px;
+            padding: 0 2px;
         }
         .shortcut-btn:hover { text-decoration: underline; }
 
-        /* Checkbox Containers */
+        /* Checkbox Containers - Compact */
         .checkbox-list {
             background-color: var(--bg-light);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px;
-            max-height: 140px;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 150px;
             overflow-y: auto;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            font-size: 13px;
+            margin-bottom: 8px;
+            font-size: 11px;
             cursor: pointer;
             font-weight: 600;
             color: var(--text-dark);
@@ -135,80 +131,77 @@
         .checkbox-item:last-child { margin-bottom: 0; }
 
         .checkbox-item input {
-            margin-right: 10px;
+            margin-right: 8px;
             cursor: pointer;
-            width: 16px;
-            height: 16px;
+            width: 13px;
+            height: 13px;
             accent-color: var(--primary-orange);
         }
 
         .color-dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px;
             display: inline-block;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
         }
 
         .count-badge {
             color: var(--text-muted);
-            font-size: 10px;
+            font-size: 9px;
             margin-left: auto;
             background: #E2E8F0;
-            padding: 3px 8px;
-            border-radius: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
             font-weight: 700;
         }
 
         /* Information Panel */
         .info-panel {
             background-color: var(--white);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 15px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
-            border-left: 4px solid var(--primary-orange);
+            border-left: 3px solid var(--primary-orange);
             margin-top: auto;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .info-panel h3 { color: var(--text-dark); margin: 0 0 8px 0; font-size: 14px; font-weight: 800; }
-        .info-panel p { margin: 0; font-size: 13px; color: var(--text-muted); white-space: pre-line; line-height: 1.6; font-weight: 500;}
+        .info-panel h3 { color: var(--text-dark); margin: 0 0 6px 0; font-size: 12px; font-weight: 800; }
+        .info-panel p { margin: 0; font-size: 11px; color: var(--text-muted); white-space: pre-line; line-height: 1.5; font-weight: 500;}
 
         /* Footer Attribution */
         .app-footer {
             border-top: 1px solid var(--border-color);
-            padding-top: 15px;
+            padding-top: 12px;
             margin-top: auto;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             text-align: center;
-            letter-spacing: 0.3px;
             font-weight: 500;
         }
-
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
         /* Leaflet Interactive Popups */
-        .leaflet-popup-content b { color: var(--text-dark); font-size: 14px; font-weight: 800; display: block; margin-bottom: 6px;}
-        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 12.5px; line-height: 1.7; min-width: 250px; color: #334155; }
-        .popup-label { color: var(--text-muted); font-weight: 600; width: 85px; display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;}
+        .leaflet-popup-content b { color: var(--text-dark); font-size: 13px; font-weight: 800; display: block; margin-bottom: 4px;}
+        .leaflet-popup-content { font-family: 'Inter', sans-serif; font-size: 11px; line-height: 1.6; min-width: 220px; color: #334155; }
+        .popup-label { color: var(--text-muted); font-weight: 600; width: 75px; display: inline-block; font-size: 10px; text-transform: uppercase;}
         .popup-link { color: var(--primary-orange); text-decoration: none; font-weight: 600; }
 
-        /* Permanent Muted Tooltip Label Styles (Pill Shaped) */
+        /* Permanent Muted Tooltip Label Styles */
         .muted-champ-label {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 1px solid rgba(0,0,0,0.06) !important;
+            background: #FFFFFF !important;
+            border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
-            padding: 3px 8px !important;
-            font-size: 9px !important;
+            padding: 2px 6px !important;
+            font-size: 8.5px !important;
             font-family: 'Inter', sans-serif !important;
             font-weight: 700 !important;
             color: #475569 !important;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
             white-space: nowrap;
-            letter-spacing: 0.2px;
         }
         
         #map { flex-grow: 1; height: 100%; }
@@ -220,9 +213,9 @@
         <div class="logo">LS_Store Location</div>
 
         <div class="upload-section">
-            <label for="csv-file" class="upload-btn">Upload Dataset CSV</label>
+            <label for="csv-file" class="upload-btn">Upload Dataset</label>
             <input type="file" id="csv-file" accept=".csv" onchange="handleFileUpload(event)">
-            <span class="upload-status" id="upload-status">Awaiting data...</span>
+            <span class="upload-status" id="upload-status">Awaiting CSV...</span>
         </div>
 
         <div class="control-group">
@@ -234,7 +227,7 @@
                 </div>
             </div>
             <div id="supervisor-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
             </div>
         </div>
 
@@ -247,7 +240,7 @@
                 </div>
             </div>
             <div id="chain-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
+                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Load CSV to populate</div>
             </div>
         </div>
 
@@ -260,7 +253,7 @@
                 </div>
             </div>
             <div id="champion-list" class="checkbox-list">
-                <div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above first</div>
+                <div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select options above first</div>
             </div>
         </div>
 
@@ -270,7 +263,7 @@
         </div>
 
         <div class="app-footer">
-            LS Operations Platform v4.0<br>
+            LS Operations Platform v5.0<br>
             Developed by <strong>Soe Naing</strong>
         </div>
     </div>
@@ -296,7 +289,6 @@
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         
-        // Refined vibrant palette for supervisor borders/routes
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
 
         function getOuterBoundary(coords) {
@@ -448,65 +440,58 @@
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
 
-        // EXECUTIVE UI COLOR ENGINE (Soft Backgrounds, Rich Deep Text, White Inner Ring)
+        // ULTRA-CLEAN PURE WHITE PINPOINT ENGINE
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             
-            let brandBgColor = "#F1F5F9"; 
-            let brandTextColor = "#334155";
+            // Default dark slate text for unmatched chains
+            let brandTextColor = "#475569";
 
-            // Colors optimized for extremely high-end dashboard readability
+            // Crisp, bold corporate colors strictly applied to the text only.
             if (lowerChain.includes("carrefour")) {
-                brandBgColor = "#EBF2FA"; 
-                brandTextColor = "#1A4971"; 
+                brandTextColor = "#0054A6"; // Carrefour True Blue
             } else if (lowerChain.includes("lulu")) {
-                brandBgColor = "#E8F3EC"; 
-                brandTextColor = "#1E6133"; 
+                brandTextColor = "#007B3A"; // Lulu True Green
             } else if (lowerChain.includes("viva")) {
-                brandBgColor = "#FCEAEB"; 
-                brandTextColor = "#8F1D2C"; 
+                brandTextColor = "#B71234"; // Viva True Red
             } else if (lowerChain.includes("sava")) {
-                brandBgColor = "#E3F2F0"; 
-                brandTextColor = "#116A5B"; 
+                brandTextColor = "#00645A"; // Sava Teal
             } else if (lowerChain.includes("union coop")) {
-                brandBgColor = "#E6F0E8"; 
-                brandTextColor = "#184D22"; 
+                brandTextColor = "#0B4226"; // Union Coop Dark Pine
             } else if (lowerChain.includes("adcoop")) {
-                brandBgColor = "#EAECEE"; 
-                brandTextColor = "#283747"; 
+                brandTextColor = "#102640"; // Adcoop Deep Navy
             } else if (lowerChain.includes("safeer")) {
-                brandBgColor = "#EAF2F8"; 
-                brandTextColor = "#1A5276"; 
+                brandTextColor = "#155084"; // Safeer Royal Blue
             }
 
             const displayLabel = chainName.trim().toUpperCase();
 
-            // The inner box-shadow creates a "White Ring" effect inside the supervisor color border. 
-            // The outer box-shadow creates a soft, realistic hover elevation off the map.
+            // The background is pure white (#FFFFFF). 
+            // This provides maximum contrast against the map and looks incredibly clean and professional.
             return L.divIcon({
                 className: 'brand-solid-marker',
                 html: `<div style="
-                    background-color: ${brandBgColor}; 
+                    background-color: #FFFFFF; 
                     color: ${brandTextColor}; 
                     border: 2px solid ${supervisorColor}; 
                     border-radius: 50%; 
-                    width: 48px; 
-                    height: 48px; 
+                    width: 44px; 
+                    height: 44px; 
                     display: flex; 
                     align-items: center; 
                     justify-content: center; 
-                    box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 4px 10px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05); 
+                    box-shadow: 0 3px 8px rgba(0,0,0,0.15); 
                     font-family: 'Inter', sans-serif;
-                    font-size: 6.8px; 
+                    font-size: 6.5px; 
                     font-weight: 800; 
                     text-align: center; 
                     box-sizing: border-box; 
                     word-break: break-word; 
-                    line-height: 1.15; 
-                    padding: 4px;
-                    letter-spacing: 0.2px;">${displayLabel}</div>`,
-                iconSize: [50, 50], 
-                iconAnchor: [25, 25]
+                    line-height: 1.1; 
+                    padding: 3px;
+                    letter-spacing: 0.1px;">${displayLabel}</div>`,
+                iconSize: [46, 46], 
+                iconAnchor: [23, 23]
             });
         }
 
@@ -526,7 +511,7 @@
             const champList = document.getElementById('champion-list');
 
             if (selectedSups.length === 0 || selectedChains.length === 0) {
-                champList.innerHTML = '<div style="color: #94A3B8; font-size: 12px; text-align: center; padding: 10px 0; font-weight: 500;">Select Options Above</div>';
+                champList.innerHTML = '<div style="color: #94A3B8; font-size: 11px; text-align: center; padding: 10px 0; font-weight: 500;">Select Options Above</div>';
                 document.getElementById('info-panel').style.display = 'none';
                 markerLayer.clearLayers(); routeLayer.clearLayers(); return;
             }
@@ -581,7 +566,7 @@
                             <span class="popup-label">Vendor:</span> ${store.vendorName}<br>
                             <span class="popup-label">Champ:</span> <strong style="color:var(--primary-orange);">${store.championName}</strong><br>
                             <span class="popup-label">Sup:</span> ${store.supervisor}<br>
-                            <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+                            <hr style="border:0; border-top:1px solid var(--border-color); margin:8px 0;">
                             <span class="popup-label">Mobile:</span> <a class="popup-link" href="tel:${store.mobile.replace(/\s/g, '')}">${store.mobile}</a><br>
                             <span class="popup-label">Mail ID:</span> <a class="popup-link" href="mailto:${store.email}">${store.email}</a>
                         `;
@@ -594,7 +579,7 @@
                             permanent: true,
                             direction: 'bottom',
                             className: 'muted-champ-label',
-                            offset: [0, 20]
+                            offset: [0, 16]
                         });
                         
                         allBounds.push([store.lat, store.lng]);
