@@ -93,7 +93,9 @@
             padding: 6px 14px; border-radius: 20px;
         }
 
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-green); box-shadow: 0 0 0 3px var(--status-green-bg); }
+        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px var(--status-yellow-bg); transition: background-color 0.3s;}
+        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px var(--status-green-bg); }
+        
         .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
         .db-text strong { color: var(--text-dark); }
 
@@ -269,8 +271,8 @@
             </div>
         </div>
         <div class="database-status">
-            <div class="db-icon"></div>
-            <div class="db-text" id="db-status-text">Database: <strong>Connecting...</strong></div>
+            <div class="db-icon" id="db-icon"></div>
+            <div class="db-text" id="db-status-text">Database: <strong>Checking updates...</strong></div>
         </div>
     </div>
 
@@ -320,7 +322,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.01<br>
+                        LS Operations Optimizer v15.02<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -385,6 +387,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <script>
+        // ====== ADMIN CONFIGURATION ======
+        const CSV_FILE_PATH = "data.csv"; 
+        
+        // GITHUB API CONNECTION (Required to fetch exact "Last Updated" time)
+        const GITHUB_USERNAME = "Snoop214"; 
+        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- CHANGE THIS to the exact name of your GitHub repo!
+        // ==================================
+
         // --- MAP INIT ---
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
@@ -401,11 +411,6 @@
         let championUtilizationData = {};
         
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
-
-        // ====== ADMIN CONFIGURATION ======
-        const CSV_FILE_PATH = "data.csv"; 
-        const LAST_UPDATED_DATE = "Today"; 
-        // ==================================
 
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
@@ -428,24 +433,65 @@
             setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // --- INIT DATA FETCH ---
+        // --- INIT DATA FETCH & GITHUB SYNC ---
         document.addEventListener('DOMContentLoaded', () => {
+            fetchHostedData();
+            fetchGitHubUpdateStatus();
+        });
+
+        // Formats the GitHub timestamp into readable "X days ago" string
+        function timeSince(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 86400;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " day ago" : " days ago");
+            interval = seconds / 3600;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " hour ago" : " hours ago");
+            interval = seconds / 60;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
+            return "Just now";
+        }
+
+        function fetchGitHubUpdateStatus() {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const commitDate = new Date(data[0].commit.committer.date);
+                        const relativeTime = timeSince(commitDate);
+                        document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>${relativeTime}</strong>`;
+                        document.getElementById('db-icon').classList.add('live');
+                    } else {
+                        // Fallback if file isn't found in GitHub API
+                        document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>Recently</strong>`;
+                        document.getElementById('db-icon').classList.add('live');
+                    }
+                })
+                .catch(err => {
+                    console.log("GitHub API limitation or incorrect repo name:", err);
+                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
+                    document.getElementById('db-icon').classList.add('live');
+                });
+        }
+
+        function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true,
                 header: true, 
                 skipEmptyLines: true,
                 complete: function(results) {
                     processSmartData(results.data);
-                    document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>${LAST_UPDATED_DATE}</strong>`;
                 },
                 error: function(err) {
-                    document.getElementById('db-status-text').innerHTML = `<span style="color:red;">⚠️ Error connecting</span>`;
+                    document.getElementById('db-status-text').innerHTML = `<span style="color:red;">⚠️ CSV Missing</span>`;
+                    document.getElementById('db-icon').classList.remove('live');
                     console.error("Make sure data.csv is on the server.", err);
                 }
             });
-        });
+        }
 
-        // --- DATA PROCESSING & NEW BUSINESS LOGIC ---
+        // --- DATA PROCESSING & BUSINESS LOGIC ---
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
@@ -497,19 +543,15 @@
                 let count = d.stores.length;
                 let o = d.totalOrders;
                 
-                // Rule 1: 1 Store can NEVER be overloaded
                 if (count === 1) {
                     d.status = (o < 200) ? 'Underutilized' : 'Optimal';
                 } 
-                // Rule 2: Overloaded = >5 stores OR >500 orders
                 else if (count > 5 || o > 500) {
                     d.status = 'Overloaded';
                 } 
-                // Rule 3: Medium/Warning = 4-5 stores OR 351-500 orders
                 else if ((count >= 4 && count <= 5) || (o > 350 && o <= 500)) {
                     d.status = 'Medium Load';
                 } 
-                // Rule 4: Normal/Optimal = Up to 3 stores, Up to 350 orders
                 else if (count <= 3 && o <= 350) {
                     if (count < 3 && o < 200) d.status = 'Underutilized';
                     else d.status = 'Optimal';
@@ -819,7 +861,7 @@
             });
         }
 
-        // --- TAB 1: MAP RENDERER (Retains design logic) ---
+        // --- TAB 1: MAP RENDERER ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             let brandBgColor = "#E2E8F0"; let brandTextColor = "#475569";
