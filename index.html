@@ -194,13 +194,16 @@
         .status-under { background: var(--status-blue-bg); color: var(--status-blue); }
 
         /* ACCORDION EXPANDABLE ROW STYLES */
-        .chevron {
-            display: inline-block;
-            transition: transform 0.2s ease;
-            margin-right: 10px;
-            font-size: 10px;
-            color: var(--primary-orange);
+        .chevron-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 6px;
+            background: #F1F5F9; color: var(--primary-orange);
+            cursor: pointer; transition: all 0.2s ease;
+            font-size: 12px; font-weight: bold; user-select: none;
         }
+        .chevron-btn:hover { background: #E2E8F0; }
+        .chevron-btn.open { transform: rotate(180deg); background: var(--primary-orange); color: white;}
+        
         .sub-row { background-color: #FAFAFA; border-left: 4px solid var(--border-color); }
         .sub-row.selected-sub { border-left: 4px solid var(--primary-orange); }
         .sub-row td { padding: 0 !important; border-bottom: none; }
@@ -339,7 +342,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.08<br>
+                        LS Operations Optimizer v15.09<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -373,6 +376,7 @@
                                     <th>Store Count</th>
                                     <th>Daily Avg Orders</th>
                                     <th>Utilization Status</th>
+                                    <th style="width: 50px; text-align: center;">Stores</th>
                                 </tr>
                             </thead>
                             <tbody id="utilization-tbody">
@@ -484,7 +488,7 @@
                     }
                 })
                 .catch(err => {
-                    console.log("GitHub API limitation", err);
+                    console.log("GitHub API layout fallback:", err);
                     document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
                     document.getElementById('db-icon').classList.add('live');
                 });
@@ -663,7 +667,7 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
-        // --- TAB 2: EXPANDABLE DATA TABLE RENDERER ---
+        // --- TAB 2: DATA TABLE RENDERER WITH EXPANDABLE STORE LIST ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody');
             if(!tbody) return;
@@ -682,7 +686,7 @@
             }
 
             if(activeChamps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
                 return;
             }
 
@@ -696,28 +700,30 @@
                 else if(d.status === 'Medium Load') badgeHTML = `<span class="status-badge status-medium">⚠️ Medium Load</span>`;
                 else badgeHTML = `<span class="status-badge status-over">🔥 Overloaded</span>`;
 
-                // Main Row
+                // Main Champion Row
                 let mainRow = document.createElement('tr');
                 mainRow.innerHTML = `
-                    <td style="font-weight:700;"><span class="chevron">▶</span>${champ}</td>
+                    <td style="font-weight:700;">${champ}</td>
                     <td>${d.supervisor}</td>
                     <td>${d.stores.length}</td>
                     <td>${Math.round(d.totalOrders)}</td>
                     <td>${badgeHTML}</td>
+                    <td style="text-align: center;">
+                        <span class="chevron-btn">▼</span>
+                    </td>
                 `;
 
-                // Expandable Sub-Row
+                // Expanded Sub-Row (Hidden by default)
                 let subRow = document.createElement('tr');
                 subRow.className = 'sub-row';
                 subRow.style.display = 'none';
 
-                // Build Store Breakdown Table
                 let subTableHTML = `
                     <div class="sub-table-wrapper">
                         <table class="sub-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50%;">Store Location</th>
+                                    <th style="width: 50%;">Store Name</th>
                                     <th>Chain</th>
                                     <th>Daily Avg Orders</th>
                                 </tr>
@@ -725,7 +731,7 @@
                             <tbody>
                 `;
                 
-                // Sort stores alphabetically for clean look
+                // Sort the stores alphabetically inside the dropdown
                 let sortedStores = [...d.stores].sort((a,b) => a.locationName.localeCompare(b.locationName));
                 
                 sortedStores.forEach(store => {
@@ -739,33 +745,35 @@
                 });
                 
                 subTableHTML += `</tbody></table></div>`;
-                subRow.innerHTML = `<td colspan="5">${subTableHTML}</td>`;
+                subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
 
-                // Click event handling (Selection + Accordion Expand)
+                // Clicking anywhere on the row selects the champion
                 mainRow.onclick = () => {
-                    // Update bottom UI
                     selectChampion(champ, mainRow);
+                };
+
+                // Clicking specifically on the Dropdown arrow opens the sub-table
+                let chevronBtn = mainRow.querySelector('.chevron-btn');
+                chevronBtn.onclick = (e) => {
+                    e.stopPropagation(); // Stop the click from re-triggering the row select twice
+                    selectChampion(champ, mainRow); // Still select the champion if they open their dropdown
                     
-                    // Manage Accordion State
                     const isExpanded = subRow.style.display === 'table-row';
                     
-                    // Close everything first
+                    // Close all other dropdowns
                     document.querySelectorAll('.sub-row').forEach(r => {
                         r.style.display = 'none';
                         r.classList.remove('selected-sub');
                     });
-                    document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => {
-                        r.classList.remove('expanded');
-                        let chev = r.querySelector('.chevron');
-                        if (chev) chev.style.transform = 'rotate(0deg)';
+                    document.querySelectorAll('.chevron-btn').forEach(btn => {
+                        btn.classList.remove('open');
                     });
                     
-                    // Open clicked if it wasn't already open
+                    // Open this one if it wasn't already open
                     if (!isExpanded) {
                         subRow.style.display = 'table-row';
                         subRow.classList.add('selected-sub');
-                        mainRow.classList.add('expanded');
-                        mainRow.querySelector('.chevron').style.transform = 'rotate(90deg)';
+                        chevronBtn.classList.add('open');
                     }
                 };
 
