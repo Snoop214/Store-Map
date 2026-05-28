@@ -322,7 +322,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.05<br>
+                        LS Operations Optimizer v15.06<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -534,7 +534,7 @@
                 championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // v15.05 Threshold Engine (Below 5 stores, Below 400 orders = Normal)
+            // Threshold Engine (Below 5 stores, Below 400 orders = Normal)
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
@@ -605,6 +605,7 @@
             if (listId === 'supervisor-list') handleFiltersChange(); else handleChainChange();
         }
 
+        // --- TAB 2: DATA TABLE RENDERER ---
         function getCheckedValues(listId) {
             return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
         }
@@ -646,7 +647,6 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
-        // --- TAB 2: DATA TABLE RENDERER ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody');
             if(!tbody) return;
@@ -693,6 +693,19 @@
         }
 
         // --- TAB 2: AI PREDICTIVE SUGGESTION ENGINE & FORMATTED REVIEW TEXT ---
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
+        }
+
         function selectChampion(champName, rowElement) {
             document.querySelectorAll('#utilization-tbody tr').forEach(r => r.classList.remove('selected'));
             rowElement.classList.add('selected');
@@ -739,7 +752,7 @@
                     }
                 });
             } 
-            // LOGIC B: Overloaded -> Find ANY valid champion to GIVE TO
+            // LOGIC B: Overloaded/Medium -> Find ANY champion under supervisor to share store with safely
             else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
                 d.stores.forEach(store => {
                     Object.keys(championUtilizationData).forEach(otherChampName => {
@@ -749,6 +762,7 @@
                             let newCount = otherData.stores.length + 1;
                             let newOrders = otherData.totalOrders + store.orders;
                             
+                            // Predictive validation check to ensure receiver does not overload
                             if (newCount <= 5 && newOrders < 500) { 
                                 let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
                                 if (nearestData.distance < 15 && nearestData.anchorStore) {
