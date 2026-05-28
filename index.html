@@ -322,7 +322,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.04<br>
+                        LS Operations Optimizer v15.06<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -390,9 +390,9 @@
         // ====== ADMIN CONFIGURATION ======
         const CSV_FILE_PATH = "data.csv"; 
         
-        // GITHUB API CONNECTION (Required to fetch exact "Last Updated" time)
+        // GITHUB API CONNECTION
         const GITHUB_USERNAME = "Snoop214"; 
-        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- CHANGE THIS TO YOUR REPO NAME
+        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
         // --- MAP INIT ---
@@ -467,7 +467,7 @@
                     }
                 })
                 .catch(err => {
-                    console.log("GitHub API limitation or incorrect repo name:", err);
+                    console.log("GitHub API layout fallback:", err);
                     document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
                     document.getElementById('db-icon').classList.add('live');
                 });
@@ -484,7 +484,6 @@
                 error: function(err) {
                     document.getElementById('db-status-text').innerHTML = `<span style="color:red;">⚠️ CSV Missing</span>`;
                     document.getElementById('db-icon').classList.remove('live');
-                    console.error("Make sure data.csv is on the server.", err);
                 }
             });
         }
@@ -535,7 +534,7 @@
                 championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // LOGIC (v15.04) - Below 5 stores, Below 400 orders = Normal
+            // Threshold Engine (Below 5 stores, Below 400 orders = Normal)
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
@@ -647,7 +646,6 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
-        // --- TAB 2: DATA TABLE RENDERER ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody');
             if(!tbody) return;
@@ -694,14 +692,6 @@
         }
 
         // --- TAB 2: AI PREDICTIVE SUGGESTION ENGINE & NEAREST-STORE MINIMAPS ---
-        function getDistanceKM(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
         function getNearestStoreData(targetLat, targetLng, targetChampStores) {
             let minDist = Infinity;
             let closestStore = null;
@@ -740,60 +730,43 @@
 
             let candidates = [];
 
-            // LOGIC A: Selected Champion is Underutilized/Optimal -> Find Overloaded/Medium stores to TAKE
+            // LOGIC A: Underutilized/Optimal -> Find Overloaded/Medium stores to TAKE
             if (d.status === 'Underutilized' || d.status === 'Optimal') {
                 parsedData.forEach(store => {
                     let ownerData = championUtilizationData[store.championName];
-                    
-                    // The source champion must be overloaded or medium
                     if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
                         
-                        // PREDICTIVE CHECK: Will taking this store make the CURRENT champion overloaded?
                         let newCount = d.stores.length + 1;
                         let newOrders = d.totalOrders + store.orders;
                         
-                        if (newCount <= 5 && newOrders < 500) { // Keep them safe from Overload
+                        if (newCount <= 5 && newOrders < 500) { 
                             let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
-                            
                             if (nearestData.distance < 15 && nearestData.anchorStore) {
                                 candidates.push({ 
-                                    type: 'take', 
-                                    store: store, 
-                                    targetChamp: d, 
-                                    sourceChamp: ownerData, 
-                                    distance: nearestData.distance,
-                                    anchorStore: nearestData.anchorStore,
-                                    newOrders: newOrders
+                                    type: 'take', store: store, targetChamp: d, sourceChamp: ownerData, 
+                                    distance: nearestData.distance, anchorStore: nearestData.anchorStore
                                 });
                             }
                         }
                     }
                 });
             } 
-            // LOGIC B: Selected Champion is Overloaded -> Find ANY valid champion to GIVE TO
+            // LOGIC B: Overloaded/Medium -> Find ANY champion under supervisor to share store with safely
             else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
                 d.stores.forEach(store => {
                     Object.keys(championUtilizationData).forEach(otherChampName => {
                         let otherData = championUtilizationData[otherChampName];
-                        
                         if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
                             
-                            // PREDICTIVE CHECK: Will giving this store to the OTHER champion make them overloaded?
                             let newCount = otherData.stores.length + 1;
                             let newOrders = otherData.totalOrders + store.orders;
                             
-                            if (newCount <= 5 && newOrders < 500) { // Ensures receiver stays safe
+                            if (newCount <= 5 && newOrders < 500) { 
                                 let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
-                                
                                 if (nearestData.distance < 15 && nearestData.anchorStore) {
                                     candidates.push({ 
-                                        type: 'give', 
-                                        store: store, 
-                                        targetChamp: otherData, 
-                                        targetChampName: otherChampName, 
-                                        distance: nearestData.distance,
-                                        anchorStore: nearestData.anchorStore,
-                                        newOrders: newOrders
+                                        type: 'give', store: store, targetChamp: otherData, targetChampName: otherChampName, 
+                                        distance: nearestData.distance, anchorStore: nearestData.anchorStore
                                     });
                                 }
                             }
@@ -831,21 +804,12 @@
                         
                         <div id="${mapId}" class="mini-map"></div>
 
-                        <div class="sc-detail" style="align-items:flex-start;">
-                            <span>Take From:</span> 
-                            <strong style="color:var(--status-red)">${c.store.championName}</strong>
-                        </div>
-                        <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                            <div style="display:flex; justify-content:space-between;">
-                                <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                            </div>
-                            <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                (from their ${c.anchorStore.locationName} store)
-                            </div>
-                        </div>
+                        <div class="sc-detail"><span>Take From:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
+                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
+                        <div class="sc-detail"><span>Store Volume:</span> <strong style="color:var(--status-green)">${Math.round(c.store.orders)} Orders/Day</strong></div>
                         
                         <div class="ai-review">
-                            <strong>🤖 AI Review:</strong> Transfer balances workload safely. Relieves <strong>${c.store.championName}</strong> (${c.sourceChamp.status}) and safely brings ${champName}'s load to ${Math.round(c.newOrders)} orders.
+                            <strong>🤖 AI Review:</strong> Transferring this store balances workload. It relieves <strong>${c.store.championName}</strong> and assigns it to <strong>${champName}</strong>, as it is close to their existing <strong>${c.anchorStore.locationName}</strong> location.
                         </div>
                     `;
                 } else {
@@ -855,21 +819,12 @@
                         
                         <div id="${mapId}" class="mini-map"></div>
 
-                        <div class="sc-detail" style="align-items:flex-start;">
-                            <span>Give To:</span> 
-                            <strong style="color:var(--status-green)">${c.targetChampName}</strong>
-                        </div>
-                        <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                            <div style="display:flex; justify-content:space-between;">
-                                <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                            </div>
-                            <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                (from their ${c.anchorStore.locationName} store)
-                            </div>
-                        </div>
+                        <div class="sc-detail"><span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong></div>
+                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
+                        <div class="sc-detail"><span>Load Reduction:</span> <strong style="color:var(--status-red)">-${Math.round(c.store.orders)} Orders/Day</strong></div>
                         
                         <div class="ai-review">
-                            <strong>🤖 AI Review:</strong> Transferring relieves <strong>${champName}'s</strong> load by ${Math.round(c.store.orders)} orders. Reassigns to <strong>${c.targetChampName}</strong> (${c.targetChamp.status}), bringing their new load to ${Math.round(c.newOrders)} safely.
+                            <strong>🤖 AI Review:</strong> Transferring this store relieves <strong>${champName}'s</strong> overload and reassigns it to <strong>${c.targetChampName}</strong>, as it operates near their existing <strong>${c.anchorStore.locationName}</strong> store.
                         </div>
                     `;
                 }
@@ -884,13 +839,11 @@
                     let anchorLatLng = [c.anchorStore.lat, c.anchorStore.lng];
 
                     L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
-                    
                     L.circleMarker(anchorLatLng, {
                         radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                    }).bindTooltip("Nearest current store: " + c.anchorStore.locationName).addTo(mmap);
+                    }).bindTooltip("Nearest store: " + c.anchorStore.locationName).addTo(mmap);
 
                     L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
-                    
                     mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
                 }, 50); 
             });
