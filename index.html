@@ -322,7 +322,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.06<br>
+                        LS Operations Optimizer v15.07<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -467,7 +467,7 @@
                     }
                 })
                 .catch(err => {
-                    console.log("GitHub API layout fallback:", err);
+                    console.log("GitHub API limitation", err);
                     document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
                     document.getElementById('db-icon').classList.add('live');
                 });
@@ -691,7 +691,15 @@
             });
         }
 
-        // --- TAB 2: AI PREDICTIVE SUGGESTION ENGINE & NEAREST-STORE MINIMAPS ---
+        // --- TAB 2: AI PREDICTIVE SUGGESTION ENGINE ---
+        function getDistanceKM(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
         function getNearestStoreData(targetLat, targetLng, targetChampStores) {
             let minDist = Infinity;
             let closestStore = null;
@@ -728,125 +736,147 @@
             let sWrapper = document.getElementById('suggestions-wrapper');
             sWrapper.innerHTML = '';
 
-            let candidates = [];
+            try {
+                let candidates = [];
 
-            // LOGIC A: Underutilized/Optimal -> Find Overloaded/Medium stores to TAKE
-            if (d.status === 'Underutilized' || d.status === 'Optimal') {
-                parsedData.forEach(store => {
-                    let ownerData = championUtilizationData[store.championName];
-                    if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
-                        
-                        let newCount = d.stores.length + 1;
-                        let newOrders = d.totalOrders + store.orders;
-                        
-                        if (newCount <= 5 && newOrders < 500) { 
-                            let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
-                            if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                candidates.push({ 
-                                    type: 'take', store: store, targetChamp: d, sourceChamp: ownerData, 
-                                    distance: nearestData.distance, anchorStore: nearestData.anchorStore
-                                });
-                            }
-                        }
-                    }
-                });
-            } 
-            // LOGIC B: Overloaded/Medium -> Find ANY champion under supervisor to share store with safely
-            else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
-                d.stores.forEach(store => {
-                    Object.keys(championUtilizationData).forEach(otherChampName => {
-                        let otherData = championUtilizationData[otherChampName];
-                        if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
-                            
-                            let newCount = otherData.stores.length + 1;
-                            let newOrders = otherData.totalOrders + store.orders;
+                if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                    parsedData.forEach(store => {
+                        let ownerData = championUtilizationData[store.championName];
+                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                            let newCount = d.stores.length + 1;
+                            let newOrders = d.totalOrders + store.orders;
                             
                             if (newCount <= 5 && newOrders < 500) { 
-                                let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
                                 if (nearestData.distance < 15 && nearestData.anchorStore) {
                                     candidates.push({ 
-                                        type: 'give', store: store, targetChamp: otherData, targetChampName: otherChampName, 
-                                        distance: nearestData.distance, anchorStore: nearestData.anchorStore
+                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
+                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
                                     });
                                 }
                             }
                         }
                     });
+                } 
+                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                    d.stores.forEach(store => {
+                        Object.keys(championUtilizationData).forEach(otherChampName => {
+                            let otherData = championUtilizationData[otherChampName];
+                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
+                                let newCount = otherData.stores.length + 1;
+                                let newOrders = otherData.totalOrders + store.orders;
+                                
+                                if (newCount <= 5 && newOrders < 500) { 
+                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                        candidates.push({ 
+                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
+                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+
+                candidates.sort((a, b) => a.distance - b.distance);
+
+                let uniqueCandidates = [];
+                let seenStores = new Set();
+                for (let c of candidates) {
+                    if (!seenStores.has(c.store.locationName)) {
+                        uniqueCandidates.push(c);
+                        seenStores.add(c.store.locationName);
+                    }
+                    if (uniqueCandidates.length >= 3) break;
+                }
+
+                if (uniqueCandidates.length === 0) {
+                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
+                    return;
+                }
+
+                uniqueCandidates.forEach((c, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    let mapId = `minimap-${index}`;
+                    
+                    if (c.type === 'take') {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            
+                            <div id="${mapId}" class="mini-map"></div>
+
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Take From:</span> 
+                                <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            
+                            <div id="${mapId}" class="mini-map"></div>
+
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Give To:</span> 
+                                <strong style="color:var(--status-green)">${c.targetChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                            </div>
+                        `;
+                    }
+
+                    sWrapper.appendChild(card);
+
+                    setTimeout(() => {
+                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                        let storeLatLng = [c.store.lat, c.store.lng];
+                        let anchorLatLng = [c.anchorLat, c.anchorLng];
+
+                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
+                        L.circleMarker(anchorLatLng, {
+                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
+
+                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                    }, 50); 
                 });
+
+            } catch (err) {
+                // If anything goes wrong, prevent a blank screen and show the exact error.
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
             }
-
-            candidates.sort((a, b) => a.distance - b.distance);
-
-            let uniqueCandidates = [];
-            let seenStores = new Set();
-            for (let c of candidates) {
-                if (!seenStores.has(c.store.locationName)) {
-                    uniqueCandidates.push(c);
-                    seenStores.add(c.store.locationName);
-                }
-                if (uniqueCandidates.length >= 3) break;
-            }
-
-            if (uniqueCandidates.length === 0) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
-                return;
-            }
-
-            uniqueCandidates.forEach((c, index) => {
-                let card = document.createElement('div');
-                card.className = 'suggestion-card';
-                let mapId = `minimap-${index}`;
-                
-                if (c.type === 'take') {
-                    card.innerHTML = `
-                        <div class="sc-title">${c.store.locationName}</div>
-                        <div class="sc-sub">${c.store.chainName}</div>
-                        
-                        <div id="${mapId}" class="mini-map"></div>
-
-                        <div class="sc-detail"><span>Take From:</span> <strong style="color:var(--status-red)">${c.store.championName}</strong></div>
-                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
-                        <div class="sc-detail"><span>Store Volume:</span> <strong style="color:var(--status-green)">${Math.round(c.store.orders)} Orders/Day</strong></div>
-                        
-                        <div class="ai-review">
-                            <strong>🤖 AI Review:</strong> Transferring this store balances workload. It relieves <strong>${c.store.championName}</strong> and assigns it to <strong>${champName}</strong>, as it is close to their existing <strong>${c.anchorStore.locationName}</strong> location.
-                        </div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div class="sc-title">${c.store.locationName}</div>
-                        <div class="sc-sub">${c.store.chainName}</div>
-                        
-                        <div id="${mapId}" class="mini-map"></div>
-
-                        <div class="sc-detail"><span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong></div>
-                        <div class="sc-detail"><span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong></div>
-                        <div class="sc-detail"><span>Load Reduction:</span> <strong style="color:var(--status-red)">-${Math.round(c.store.orders)} Orders/Day</strong></div>
-                        
-                        <div class="ai-review">
-                            <strong>🤖 AI Review:</strong> Transferring this store relieves <strong>${champName}'s</strong> overload and reassigns it to <strong>${c.targetChampName}</strong>, as it operates near their existing <strong>${c.anchorStore.locationName}</strong> store.
-                        </div>
-                    `;
-                }
-
-                sWrapper.appendChild(card);
-
-                setTimeout(() => {
-                    let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
-                    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
-
-                    let storeLatLng = [c.store.lat, c.store.lng];
-                    let anchorLatLng = [c.anchorStore.lat, c.anchorStore.lng];
-
-                    L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
-                    L.circleMarker(anchorLatLng, {
-                        radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                    }).bindTooltip("Nearest store: " + c.anchorStore.locationName).addTo(mmap);
-
-                    L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
-                    mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
-                }, 50); 
-            });
         }
 
         // --- TAB 1: MAP RENDERER ---
