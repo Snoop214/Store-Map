@@ -551,6 +551,463 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Champion Name</th>
+                                    <th>Supervisor</th>
+                                    <th>Store Count</th>
+                                    <th>Daily Avg Orders</th>
+                                    <th>Utilization Status</th>
+                                    <th style="width: 50px; text-align: center;">Stores</th>
+                                </tr>
+                            </thead>
+                            <tbody id="utilization-tbody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="data-panel-bottom">
+                    <div class="profile-card" id="profile-card">
+                        <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                        <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
+                    </div>
+                    
+                    <div class="suggestions-container" id="suggestions-card">
+                        <h3>Smart Reallocation Suggestions</h3>
+                        <div class="cards-wrapper" id="suggestions-wrapper">
+                            <div class="empty-state" style="width:100%;">Awaiting selection...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        // ====== ADMIN CONFIGURATION ======
+        const CSV_FILE_PATH = "data.csv"; 
+        // ==================================
+
+        // --- MAP INIT ---
+        const map = L.map('map', {zoomControl: false}).setView([25.2048, 55.2708], 10);
+        L.control.zoom({position: 'bottomright'}).addTo(map);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(map);
+        
+        const markerLayer = L.layerGroup().addTo(map);
+        const searchPinLayer = L.layerGroup().addTo(map);
+        const staticPinLayer = L.layerGroup().addTo(map);
+        const previewRouteLayer = L.layerGroup().addTo(map);
+
+        // --- GLOBAL POINTS DICTIONARY FOR ROUTING DROPDOWNS ---
+        let availablePoints = {
+            'my_location': { lat: null, lng: null, name: "My Location" },
+            'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
+            'selected_store': null, // Populated dynamically on click
+            'searched_loc': null    // Populated dynamically on search
+        };
+
+        // --- TALABAT OFFICE PIN (Interactive) ---
+        const talabatOfficeIcon = L.divIcon({
+            className: 'brand-solid-marker',
+            html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
+            iconSize: [64, 28], iconAnchor: [32, 14]
+        });
+        const talabatMarker = L.marker([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], {icon: talabatOfficeIcon})
+            .addTo(staticPinLayer)
+            .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
+        
+        talabatMarker.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
+            // Treat Office like a store click for routing
+            openBottomSheet({
+                locationName: availablePoints.talabat_office.name,
+                chainName: "Talabat HQ",
+                championName: "Corporate",
+                orders: 0,
+                lat: availablePoints.talabat_office.lat,
+                lng: availablePoints.talabat_office.lng
+            });
+        });
+
+        // Background GPS fetch
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(p => {
+                availablePoints.my_location.lat = p.coords.latitude;
+                availablePoints.my_location.lng = p.coords.longitude;
+            }, () => {});
+        }
+
+        // --- TAB SWITCHER ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('data-container').style.display = 'none';
+
+            if (tabId === 'map') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('map-container').style.display = 'block';
+                setTimeout(() => map.invalidateSize(), 100);
+            } 
+            else if (tabId === 'data') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('data-container').style.display = 'flex';
+                renderTable(); 
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+
+        if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
+
+        // --- INTERACTIVE BOTTOM SHEET ROUTING ---
+        function populateRouteDropdowns() {
+            const fromSelect = document.getElementById('bs-route-from');
+            const toSelect = document.getElementById('bs-route-to');
+            
+            let html = '';
+            if(availablePoints.my_location.lat) {
+                html += `<option value="my_location">📍 My Location</option>`;
+            } else {
+                html += `<option value="my_location">📍 My Location (GPS Off)</option>`;
+            }
+            
+            html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
+            
+            if(availablePoints.selected_store) {
+                html += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
+            }
+            if(availablePoints.searched_loc) {
+                html += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
+            }
+
+            // Save current selection to persist during re-renders
+            const currentFrom = fromSelect.value;
+            const currentTo = toSelect.value;
+
+            fromSelect.innerHTML = html;
+            toSelect.innerHTML = html;
+
+            if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
+            if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
+        }
+
+        function updateRoutePreview() {
+            const fromKey = document.getElementById('bs-route-from').value;
+            const toKey = document.getElementById('bs-route-to').value;
+            
+            const fromPoint = availablePoints[fromKey];
+            const toPoint = availablePoints[toKey];
+
+            previewRouteLayer.clearLayers();
+
+            if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
+                // Calculate distance
+                let distKM = getDistanceKM(fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng);
+                document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
+
+                // Draw Preview Line
+                if(distKM > 0) {
+                    const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
+                    L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
+                    map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
+                }
+            } else {
+                document.getElementById('bs-dist').innerText = "GPS Required";
+            }
+        }
+
+        function swapRoute() {
+            const fromSelect = document.getElementById('bs-route-from');
+            const toSelect = document.getElementById('bs-route-to');
+            
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+
+            updateRoutePreview();
+        }
+
+        function closeBottomSheet() {
+            document.getElementById('bottom-sheet').classList.remove('active');
+            previewRouteLayer.clearLayers();
+        }
+
+        function openBottomSheet(store) {
+            // Register this store globally so dropdowns can use it
+            availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
+
+            document.getElementById('bs-store-name').innerText = store.locationName;
+            document.getElementById('bs-chain-name').innerText = store.chainName;
+            document.getElementById('bs-champ').innerText = store.championName;
+            document.getElementById('bs-orders').innerText = Math.round(store.orders);
+            
+            populateRouteDropdowns();
+            
+            // Set defaults: From = My Location (or searched), To = Selected Store
+            const fromSelect = document.getElementById('bs-route-from');
+            const toSelect = document.getElementById('bs-route-to');
+            
+            if (availablePoints.searched_loc) {
+                fromSelect.value = "searched_loc";
+            } else {
+                fromSelect.value = "my_location";
+            }
+            toSelect.value = "selected_store";
+
+            // If GPS isn't locked yet, try to grab it
+            if (!availablePoints.my_location.lat && "geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    availablePoints.my_location.lat = p.coords.latitude;
+                    availablePoints.my_location.lng = p.coords.longitude;
+                    populateRouteDropdowns(); // Re-populate to remove "(GPS Off)" text
+                    fromSelect.value = "my_location";
+                    toSelect.value = "selected_store";
+                    updateRoutePreview();
+                }, () => { updateRoutePreview(); });
+            } else {
+                updateRoutePreview();
+            }
+
+            document.getElementById('bottom-sheet').classList.add('active');
+        }
+
+        map.on('click', function() { closeBottomSheet(); });
+
+        // --- NATIVE APP HANDOFF (THE MODAL) ---
+        function openNavModal() {
+            document.getElementById('navAppModal').classList.add('active');
+        }
+
+        function closeNavModal() {
+            document.getElementById('navAppModal').classList.remove('active');
+        }
+
+        function launchApp(appType, event) {
+            const fromKey = document.getElementById('bs-route-from').value;
+            const toKey = document.getElementById('bs-route-to').value;
+            
+            const fromPoint = availablePoints[fromKey];
+            const toPoint = availablePoints[toKey];
+
+            if (!fromPoint || !fromPoint.lat || !toPoint || !toPoint.lat) {
+                alert("Valid Starting and Ending locations are required.");
+                return;
+            }
+
+            if (appType === 'gmaps') {
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{fromPoint.lat},${fromPoint.lng}&destination=${toPoint.lat},${toPoint.lng}&travelmode=driving`;
+                window.open(gmapsLink, '_blank');
+            } 
+            else if (appType === 'twogis') {
+                const twogisLink = `https://2gis.ae/dubai/directions/points/${fromPoint.lng},${fromPoint.lat}|${toPoint.lng},${toPoint.lat}?traffic`;
+                window.open(twogisLink, '_blank');
+            }
+            
+            closeNavModal();
+            closeBottomSheet();
+        }
+
+        // --- INITIALIZATION & DATA FETCH ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHostedData(); 
+        });
+
+        function fetchHostedData() {
+            Papa.parse(CSV_FILE_PATH, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(results) { processSmartData(results.data); },
+                error: function(err) {
+                    alert("Error loading CSV file. Please check the file path.");
+                }
+            });
+        }
+
+        // --- GLOBALS & DATA PROCESSING ---
+        let parsedData = [];
+        let supervisorStats = {}; 
+        let supervisorColors = {}; 
+        let championUtilizationData = {};
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+        
+        function processSmartData(dataRows) {
+            parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
+
+            dataRows.forEach(row => {
+                const keys = Object.keys(row);
+                const clean = (ko) => { for (let k of ko) { let f = keys.find(x => x.trim()===k); if(f && row[f]) return row[f].trim(); } return ""; };
+
+                const lat = parseFloat(clean(["Latitude", "Lat"]));
+                const lng = parseFloat(clean(["Longitude", "Lng"]));
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const sup = clean(["Supervisor"]) || "Unknown";
+                const champ = clean(["Name", "Champion Name"]) || "Unknown";
+                const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
+                let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]) || row[keys[11]];
+                let dailyOrders = parseFloat(ordersStr); if(isNaN(dailyOrders)) dailyOrders = 100;
+
+                if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
+                supervisorStats[sup].add(champ);
+
+                let locStr = row[keys[10]]; 
+                let finalLocationName = (locStr && locStr.trim() !== "") ? locStr.trim() : (clean(["Location", "Branch Loc", "Store Name"]) || "Store");
+
+                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
+                parsedData.push(storeObj);
+
+                if(!championUtilizationData[champ]) {
+                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                }
+                championUtilizationData[champ].stores.push(storeObj);
+                championUtilizationData[champ].totalOrders += dailyOrders;
+            });
+
+            // Restore the AI Threshold Engine
+            Object.keys(championUtilizationData).forEach(champ => {
+                let d = championUtilizationData[champ];
+                let count = d.stores.length;
+                let o = d.totalOrders;
+                
+                if (count === 1) {
+                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
+                } 
+                else if (count > 5 || o >= 500) {
+                    d.status = 'Overloaded';
+                } 
+                else if (count === 5 || (o >= 400 && o < 500)) {
+                    d.status = 'Medium Load';
+                } 
+                else if (count < 5 && o < 400) {
+                    if (count < 3 && o < 200) d.status = 'Underutilized';
+                    else d.status = 'Optimal';
+                }
+            });
+
+            buildSupervisorFilterList(); buildChainFilterList(true);
+        }
+
+        // --- FILTER BUILDING ---
+        function buildSupervisorFilterList() {
+            const supList = document.getElementById('supervisor-list'); supList.innerHTML = '';
+            let colorIndex = 0;
+            Object.keys(supervisorStats).sort().forEach(sup => {
+                if (sup === "Unknown") return;
+                const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
+                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
+            });
+        }
+
+        function buildChainFilterList(checkAll = false) {
+            const chainList = document.getElementById('chain-list');
+            const previouslyCheckedChains = checkAll ? [] : getCheckedValues('chain-list');
+            chainList.innerHTML = '';
+            let selectedSups = getCheckedValues('supervisor-list');
+            let chainStoreCounts = {};
+            parsedData.forEach(d => {
+                if (selectedSups.length === 0 || selectedSups.includes(d.supervisor)) {
+                    if (d.chainName !== "Unknown") chainStoreCounts[d.chainName] = (chainStoreCounts[d.chainName] || 0) + 1;
+                }
+            });
+            Object.keys(chainStoreCounts).sort().forEach(chain => {
+                const isChecked = (checkAll || previouslyCheckedChains.includes(chain)) ? 'checked' : '';
+                chainList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}><span style="flex-grow: 1;">${chain}</span><span class="count-badge">${chainStoreCounts[chain]}</span></label>`;
+            });
+        }
+
+        function toggleAllCheckboxes(listId, checkState) {
+            document.querySelectorAll(`#${listId} input[type="checkbox"]`).forEach(cb => cb.checked = checkState);
+            if (listId === 'supervisor-list') handleFiltersChange(); else handleChainChange();
+        }
+
+        function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
+        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
+        function handleChainChange() { updateChampionDropdownScope(); }
+
+        function updateChampionDropdownScope() {
+            const selectedSups = getCheckedValues('supervisor-list');
+            const selectedChains = getCheckedValues('chain-list');
+            const previouslyCheckedChamps = getCheckedValues('champion-list');
+            const champList = document.getElementById('champion-list');
+
+            if (selectedSups.length === 0 || selectedChains.length === 0) {
+                champList.innerHTML = '<div class="empty-state">Select Options</div>';
+                renderDashboard(); return;
+            }
+
+            champList.innerHTML = ''; let champStoreCounts = {};
+            parsedData.forEach(d => {
+                if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) champStoreCounts[d.championName] = (champStoreCounts[d.championName] || 0) + 1;
+            });
+
+            Object.keys(champStoreCounts).sort().forEach(champ => {
+                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
+            });
+            renderDashboard();
+        }
+
+        function renderDashboard() { renderMap(); renderTable(); }
+
+        // --- FULLY RESTORED TABLE RENDERING ---
+        function renderTable() {
+            const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let activeChamps = getCheckedValues('champion-list');
+            
+            if(activeChamps.length === 0) {
+                let tempSet = new Set();
+                const selectedSups = getCheckedValues('supervisor-list');
+                const selectedChains = getCheckedValues('chain-list');
+                parsedData.forEach(d => {
+                    if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName);
+                });
+                activeChamps = Array.from(tempSet);
+            }
+
+            if(activeChamps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
+                return;
+            }
+
+            activeChamps.forEach(champ => {
+                let d = championUtilizationData[champ];
+                if(!d) return;
+                
+                let badgeHTML = '';
+                if(d.status === 'Optimal') badgeHTML = `<span class="status-badge status-optimal">✓ Optimal</span>`;
+                else if(d.status === 'Underutilized') badgeHTML = `<span class="status-badge status-under">↘ Underutilized</span>`;
+                else if(d.status === 'Medium Load') badgeHTML = `<span class="status-badge status-medium">⚠️ Medium Load</span>`;
+                else badgeHTML = `<span class="status-badge status-over">🔥 Overloaded</span>`;
+
+                let mainRow = document.createElement('tr');
+                mainRow.innerHTML = `
+                    <td style="font-weight:700;">${champ}</td>
+                    <td>${d.supervisor}</td>
+                    <td>${d.stores.length}</td>
+                    <td>${Math.round(d.totalOrders)}</td>
+                    <td>${badgeHTML}</td>
+                    <td style="text-align: center;">
+                        <span class="chevron-btn">▼</span>
+                    </td>
+                `;
+
+                let subRow = document.createElement('tr');
+                subRow.className = 'sub-row';
+                subRow.style.display = 'none';
+
+                let subTableHTML = `
+                    <div class="sub-table-wrapper">
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
                                     <th style="width: 50%;">Store Name</th>
                                     <th>Chain</th>
                                     <th>Daily Avg Orders</th>
@@ -574,14 +1031,25 @@
                 subTableHTML += `</tbody></table></div>`;
                 subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
 
-                mainRow.onclick = () => { selectChampion(champ, mainRow); };
+                mainRow.onclick = () => {
+                    selectChampion(champ, mainRow);
+                };
 
                 let chevronBtn = mainRow.querySelector('.chevron-btn');
                 chevronBtn.onclick = (e) => {
-                    e.stopPropagation(); selectChampion(champ, mainRow); 
+                    e.stopPropagation(); 
+                    selectChampion(champ, mainRow); 
+                    
                     const isExpanded = subRow.style.display === 'table-row';
-                    document.querySelectorAll('.sub-row').forEach(r => { r.style.display = 'none'; r.classList.remove('selected-sub'); });
-                    document.querySelectorAll('.chevron-btn').forEach(btn => { btn.classList.remove('open'); });
+                    
+                    document.querySelectorAll('.sub-row').forEach(r => {
+                        r.style.display = 'none';
+                        r.classList.remove('selected-sub');
+                    });
+                    document.querySelectorAll('.chevron-btn').forEach(btn => {
+                        btn.classList.remove('open');
+                    });
+                    
                     if (!isExpanded) {
                         subRow.style.display = 'table-row';
                         subRow.classList.add('selected-sub');
@@ -722,7 +1190,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     } else {
@@ -742,7 +1210,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     }
@@ -914,16 +1382,6 @@
                 });
             }, 500); 
         });
-
-        // --- LOCAL FILE FALLBACK HANDLER ---
-        function handleLocalCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); }
-            });
-        }
     </script>
 </body>
 </html>
