@@ -438,7 +438,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.12<br>
+                        LS Operations Optimizer v15.13<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -457,7 +457,7 @@
                 
                 <div class="map-search-wrapper">
                     <div class="map-search-bar">
-                        <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search location or paste coordinates..." autocomplete="off">
+                        <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search UAE location or paste coordinates..." autocomplete="off">
                         <button class="map-action-btn primary" onclick="executeMapSearch()" title="Search">🔍</button>
                         <button class="map-action-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
                     </div>
@@ -561,13 +561,13 @@
             setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // --- INITIALIZATION --- (This was the missing piece from v15.11!)
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             fetchHostedData();
             fetchGitHubUpdateStatus();
         });
 
-        // --- SEARCH & GEOLOCATION WITH AUTOCOMPLETE ---
+        // --- SEARCH & GEOLOCATION WITH UAE AUTOCOMPLETE ---
         let searchTimeout;
         const searchInput = document.getElementById('mapSearchInput');
         const suggestionsBox = document.getElementById('search-suggestions');
@@ -586,8 +586,9 @@
                 return;
             }
 
+            // ADDED: &countrycodes=ae to restrict to UAE only
             searchTimeout = setTimeout(() => {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ae`)
                 .then(res => res.json())
                 .then(data => {
                     suggestionsBox.innerHTML = '';
@@ -637,7 +638,8 @@
                 const lng = parseFloat(coordsMatch[3]);
                 dropSearchPin(lat, lng, "Searched Coordinates");
             } else {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                // ADDED: &countrycodes=ae to restrict manual search to UAE only
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ae`)
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
@@ -645,7 +647,7 @@
                         const lng = parseFloat(data[0].lon);
                         dropSearchPin(lat, lng, data[0].display_name.split(',')[0]);
                     } else {
-                        alert("Location not found. Try selecting from the dropdown suggestions.");
+                        alert("Location not found in the UAE. Try checking spelling or using coordinates.");
                     }
                 })
                 .catch(err => {
