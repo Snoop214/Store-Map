@@ -240,19 +240,24 @@
         .suggestion-item:hover { background: #FFF5F0; }
         .suggestion-icon { font-size: 12px; margin-right: 8px; color: var(--text-muted); }
         
-        .custom-popup-link {
-            display: inline-block;
-            margin-top: 8px;
-            background: #3B82F6;
+        /* Navigation Button Style */
+        .drive-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+            background: var(--status-green);
             color: white !important;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: bold;
-            font-size: 11px;
+            font-weight: 800;
+            font-size: 12px;
             text-align: center;
+            transition: background 0.2s;
         }
-        .custom-popup-link:hover { background: #2563EB; }
+        .drive-btn:hover { background: #059669; }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -438,7 +443,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.13<br>
+                        LS Operations Optimizer v15.14<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -586,7 +591,6 @@
                 return;
             }
 
-            // ADDED: &countrycodes=ae to restrict to UAE only
             searchTimeout = setTimeout(() => {
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ae`)
                 .then(res => res.json())
@@ -638,7 +642,6 @@
                 const lng = parseFloat(coordsMatch[3]);
                 dropSearchPin(lat, lng, "Searched Coordinates");
             } else {
-                // ADDED: &countrycodes=ae to restrict manual search to UAE only
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ae`)
                 .then(response => response.json())
                 .then(data => {
@@ -686,13 +689,14 @@
                 iconAnchor: [12, 12]
             });
 
-            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`;
+            // Native Google Maps Directions deep-link
+            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
 
             const popupHTML = `
                 <div style="font-family:'Inter', sans-serif;">
                     <b style="font-size:14px;">${title}</b><br>
                     <span style="font-size:11px; color:#64748B;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</span><br>
-                    <a href="${gmapsLink}" target="_blank" class="custom-popup-link">Open in Google Maps ↗</a>
+                    <a href="${gmapsLink}" target="_blank" class="drive-btn">🚗 Start Navigation</a>
                 </div>
             `;
 
@@ -1251,14 +1255,16 @@
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                         
-                        const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=$${store.lat},${store.lng}`;
+                        // Native Google Maps Directions deep-link for Store Pins
+                        const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}&travelmode=driving`;
+                        
                         const popupHTML = `
                             <div style="font-family:'Inter', sans-serif;">
                                 <b style="font-size:14px; display:block; margin-bottom:4px;">${store.locationName}</b>
                                 <span style="font-size:12px; color:#64748B;">Chain:</span> <strong style="font-size:12px; color:var(--text-dark);">${store.chainName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Champ:</span> <strong style="font-size:12px; color:var(--primary-orange);">${store.championName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Avg Orders:</span> <span style="font-size:12px;">${Math.round(store.orders)}</span><br>
-                                <a href="${gmapsLink}" target="_blank" class="custom-popup-link" style="margin-top:10px;">Open in Google Maps ↗</a>
+                                <a href="${gmapsLink}" target="_blank" class="drive-btn">🚗 Start Navigation</a>
                             </div>
                         `;
 
