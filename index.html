@@ -748,7 +748,7 @@
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-            
+
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
@@ -1158,12 +1158,12 @@
             const selectedChamps = getCheckedValues('champion-list'); 
             
             if (selectedSups.length === 0 && selectedChains.length === 0 && selectedChamps.length === 0) {
-                return; // Baseline empty map
+                return; 
             }
 
             let allBounds = []; 
-            let supGroups = {}; // Used when > 1 Supervisor selected
-            let champGroups = {}; // Used when exactly 1 Supervisor is selected
+            let supGroups = {}; 
+            let champGroups = {}; 
 
             parsedData.forEach(store => {
                 const supMatch = selectedSups.length === 0 || selectedSups.includes(store.supervisor);
@@ -1174,15 +1174,22 @@
                     const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                     const champColor = championColors[store.championName] || '#3B82F6';
                     
-                    // --- CONDITION 1: MORE THAN 1 SUPERVISOR ELECTED (CONNECT ENTIRE SUPERVISOR TEAM AREA) ---
-                    if (selectedSups.length > 1) {
+                    // --- STRATEGY: IF 1 SUPERVISOR SELECT: CONNECT AND SEPARATE STORES VIA CHAMPION ---
+                    if (selectedSups.length === 1) {
+                        if (!champGroups[store.championName]) {
+                            champGroups[store.championName] = { points: [], color: champColor };
+                        }
+                        champGroups[store.championName].points.push({lat: store.lat, lng: store.lng});
+                    } 
+                    // --- STRATEGY: IF > 1 SUPERVISOR SELECT: GROUP AND CONNECT SOLELY BY SUPERVISOR ---
+                    else if (selectedSups.length > 1) {
                         if (!supGroups[store.supervisor]) {
                             supGroups[store.supervisor] = { points: [], color: supColor };
                         }
                         supGroups[store.supervisor].points.push({lat: store.lat, lng: store.lng});
                     }
-                    // --- CONDITION 2: EXACTLY 1 SUPERVISOR ELECTED (CONNECT EACH ASSIGNED CHAMPION INDEPENDENTLY) ---
-                    else if (selectedSups.length === 1 || selectedChamps.length >= 1) {
+                    // Fallback for standalone champion box selection
+                    else if (selectedChamps.length >= 1) {
                         if (!champGroups[store.championName]) {
                             champGroups[store.championName] = { points: [], color: champColor };
                         }
@@ -1218,19 +1225,19 @@
                 }
             });
             
-            // --- DRAW MACRO-LEVEL SUPERVISOR TEAM HIGHLIGHT HEATMAPS ---
+            // Draw Macro supervisor team shapes when more than 1 supervisor is on
             Object.keys(supGroups).forEach(supName => {
                 const group = supGroups[supName];
                 if (group.points.length >= 3) {
                     const hull = getConvexHull(group.points);
                     const latlngs = hull.map(p => [p.lat, p.lng]);
-                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.15, weight: 2}).addTo(territoryLayer);
+                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.16, weight: 2.5}).addTo(territoryLayer);
                 } else if (group.points.length === 2) {
                     L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3}).addTo(territoryLayer);
                 }
             });
 
-            // --- DRAW COMPONENT-LEVEL CHAMPION SUB-HEATMAPS ---
+            // Draw individual champion shapes when exactly 1 supervisor is on
             Object.keys(champGroups).forEach(champName => {
                 const group = champGroups[champName];
                 if (group.points.length >= 3) {
