@@ -223,16 +223,16 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
+        /* Talabat X Close Button */
         .sheet-close-btn {
             position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
         
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
         /* Interactive Route Info Box (Native UI) */
@@ -262,7 +262,7 @@
         
         .icon-btn { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 12px; padding: 4px 6px; cursor: pointer; transition: 0.2s;}
         .icon-btn:hover { background: #E2E8F0; transform: scale(1.05); }
-        
+
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
             border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
@@ -327,6 +327,19 @@
         .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
+
+        /* Glowing highlight ring for clicked stores */
+        .store-highlight-ring {
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.2);
+            border: 2px solid var(--primary-orange);
+            animation: pulseRing 1.5s infinite ease-out;
+            pointer-events: none;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -427,6 +440,8 @@
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
 
+            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; max-width: calc(100% - 60px); }
+
             .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
 
             #data-container { padding: 12px; overflow-y: auto; }
@@ -522,7 +537,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.42<br>
+                        LS Operations Optimizer v15.43<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -635,6 +650,10 @@
         const staticPinLayer = L.layerGroup().addTo(map);
         const previewRouteLayer = L.layerGroup().addTo(map);
         const clickedPinLayer = L.layerGroup().addTo(map);
+        
+        // Layers for Champion Territory Polygon and Clicked Store Glow
+        const territoryLayer = L.layerGroup().addTo(map);
+        const highlightLayer = L.layerGroup().addTo(map);
 
         // --- CLOCK SCRIPT ---
         function updateDateTime() {
@@ -682,7 +701,6 @@
                 availablePoints.my_location.lng = p.coords.longitude;
                 if (routeData.from.name === "📍 My Location") {
                     routeData.from = { ...availablePoints.my_location };
-                    // We DO NOT update UI here to prevent drawing lines on load
                 }
             }, () => {});
         }
@@ -711,7 +729,6 @@
             L.DomEvent.stopPropagation(e);
             let point = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
             
-            // If the bottom sheet routing section is currently visible, update the input
             if (document.getElementById('routing-section').style.display === 'flex') {
                 if (activeInput === 'from') routeData.from = point;
                 else routeData.to = point;
@@ -810,8 +827,8 @@
             document.getElementById('bottom-sheet').classList.remove('active');
             previewRouteLayer.clearLayers();
             clickedPinLayer.clearLayers();
+            highlightLayer.clearLayers(); // Remove glow when closed
             
-            // Reset to defaults
             routeData.to = { lat: null, lng: null, name: "Select Destination..." };
             if(availablePoints.my_location.lat) {
                 routeData.from = { ...availablePoints.my_location };
@@ -819,7 +836,6 @@
             setActiveInput('to');
         }
 
-        // --- THE CRITICAL FIX: Only show data, no lines yet ---
         function openBottomSheet(store) {
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
@@ -827,13 +843,11 @@
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             document.getElementById('bs-dist').innerText = "---";
             
-            // Reset to pure info state
             document.getElementById('routing-section').style.display = 'none';
             let navBtn = document.getElementById('bs-nav-btn');
             navBtn.innerHTML = '🚗 Direction';
             navBtn.setAttribute('onclick', 'handleDirectionClick()');
 
-            // Prep the background data but DO NOT draw the line
             routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
             if (!routeData.from.lat && "geolocation" in navigator && routeData.from.name.includes("My Location")) {
                 navigator.geolocation.getCurrentPosition(p => {
@@ -845,24 +859,29 @@
 
             previewRouteLayer.clearLayers();
             clickedPinLayer.clearLayers();
+            
+            // Draw Glowing Ring Highlight around the selected store
+            highlightLayer.clearLayers();
+            const hIcon = L.divIcon({
+                className: 'store-highlight-ring',
+                iconSize: [60, 60], iconAnchor: [30, 30]
+            });
+            L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
 
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        // --- NEW: Toggle Direction/Start Drive logic ---
         function handleDirectionClick() {
             document.getElementById('routing-section').style.display = 'flex';
             let btn = document.getElementById('bs-nav-btn');
             btn.innerHTML = '🚗 Start Drive';
             btn.setAttribute('onclick', 'openNavModal()');
             
-            // NOW we draw the line
             updateRouteUI();
         }
 
         // --- MAP CLICK HANDLER (EMPTY MAP) ---
         map.on('click', function(e) { 
-            // Only capture clicks if the routing section is currently open
             if (document.getElementById('routing-section').style.display === 'flex' && activeInput) {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
@@ -928,7 +947,7 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
                 error: function(err) { 
-                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
+                    console.error("Fetch failed");
                     document.querySelectorAll('.checkbox-list').forEach(el => {
                         el.innerHTML = `
                         <div class="empty-state" style="color:var(--status-red); font-size:11px;">
@@ -963,8 +982,8 @@
                         return ""; 
                     };
 
-                    const latStr = clean(["Latitude", "Lat", "latitude", "lat"]);
-                    const lngStr = clean(["Longitude", "Lng", "longitude", "lng"]);
+                    const latStr = clean(["Latitude", "Lat"]);
+                    const lngStr = clean(["Longitude", "Lng"]);
                     const lat = parseFloat(latStr);
                     const lng = parseFloat(lngStr);
                     if (isNaN(lat) || isNaN(lng)) return; 
@@ -1017,7 +1036,6 @@
                 }
             });
 
-            // ALL CHECKBOXES START UNCHECKED
             buildSupervisorFilterList(); 
             buildChainFilterList(false);
             updateChampionDropdownScope(false); 
@@ -1029,7 +1047,6 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                // Unchecked by default
                 supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
@@ -1369,24 +1386,52 @@
                 iconSize: [46, 46], iconAnchor: [23, 23]
             });
         }
+        
+        // Custom Math helper for mapping territory
+        function getConvexHull(points) {
+            if (points.length < 3) return points;
+            points.sort((a, b) => a.lat === b.lat ? a.lng - b.lng : a.lat - b.lat);
+            const cross = (o, a, b) => (a.lng - o.lng) * (b.lat - o.lat) - (a.lat - o.lat) * (b.lng - o.lng);
+            const lower = [];
+            for (let i = 0; i < points.length; i++) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) lower.pop();
+                lower.push(points[i]);
+            }
+            const upper = [];
+            for (let i = points.length - 1; i >= 0; i--) {
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) upper.pop();
+                upper.push(points[i]);
+            }
+            upper.pop(); lower.pop();
+            return lower.concat(upper);
+        }
 
         function renderMap() {
             markerLayer.clearLayers(); 
+            territoryLayer.clearLayers();
+            highlightLayer.clearLayers();
+            
             const selectedSups = getCheckedValues('supervisor-list'); const selectedChains = getCheckedValues('chain-list');
             const selectedChamps = getCheckedValues('champion-list'); const noChampsSelected = selectedChamps.length === 0;
             let allBounds = []; 
+            let champPoints = [];
+            let champColor = '#FF5A00';
 
             parsedData.forEach(store => {
                 if (selectedSups.includes(store.supervisor) && selectedChains.includes(store.chainName)) {
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                         
+                        if (selectedChamps.length === 1 && selectedChamps[0] === store.championName) {
+                            champPoints.push({lat: store.lat, lng: store.lng});
+                            champColor = supColor;
+                        }
+                        
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
                         storeMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e); 
                             
-                            // If the routing UI is open, fill the box. Otherwise, just open info sheet.
                             if (document.getElementById('routing-section').style.display === 'flex') {
                                 let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
                                 if (activeInput === 'from') routeData.from = point;
@@ -1403,7 +1448,20 @@
                     }
                 }
             });
-            if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
+            
+            // --- NEW TERRITORY FEATURE ---
+            if (selectedChamps.length === 1 && champPoints.length > 0) {
+                if (champPoints.length >= 3) {
+                    const hull = getConvexHull(champPoints);
+                    const latlngs = hull.map(p => [p.lat, p.lng]);
+                    L.polygon(latlngs, {color: champColor, fillColor: champColor, fillOpacity: 0.2, weight: 2}).addTo(territoryLayer);
+                } else if (champPoints.length === 2) {
+                    L.polyline(champPoints.map(p => [p.lat, p.lng]), {color: champColor, weight: 3}).addTo(territoryLayer);
+                }
+                map.fitBounds(champPoints.map(p => [p.lat, p.lng]), { padding: [50, 50] });
+            } else if (allBounds.length > 0) {
+                map.fitBounds(allBounds, { padding: [50, 50] });
+            }
         }
         
         let searchTimeoutMap;
@@ -1436,7 +1494,6 @@
                                 
                                 let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
                                 
-                                // Only populate route if routing section is open
                                 if (document.getElementById('routing-section').style.display === 'flex') {
                                     if (activeInput === 'to') routeData.to = searchPoint;
                                     else if (activeInput === 'from') routeData.from = searchPoint;
