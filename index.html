@@ -82,17 +82,20 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
-        .database-status {
-            display: flex; align-items: center; gap: 12px;
-            background: #F8FAFC; border: 1px solid var(--border-color);
-            padding: 6px 14px; border-radius: 20px;
+        /* Current Date/Time Display */
+        .datetime-display {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-orange);
+            background: #FFF5F0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #FFDDCB;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.3px;
         }
-
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
-        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
-        
-        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .db-text strong { color: var(--text-dark); }
 
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
@@ -145,10 +148,23 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
+        /* --- FOOTER RESTORED TO MUTED GREY --- */
+        .app-footer { 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 10px; 
+            font-size: 10px; 
+            color: var(--text-muted); 
+            text-align: left; 
+            flex-shrink: 0;
+            margin-top: auto;
+            line-height: 1.4;
+        }
+        .app-footer strong { color: var(--text-dark); font-weight: 700; }
+
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; position: relative;}
-        #map { height: 100%; width: 100%; }
+        #map { height: 100%; width: 100%; cursor: grab;}
         
         /* --- MAP CONTROLS OVERLAY (MAIN MAP) --- */
         .map-search-wrapper {
@@ -203,21 +219,18 @@
         
         /* Talabat X Close Button */
         .sheet-close-btn {
-            position: absolute; top: 20px; right: 20px; width: 32px; height: 32px;
+            position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
+            font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
         
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
         /* Interactive Route Info Box (Dropdowns) */
-        .route-info-wrapper {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
-        }
+        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
         .route-info {
             background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
             display: flex; flex-direction: column; gap: 10px; flex-grow: 1;
@@ -225,7 +238,6 @@
         .route-row { display: flex; align-items: center; gap: 10px; position: relative;}
         .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px;}
         
-        /* Native Dropdowns Styled Cleanly */
         .route-select {
             width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-dark);
             font-family: 'Inter', sans-serif; appearance: none; outline: none; cursor: pointer;
@@ -237,7 +249,6 @@
             font-size: 10px; color: var(--text-muted); pointer-events: none;
         }
         
-        /* Swap Button */
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
             border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
@@ -299,6 +310,8 @@
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
         .custom-search-pin { display: flex; align-items: center; justify-content: center; }
+        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
+        .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
@@ -392,6 +405,7 @@
             .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
             .header-left { flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; }
             .tabs { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+            .datetime-display { align-self: flex-start; }
             .app-body { height: calc(100vh - 120px); }
             
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
@@ -437,6 +451,7 @@
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
+        <div id="live-datetime" class="datetime-display"></div>
     </div>
 
     <div class="app-body">
@@ -485,7 +500,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.27<br>
+                        LS Operations Optimizer v15.35<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -520,11 +535,11 @@
                         <div class="route-info">
                             <div class="route-row">
                                 <div class="route-label">From:</div>
-                                <select id="bs-route-from" class="route-select" onchange="updateRoutePreview()"></select>
+                                <select id="bs-route-from" class="route-select" onchange="handleRouteSelectChange('from')"></select>
                             </div>
                             <div class="route-row">
                                 <div class="route-label">To:</div>
-                                <select id="bs-route-to" class="route-select" onchange="updateRoutePreview()"></select>
+                                <select id="bs-route-to" class="route-select" onchange="handleRouteSelectChange('to')"></select>
                             </div>
                         </div>
                         <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
@@ -600,14 +615,28 @@
         const searchPinLayer = L.layerGroup().addTo(map);
         const staticPinLayer = L.layerGroup().addTo(map);
         const previewRouteLayer = L.layerGroup().addTo(map);
+        const clickedPinLayer = L.layerGroup().addTo(map); // Layer for "Click from map"
+
+        // --- CLOCK SCRIPT ---
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const dtElement = document.getElementById('live-datetime');
+            if(dtElement) dtElement.innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
 
         // --- GLOBAL POINTS DICTIONARY FOR ROUTING DROPDOWNS ---
         let availablePoints = {
             'my_location': { lat: null, lng: null, name: "My Location" },
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
-            'selected_store': null, // Populated dynamically on click
-            'searched_loc': null    // Populated dynamically on search
+            'selected_store': null, 
+            'searched_loc': null,
+            'clicked_loc': null
         };
+
+        let mapClickMode = null; // 'from' or 'to' tracking for "Click from map"
 
         // --- TALABAT OFFICE PIN (Interactive) ---
         const talabatOfficeIcon = L.divIcon({
@@ -620,6 +649,7 @@
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
         
         talabatMarker.on('click', (e) => {
+            if(mapClickMode) return; // Ignore if in click-select mode
             L.DomEvent.stopPropagation(e);
             map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
             // Treat Office like a store click for routing
@@ -680,14 +710,19 @@
             
             html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
             
+            // "Click from map" locked in perfectly as the 3rd option
+            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
+            
             if(availablePoints.selected_store) {
                 html += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
             }
             if(availablePoints.searched_loc) {
                 html += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
             }
+            if(availablePoints.clicked_loc) {
+                html += `<option value="clicked_loc">📌 Pinned Location</option>`;
+            }
 
-            // Save current selection to persist during re-renders
             const currentFrom = fromSelect.value;
             const currentTo = toSelect.value;
 
@@ -696,6 +731,25 @@
 
             if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
             if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
+        }
+
+        function handleRouteSelectChange(type) {
+            const selectId = type === 'from' ? 'bs-route-from' : 'bs-route-to';
+            const selectEl = document.getElementById(selectId);
+            
+            if (selectEl.value === 'click_map') {
+                mapClickMode = type;
+                document.getElementById('map').style.cursor = 'crosshair';
+                document.getElementById('bs-dist').innerText = "Waiting for tap...";
+                previewRouteLayer.clearLayers();
+                
+                // Hide the bottom sheet so the user has full view of the map to tap!
+                document.getElementById('bottom-sheet').classList.remove('active');
+            } else {
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                updateRoutePreview();
+            }
         }
 
         function updateRoutePreview() {
@@ -716,10 +770,19 @@
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
+                    
+                    // Put a pin at origin to make it visual
+                    const originIcon = L.divIcon({
+                        className: 'preview-origin-pin',
+                        html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                        iconSize: [24, 36], iconAnchor: [12, 36]
+                    });
+                    L.marker([fromPoint.lat, fromPoint.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + fromPoint.name);
+
                     map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
                 }
             } else {
-                document.getElementById('bs-dist').innerText = "GPS Required";
+                if(!mapClickMode) document.getElementById('bs-dist').innerText = "Select Origin/Dest";
             }
         }
 
@@ -727,6 +790,9 @@
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
+            // Ignore if currently in tap mode
+            if(mapClickMode) return;
+
             const temp = fromSelect.value;
             fromSelect.value = toSelect.value;
             toSelect.value = temp;
@@ -737,6 +803,9 @@
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
             previewRouteLayer.clearLayers();
+            clickedPinLayer.clearLayers();
+            mapClickMode = null;
+            document.getElementById('map').style.cursor = '';
         }
 
         function openBottomSheet(store) {
@@ -778,7 +847,37 @@
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        map.on('click', function() { closeBottomSheet(); });
+        // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
+        map.on('click', function(e) { 
+            if (mapClickMode) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
+                
+                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
+                
+                populateRouteDropdowns();
+                document.getElementById(selectId).value = 'clicked_loc';
+                
+                // Draw custom pin for clicked location
+                clickedPinLayer.clearLayers();
+                const icon = L.divIcon({
+                    className: 'custom-blue-teardrop',
+                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                    iconSize: [30, 45], iconAnchor: [15, 45]
+                });
+                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
+
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                
+                // Re-open the bottom sheet now that they tapped!
+                document.getElementById('bottom-sheet').classList.add('active');
+                
+                updateRoutePreview();
+            }
+        });
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
@@ -814,28 +913,21 @@
             closeBottomSheet();
         }
 
-        // --- INITIALIZATION & DATA FETCH ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData(); 
-        });
-
+        // --- DATA PROCESSING & FILTERING ---
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) {
-                    alert("Error loading CSV file. Please check the file path.");
-                }
+                error: function(err) { console.error("Error loading CSV file"); }
             });
         }
 
-        // --- GLOBALS & DATA PROCESSING ---
         let parsedData = [];
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
-        
+
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
@@ -875,22 +967,18 @@
                 let count = d.stores.length;
                 let o = d.totalOrders;
                 
-                if (count === 1) {
-                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
-                } 
-                else if (count > 5 || o >= 500) {
-                    d.status = 'Overloaded';
-                } 
-                else if (count === 5 || (o >= 400 && o < 500)) {
-                    d.status = 'Medium Load';
-                } 
+                if (count === 1) { d.status = (o < 200) ? 'Underutilized' : 'Optimal'; } 
+                else if (count > 5 || o >= 500) { d.status = 'Overloaded'; } 
+                else if (count === 5 || (o >= 400 && o < 500)) { d.status = 'Medium Load'; } 
                 else if (count < 5 && o < 400) {
                     if (count < 3 && o < 200) d.status = 'Underutilized';
                     else d.status = 'Optimal';
                 }
             });
 
-            buildSupervisorFilterList(); buildChainFilterList(true);
+            buildSupervisorFilterList(); 
+            buildChainFilterList(true);
+            updateChampionDropdownScope(true); // Ensures checkboxes check and dashboard renders on load!
         }
 
         // --- FILTER BUILDING ---
@@ -900,7 +988,7 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
+                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
 
@@ -927,10 +1015,10 @@
         }
 
         function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
-        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
-        function handleChainChange() { updateChampionDropdownScope(); }
+        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(false); }
+        function handleChainChange() { updateChampionDropdownScope(false); }
 
-        function updateChampionDropdownScope() {
+        function updateChampionDropdownScope(checkAll = false) {
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
             const previouslyCheckedChamps = getCheckedValues('champion-list');
@@ -947,7 +1035,7 @@
             });
 
             Object.keys(champStoreCounts).sort().forEach(champ => {
-                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                const isChecked = (checkAll || previouslyCheckedChamps.includes(champ)) ? 'checked' : '';
                 champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
             });
             renderDashboard();
@@ -1266,7 +1354,9 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
+                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
+                            if(mapClickMode) return; 
                             L.DomEvent.stopPropagation(e); 
                             map.setView([store.lat, store.lng], 14);
                             openBottomSheet(store);
@@ -1292,8 +1382,11 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        routeOrigin = { lat: lat, lng: lng, name: "My Location" };
                         availablePoints.my_location = { lat: lat, lng: lng, name: "My Location" };
+                        
+                        if(routeOrigin.name === "My Location") {
+                            routeOrigin.lat = lat; routeOrigin.lng = lng;
+                        }
 
                         searchInputMap.value = ""; 
                         searchPinLayer.clearLayers();
@@ -1352,6 +1445,7 @@
                                 routeOrigin = availablePoints.searched_loc;
                                 
                                 searchPinLayer.clearLayers();
+                                
                                 const searchIcon = L.divIcon({
                                     className: 'custom-teardrop',
                                     html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
