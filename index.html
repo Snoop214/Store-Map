@@ -54,6 +54,7 @@
         }
 
         .header-left { display: flex; align-items: center; gap: 40px; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
 
         .logo {
             color: var(--primary-orange);
@@ -82,17 +83,58 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
-        .database-status {
-            display: flex; align-items: center; gap: 12px;
-            background: #F8FAFC; border: 1px solid var(--border-color);
-            padding: 6px 14px; border-radius: 20px;
+        /* --- HEADER SEARCH BAR --- */
+        .header-search-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 320px;
         }
 
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
-        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
-        
-        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .db-text strong { color: var(--text-dark); }
+        .header-search-bar {
+            display: flex; gap: 8px; background: #F8FAFC; padding: 6px 12px;
+            border-radius: 8px; align-items: center; width: 100%; box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        .header-search-bar:focus-within {
+            border-color: var(--primary-orange);
+            background: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.1);
+        }
+
+        .header-search-input {
+            border: none; background: transparent; font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: none; color: var(--text-dark);
+        }
+
+        /* Search Dropdown Suggestions */
+        .suggestions-dropdown {
+            position: absolute; top: calc(100% + 8px); right: 0; width: 100%;
+            background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-height: 250px; overflow-y: auto; display: none; border: 1px solid var(--border-color); box-sizing: border-box; z-index: 3000;
+        }
+        .suggestion-item {
+            padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-color);
+            cursor: pointer; color: var(--text-dark); transition: background 0.2s; line-height: 1.4;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #FFF5F0; }
+
+        /* Current Date/Time Display */
+        .datetime-display {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-orange);
+            background: #FFF5F0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #FFDDCB;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
 
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
@@ -145,53 +187,30 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
+        .app-footer { 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 10px; 
+            font-size: 10px; 
+            color: var(--text-muted); 
+            text-align: left; 
+            flex-shrink: 0;
+            margin-top: auto;
+            line-height: 1.4;
+        }
+        .app-footer strong { color: var(--text-dark); font-weight: 700; }
+
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; position: relative;}
-        #map { height: 100%; width: 100%; }
-        
-        /* --- NEW FIXED ROUTING BOX AT TOP OF MAP --- */
-        .top-routing-box {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            background: white;
-            border-radius: 16px;
-            padding: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-        }
+        #map { height: 100%; width: 100%; cursor: grab;}
 
-        .route-info-wrapper {
-            display: flex; align-items: center; gap: 12px;
+        /* Instruction Toast */
+        #map-toast {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
+            font-size: 14px; font-weight: 700; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
         }
-        .route-info {
-            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; 
-            display: flex; flex-direction: column; gap: 10px; flex-grow: 1;
-        }
-        .route-row { display: flex; align-items: center; gap: 10px; position: relative;}
-        .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px;}
-        
-        .route-select {
-            width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-dark);
-            font-family: 'Inter', sans-serif; appearance: none; outline: none; cursor: pointer;
-            text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding-right: 15px;
-        }
-        .route-select:focus { color: var(--primary-orange); }
-        .route-row::after {
-            content: '▼'; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-            font-size: 10px; color: var(--text-muted); pointer-events: none;
-        }
-        
-        .swap-btn {
-            background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
-            border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0;
-        }
-        .swap-btn:hover { background: #E2E8F0; transform: scale(1.05); }
 
         /* --- TALABAT UI (BOTTOM SHEET OVERLAY) --- */
         .bottom-sheet {
@@ -204,17 +223,47 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
+        /* Talabat X Close Button */
         .sheet-close-btn {
-            position: absolute; top: 20px; right: 20px; width: 32px; height: 32px;
+            position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
+            font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
         
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
+        
+        /* Interactive Route Info Box (Dropdowns) */
+        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .route-info {
+            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
+            display: flex; flex-direction: column; gap: 10px; flex-grow: 1;
+        }
+        .route-row { display: flex; align-items: center; gap: 10px; position: relative;}
+        .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px;}
+        
+        .route-select {
+            width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-dark);
+            font-family: 'Inter', sans-serif; appearance: none; outline: none; cursor: pointer;
+            text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding-right: 15px;
+        }
+        .route-select:focus { color: var(--primary-orange); }
+        .route-select.waiting { color: var(--status-blue); animation: pulseText 1.5s infinite; }
+        @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
+        .route-row::after {
+            content: '▼'; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+            font-size: 10px; color: var(--text-muted); pointer-events: none;
+        }
+        
+        .swap-btn {
+            background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
+            border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0;
+        }
+        .swap-btn:hover { background: #E2E8F0; transform: scale(1.05); }
 
         .sheet-metrics {
             display: flex; justify-content: space-between; background: #FFFFFF; padding: 12px 16px; 
@@ -270,6 +319,8 @@
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
         .custom-search-pin { display: flex; align-items: center; justify-content: center; }
+        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
+        .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
@@ -358,17 +409,25 @@
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
 
+        /* --- File Upload Fallback UI --- */
+        .upload-btn-ui {
+            background: var(--primary-orange); color: white; padding: 8px 12px; border-radius: 6px; text-align: center;
+            font-weight: 700; cursor: pointer; display: block; margin-top: 10px; transition: 0.2s; border: none; width: 100%;
+        }
+        .upload-btn-ui:hover { background: var(--primary-orange-hover); }
+
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
             .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
             .header-left { flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; }
+            .header-right { width: 100%; flex-direction: column; align-items: stretch; gap: 12px;}
+            .header-search-wrapper { width: 100%; }
             .tabs { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+            .datetime-display { display: none; }
             .app-body { height: calc(100vh - 120px); }
             
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
-
-            .top-routing-box { width: 95%; top: 10px; }
 
             .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
 
@@ -407,6 +466,15 @@
                 <button class="tab-btn active" onclick="switchTab('map')">MAP VIEW</button>
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
+        </div>
+        <div class="header-right">
+            <div class="header-search-wrapper">
+                <div class="header-search-bar">
+                    <input type="text" id="mapSearchInput" class="header-search-input" placeholder="Search UAE location..." autocomplete="off">
+                </div>
+                <div id="search-suggestions" class="suggestions-dropdown"></div>
+            </div>
+            <div id="live-datetime" class="datetime-display"></div>
         </div>
     </div>
 
@@ -456,7 +524,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.27<br>
+                        LS Operations Optimizer v15.42<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -471,23 +539,9 @@
 
         <div class="main-content">
             
+            <div id="map-toast">👆 Tap map to select location</div>
+
             <div id="map-container">
-                
-                <div class="top-routing-box">
-                    <div class="route-info-wrapper">
-                        <div class="route-info">
-                            <div class="route-row">
-                                <div class="route-label">From:</div>
-                                <select id="bs-route-from" class="route-select" onchange="updateRoutePreview()"></select>
-                            </div>
-                            <div class="route-row">
-                                <div class="route-label">To:</div>
-                                <select id="bs-route-to" class="route-select" onchange="updateRoutePreview()"></select>
-                            </div>
-                        </div>
-                        <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
-                    </div>
-                </div>
                 
                 <div id="bottom-sheet" class="bottom-sheet">
                     <button class="sheet-close-btn" onclick="closeBottomSheet()">✕</button>
@@ -495,6 +549,20 @@
                     
                     <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
                     <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
+                    
+                    <div class="route-info-wrapper">
+                        <div class="route-info">
+                            <div class="route-row">
+                                <div class="route-label">From:</div>
+                                <select id="bs-route-from" class="route-select" onchange="handleRouteSelectChange('from')"></select>
+                            </div>
+                            <div class="route-row">
+                                <div class="route-label">To:</div>
+                                <select id="bs-route-to" class="route-select" onchange="handleRouteSelectChange('to')"></select>
+                            </div>
+                        </div>
+                        <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
+                    </div>
                     
                     <div class="sheet-metrics">
                         <div class="s-metric"><span>Champion</span><strong id="bs-champ">Name</strong></div>
@@ -566,16 +634,29 @@
         const searchPinLayer = L.layerGroup().addTo(map);
         const staticPinLayer = L.layerGroup().addTo(map);
         const previewRouteLayer = L.layerGroup().addTo(map);
+        const clickedPinLayer = L.layerGroup().addTo(map);
 
-        // --- GLOBAL POINTS DICTIONARY FOR ROUTING DROPDOWNS ---
+        // --- CLOCK SCRIPT ---
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const dtElement = document.getElementById('live-datetime');
+            if(dtElement) dtElement.innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // --- GLOBAL POINTS DICTIONARY (REMOVED MY LOCATION) ---
         let availablePoints = {
-            'my_location': { lat: null, lng: null, name: "My Location" },
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
             'selected_store': null, 
-            'searched_loc': null  
+            'searched_loc': null,
+            'clicked_loc': null
         };
 
-        // --- TALABAT OFFICE PIN (Interactive) ---
+        let mapClickMode = null; 
+
+        // --- TALABAT OFFICE PIN ---
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -586,25 +667,30 @@
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
         
         talabatMarker.on('click', (e) => {
-            L.DomEvent.stopPropagation(e);
-            map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
-            openBottomSheet({
-                locationName: availablePoints.talabat_office.name,
-                chainName: "Talabat HQ",
-                championName: "Corporate",
-                orders: 0,
-                lat: availablePoints.talabat_office.lat,
-                lng: availablePoints.talabat_office.lng
-            });
+            if (mapClickMode) {
+                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
+                populateRouteDropdowns();
+                document.getElementById(selectId).value = 'talabat_office';
+                document.getElementById(selectId).classList.remove('waiting');
+                
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                document.getElementById('bottom-sheet').classList.add('active');
+                document.getElementById('map-toast').style.display = 'none';
+                updateRoutePreview();
+            } else {
+                L.DomEvent.stopPropagation(e);
+                map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
+                openBottomSheet({
+                    locationName: availablePoints.talabat_office.name,
+                    chainName: "Talabat HQ",
+                    championName: "Corporate",
+                    orders: 0,
+                    lat: availablePoints.talabat_office.lat,
+                    lng: availablePoints.talabat_office.lng
+                });
+            }
         });
-
-        // Background GPS fetch
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(p => {
-                availablePoints.my_location.lat = p.coords.latitude;
-                availablePoints.my_location.lng = p.coords.longitude;
-            }, () => {});
-        }
 
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
@@ -637,11 +723,6 @@
             const toSelect = document.getElementById('bs-route-to');
             
             let html = '';
-            if(availablePoints.my_location.lat) {
-                html += `<option value="my_location">📍 My Location</option>`;
-            } else {
-                html += `<option value="my_location">📍 My Location (GPS Off)</option>`;
-            }
             
             html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
             
@@ -651,6 +732,11 @@
             if(availablePoints.searched_loc) {
                 html += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
             }
+            if(availablePoints.clicked_loc) {
+                html += `<option value="clicked_loc">📌 Pinned Location</option>`;
+            }
+            
+            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
 
             const currentFrom = fromSelect.value;
             const currentTo = toSelect.value;
@@ -660,6 +746,36 @@
 
             if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
             if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
+        }
+
+        function handleRouteSelectChange(type) {
+            const selectId = type === 'from' ? 'bs-route-from' : 'bs-route-to';
+            const selectEl = document.getElementById(selectId);
+            
+            if (selectEl.value === 'click_map') {
+                mapClickMode = type;
+                document.getElementById('map').style.cursor = 'crosshair';
+                selectEl.options[selectEl.selectedIndex].text = "Tap on map to select...";
+                selectEl.classList.add('waiting');
+                
+                previewRouteLayer.clearLayers();
+                document.getElementById('bs-dist').innerText = "Waiting for tap...";
+                
+                const toast = document.getElementById('map-toast');
+                toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
+                toast.style.display = 'flex';
+
+                // Hide bottom sheet to give user full view of map
+                document.getElementById('bottom-sheet').classList.remove('active');
+            } else {
+                if (mapClickMode === type) {
+                    mapClickMode = null;
+                    document.getElementById('map').style.cursor = '';
+                    selectEl.classList.remove('waiting');
+                    document.getElementById('map-toast').style.display = 'none';
+                }
+                updateRoutePreview();
+            }
         }
 
         function updateRoutePreview() {
@@ -678,10 +794,18 @@
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
+                    
+                    const originIcon = L.divIcon({
+                        className: 'preview-origin-pin',
+                        html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                        iconSize: [24, 36], iconAnchor: [12, 36]
+                    });
+                    L.marker([fromPoint.lat, fromPoint.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + fromPoint.name);
+
                     map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
                 }
             } else {
-                document.getElementById('bs-dist').innerText = "GPS Required";
+                if(!mapClickMode) document.getElementById('bs-dist').innerText = "Select Origin/Dest";
             }
         }
 
@@ -689,6 +813,8 @@
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
+            if(mapClickMode) return;
+
             const temp = fromSelect.value;
             fromSelect.value = toSelect.value;
             toSelect.value = temp;
@@ -699,6 +825,12 @@
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
             previewRouteLayer.clearLayers();
+            clickedPinLayer.clearLayers();
+            mapClickMode = null;
+            document.getElementById('map').style.cursor = '';
+            document.getElementById('bs-route-from').classList.remove('waiting');
+            document.getElementById('bs-route-to').classList.remove('waiting');
+            document.getElementById('map-toast').style.display = 'none';
         }
 
         function openBottomSheet(store) {
@@ -717,27 +849,47 @@
             if (availablePoints.searched_loc) {
                 fromSelect.value = "searched_loc";
             } else {
-                fromSelect.value = "my_location";
+                fromSelect.value = "talabat_office"; // Defaulted to Office instead of My Location
             }
             toSelect.value = "selected_store";
 
-            if (!availablePoints.my_location.lat && "geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(p => {
-                    availablePoints.my_location.lat = p.coords.latitude;
-                    availablePoints.my_location.lng = p.coords.longitude;
-                    populateRouteDropdowns(); 
-                    fromSelect.value = "my_location";
-                    toSelect.value = "selected_store";
-                    updateRoutePreview();
-                }, () => { updateRoutePreview(); });
-            } else {
-                updateRoutePreview();
-            }
-
+            updateRoutePreview();
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        map.on('click', function() { closeBottomSheet(); });
+        // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
+        map.on('click', function(e) { 
+            if (mapClickMode) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
+                
+                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
+                const selectEl = document.getElementById(selectId);
+                
+                populateRouteDropdowns();
+                selectEl.value = 'clicked_loc';
+                selectEl.classList.remove('waiting');
+                
+                clickedPinLayer.clearLayers();
+                const icon = L.divIcon({
+                    className: 'custom-blue-teardrop',
+                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                    iconSize: [30, 45], iconAnchor: [15, 45]
+                });
+                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
+
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                document.getElementById('map-toast').style.display = 'none';
+                
+                document.getElementById('bottom-sheet').classList.add('active');
+                updateRoutePreview();
+            } else {
+                closeBottomSheet(); 
+            }
+        });
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
@@ -773,86 +925,123 @@
             closeBottomSheet();
         }
 
-        // --- INITIALIZATION & DATA FETCH ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData(); 
-        });
+        // --- DATA PROCESSING & FILTERING ---
+        function handleLocalCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: function(results) { processSmartData(results.data); }
+            });
+        }
 
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) {
-                    alert("Error loading CSV file. Please check the file path.");
+                error: function(err) { 
+                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
+                    document.querySelectorAll('.checkbox-list').forEach(el => {
+                        el.innerHTML = `
+                        <div class="empty-state" style="color:var(--status-red); font-size:11px;">
+                            <b>Blocked by Browser</b><br>
+                            Please manually upload your data.csv file below to view data.<br><br>
+                            <input type="file" accept=".csv" style="width:100%;" onchange="handleLocalCSV(event)">
+                        </div>`;
+                    });
                 }
             });
         }
 
-        // --- GLOBALS & DATA PROCESSING ---
         let parsedData = [];
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
-        
+
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
             dataRows.forEach(row => {
-                const keys = Object.keys(row);
-                const clean = (ko) => { for (let k of ko) { let f = keys.find(x => x.trim()===k); if(f && row[f]) return row[f].trim(); } return ""; };
+                try {
+                    const keys = Object.keys(row);
+                    if (keys.length === 0) return;
 
-                const lat = parseFloat(clean(["Latitude", "Lat"]));
-                const lng = parseFloat(clean(["Longitude", "Lng"]));
-                if (isNaN(lat) || isNaN(lng)) return;
+                    const clean = (ko) => { 
+                        for (let k of ko) { 
+                            let f = keys.find(x => x && String(x).trim() === k); 
+                            if(f && row[f] !== undefined && row[f] !== null) return String(row[f]).trim(); 
+                        } 
+                        return ""; 
+                    };
 
-                const sup = clean(["Supervisor"]) || "Unknown";
-                const champ = clean(["Name", "Champion Name"]) || "Unknown";
-                const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
-                let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]) || row[keys[11]];
-                let dailyOrders = parseFloat(ordersStr); if(isNaN(dailyOrders)) dailyOrders = 100;
+                    const latStr = clean(["Latitude", "Lat", "latitude", "lat"]);
+                    const lngStr = clean(["Longitude", "Lng", "longitude", "lng"]);
+                    const lat = parseFloat(latStr);
+                    const lng = parseFloat(lngStr);
+                    if (isNaN(lat) || isNaN(lng)) return; 
 
-                if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
-                supervisorStats[sup].add(champ);
+                    const sup = clean(["Supervisor"]) || "Unknown";
+                    const champ = clean(["Name", "Champion Name"]) || "Unknown";
+                    const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
+                    
+                    let dailyOrders = 100;
+                    let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]);
+                    if (!ordersStr && keys.length > 11 && row[keys[11]]) ordersStr = String(row[keys[11]]).trim();
+                    if (ordersStr) {
+                        let pOrders = parseFloat(ordersStr);
+                        if (!isNaN(pOrders)) dailyOrders = pOrders;
+                    }
 
-                let locStr = row[keys[10]]; 
-                let finalLocationName = (locStr && locStr.trim() !== "") ? locStr.trim() : (clean(["Location", "Branch Loc", "Store Name"]) || "Store");
+                    let finalLocationName = clean(["Location", "Branch Loc", "Store Name", "Store"]) || "Store";
+                    if (keys.length > 10 && row[keys[10]]) {
+                        let kVal = String(row[keys[10]]).trim();
+                        if (kVal) finalLocationName = kVal;
+                    }
 
-                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
-                parsedData.push(storeObj);
+                    let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
+                    parsedData.push(storeObj);
 
-                if(!championUtilizationData[champ]) {
-                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                    if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
+                    supervisorStats[sup].add(champ);
+
+                    if(!championUtilizationData[champ]) {
+                        championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                    }
+                    championUtilizationData[champ].stores.push(storeObj);
+                    championUtilizationData[champ].totalOrders += dailyOrders;
+                } catch(e) {
+                    console.error("Safely caught row parse error:", e);
                 }
-                championUtilizationData[champ].stores.push(storeObj);
-                championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // Restore the AI Threshold Engine
+            if(parsedData.length === 0) {
+                document.querySelectorAll('.checkbox-list').forEach(el => {
+                    el.innerHTML = `<div class="empty-state" style="color:var(--status-red);"><b>No valid GPS data found.</b><br>Check CSV columns.</div>`;
+                });
+                return;
+            }
+
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
                 let o = d.totalOrders;
                 
-                if (count === 1) {
-                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
-                } 
-                else if (count > 5 || o >= 500) {
-                    d.status = 'Overloaded';
-                } 
-                else if (count === 5 || (o >= 400 && o < 500)) {
-                    d.status = 'Medium Load';
-                } 
+                if (count === 1) { d.status = (o < 200) ? 'Underutilized' : 'Optimal'; } 
+                else if (count > 5 || o >= 500) { d.status = 'Overloaded'; } 
+                else if (count === 5 || (o >= 400 && o < 500)) { d.status = 'Medium Load'; } 
                 else if (count < 5 && o < 400) {
                     if (count < 3 && o < 200) d.status = 'Underutilized';
                     else d.status = 'Optimal';
                 }
             });
 
-            buildSupervisorFilterList(); buildChainFilterList(true);
+            // CHECKBOXES DEFAULT TO FALSE (UNCHECKED) ON LOAD
+            buildSupervisorFilterList(); 
+            buildChainFilterList(false);
+            updateChampionDropdownScope(false); 
         }
 
-        // --- FILTER BUILDING ---
         function buildSupervisorFilterList() {
             const supList = document.getElementById('supervisor-list'); supList.innerHTML = '';
             let colorIndex = 0;
@@ -886,10 +1075,10 @@
         }
 
         function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
-        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
-        function handleChainChange() { updateChampionDropdownScope(); }
+        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(false); }
+        function handleChainChange() { updateChampionDropdownScope(false); }
 
-        function updateChampionDropdownScope() {
+        function updateChampionDropdownScope(checkAll = false) {
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
             const previouslyCheckedChamps = getCheckedValues('champion-list');
@@ -906,7 +1095,7 @@
             });
 
             Object.keys(champStoreCounts).sort().forEach(champ => {
-                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                const isChecked = (checkAll || previouslyCheckedChamps.includes(champ)) ? 'checked' : '';
                 champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
             });
             renderDashboard();
@@ -914,7 +1103,6 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
-        // --- FULLY RESTORED TABLE RENDERING ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
             tbody.innerHTML = '';
@@ -990,25 +1178,14 @@
                 subTableHTML += `</tbody></table></div>`;
                 subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
 
-                mainRow.onclick = () => {
-                    selectChampion(champ, mainRow);
-                };
+                mainRow.onclick = () => { selectChampion(champ, mainRow); };
 
                 let chevronBtn = mainRow.querySelector('.chevron-btn');
                 chevronBtn.onclick = (e) => {
-                    e.stopPropagation(); 
-                    selectChampion(champ, mainRow); 
-                    
+                    e.stopPropagation(); selectChampion(champ, mainRow); 
                     const isExpanded = subRow.style.display === 'table-row';
-                    
-                    document.querySelectorAll('.sub-row').forEach(r => {
-                        r.style.display = 'none';
-                        r.classList.remove('selected-sub');
-                    });
-                    document.querySelectorAll('.chevron-btn').forEach(btn => {
-                        btn.classList.remove('open');
-                    });
-                    
+                    document.querySelectorAll('.sub-row').forEach(r => { r.style.display = 'none'; r.classList.remove('selected-sub'); });
+                    document.querySelectorAll('.chevron-btn').forEach(btn => { btn.classList.remove('open'); });
                     if (!isExpanded) {
                         subRow.style.display = 'table-row';
                         subRow.classList.add('selected-sub');
@@ -1027,7 +1204,6 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // --- FULLY RESTORED AI SUGGESTION ENGINE ---
         function getNearestStoreData(targetLat, targetLng, targetChampStores) {
             let minDist = Infinity;
             let closestStore = null;
@@ -1227,8 +1403,16 @@
                         
                         storeMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e); 
-                            map.setView([store.lat, store.lng], 14);
-                            openBottomSheet(store);
+                            
+                            if (mapClickMode) {
+                                let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
+                                if (mapClickMode === 'from') routeData.from = point;
+                                if (mapClickMode === 'to') routeData.to = point;
+                                exitMapClickMode();
+                            } else {
+                                map.setView([store.lat, store.lng], 14);
+                                openBottomSheet(store);
+                            }
                         });
 
                         storeMarker.bindTooltip(store.championName, { permanent: true, direction: 'bottom', className: 'muted-champ-label', offset: [0, 16] });
@@ -1241,11 +1425,66 @@
         
         let searchTimeoutMap;
         const searchInputMap = document.getElementById('mapSearchInput');
-        if (searchInputMap) {
-            searchInputMap.addEventListener('input', function() {
-                // Kept safely disabled while search bar UI is hidden
-            });
-        }
+        const suggestionsBoxMap = document.getElementById('search-suggestions');
+
+        searchInputMap.addEventListener('input', function() {
+            clearTimeout(searchTimeoutMap);
+            const query = this.value.trim();
+            
+            if (!query) { 
+                suggestionsBoxMap.style.display = 'none'; 
+                return; 
+            }
+            
+            searchTimeoutMap = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ae`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBoxMap.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            let div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            let shortName = item.display_name.split(',').slice(0,3).join(', ');
+                            div.innerHTML = `<span class="suggestion-icon">📍</span> ${shortName}`;
+                            div.onclick = () => {
+                                searchInputMap.value = shortName;
+                                suggestionsBoxMap.style.display = 'none';
+                                
+                                let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
+                                
+                                if (mapClickMode === 'to') {
+                                    routeData.to = searchPoint;
+                                    exitMapClickMode();
+                                } else {
+                                    routeData.from = searchPoint;
+                                }
+                                
+                                searchPinLayer.clearLayers();
+                                
+                                const searchIcon = L.divIcon({
+                                    className: 'custom-teardrop',
+                                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                                    iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
+                                });
+
+                                L.marker([item.lat, item.lon], { icon: searchIcon })
+                                    .addTo(searchPinLayer)
+                                    .bindPopup(`<b>${shortName}</b>`);
+
+                                map.setView([item.lat, item.lon], 15);
+
+                                if (document.getElementById('bottom-sheet').classList.contains('active')) {
+                                    refreshRouteUI();
+                                }
+                            };
+                            suggestionsBoxMap.appendChild(div);
+                        });
+                        suggestionsBoxMap.style.display = 'block';
+                    }
+                });
+            }, 500); 
+        });
 
         document.addEventListener('DOMContentLoaded', () => { fetchHostedData(); });
     </script>
