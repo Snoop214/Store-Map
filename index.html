@@ -26,11 +26,6 @@
             --status-yellow: #F59E0B;
             --status-red: #EF4444;
             --status-blue: #3B82F6;
-            
-            --status-green-bg: #D1FAE5;
-            --status-yellow-bg: #FEF3C7;
-            --status-red-bg: #FEE2E2;
-            --status-blue-bg: #DBEAFE;
         }
 
         body {
@@ -58,7 +53,7 @@
             z-index: 2000;
         }
 
-        .header-left { display: flex; align-items: center; gap: 40px; }
+        .header-left { display: flex; align-items: center; gap: 40px; width: 100%; justify-content: space-between; }
 
         .logo {
             color: var(--primary-orange);
@@ -87,18 +82,6 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
-        .database-status {
-            display: flex; align-items: center; gap: 12px;
-            background: #F8FAFC; border: 1px solid var(--border-color);
-            padding: 6px 14px; border-radius: 20px;
-        }
-
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
-        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
-        
-        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .db-text strong { color: var(--text-dark); }
-
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
 
@@ -110,7 +93,7 @@
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex;
         }
 
-        .sidebar-container.collapsed { width: 35px; }
+        .sidebar-container.collapsed { width: 0px; }
         .sidebar-content-wrapper { width: 100%; height: 100%; overflow: hidden; }
 
         .sidebar-content {
@@ -168,7 +151,7 @@
 
         .map-search-input {
             border: none; background: #F8FAFC; padding: 10px 12px; border-radius: 6px;
-            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0;
+            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0; width: 100%;
         }
         .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
 
@@ -179,9 +162,10 @@
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
         
-        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE;}
+        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
         .pulse-loc-btn:hover { background: #EFF6FF !important; }
 
+        /* Search Dropdown Suggestions */
         .suggestions-dropdown {
             background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
@@ -205,6 +189,8 @@
         .bottom-sheet.active { bottom: 0; }
         
         .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 10px auto; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
+        .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;}
         
         .route-info {
             background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
@@ -354,6 +340,75 @@
             font-size: 9px !important; font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
+
+        /* --- RESPONSIVE MOBILE VIEW --- */
+        @media (max-width: 768px) {
+            .app-header {
+                height: auto;
+                padding: 12px;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .header-left {
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+                justify-content: center;
+            }
+            .logo {
+                font-size: 20px;
+                text-align: center;
+            }
+            .tabs {
+                width: 100%;
+                justify-content: center;
+            }
+            .app-body {
+                height: calc(100vh - 100px);
+            }
+            
+            /* Sidebar Overlays on Map for Mobile */
+            .sidebar-container {
+                position: absolute;
+                z-index: 3000;
+                height: 100%;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
+            }
+            .sidebar-content {
+                width: 280px; /* Slightly narrower on mobile */
+            }
+
+            /* Fix map search bar size on mobile */
+            .map-search-wrapper {
+                top: 10px;
+                right: 10px;
+                left: 50px; /* Make room for zoom controls if needed, or just let it float */
+                width: auto;
+                max-width: calc(100% - 20px);
+            }
+
+            /* Make Bottom Sheet full width on mobile */
+            .bottom-sheet {
+                width: 100%;
+                border-radius: 20px 20px 0 0;
+                padding: 20px;
+            }
+
+            /* Stack Data View elements */
+            #data-container {
+                padding: 12px;
+                overflow-y: auto; /* Allow full scrolling on mobile */
+            }
+            .data-panel-bottom {
+                flex-direction: column;
+                height: auto;
+                min-height: auto;
+            }
+            .profile-card, .suggestions-container {
+                flex: none;
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -386,16 +441,11 @@
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
-        <div class="database-status">
-            <div class="db-icon" id="db-icon"></div>
-            <div class="db-text" id="db-status-text">Database: <strong>Checking updates...</strong></div>
-        </div>
     </div>
 
     <div class="app-body">
         
-        <div class="sidebar-container" id="sidebar">
-            <div class="sidebar-content-wrapper">
+        <div class="sidebar-container collapsed" id="sidebar"> <div class="sidebar-content-wrapper">
                 <div class="sidebar-content">
                     
                     <div class="control-group">
@@ -438,7 +488,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.25<br>
+                        LS Operations Optimizer v15.28<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -535,10 +585,6 @@
     <script>
         // ====== ADMIN CONFIGURATION ======
         const CSV_FILE_PATH = "data.csv"; 
-        
-        // GITHUB API CONNECTION
-        const GITHUB_USERNAME = "Snoop214"; 
-        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
         // --- MAP INIT ---
@@ -581,6 +627,11 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
             setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+
+        // Show sidebar by default on desktop, hide on mobile
+        if (window.innerWidth > 768) {
+            document.getElementById('sidebar').classList.remove('collapsed');
         }
 
         // --- BOTTOM SHEET UI (MAP TAB) ---
@@ -646,7 +697,7 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -660,26 +711,16 @@
 
         // --- INITIALIZATION & DATA FETCH ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData(); fetchGitHubUpdateStatus();
+            fetchHostedData(); 
         });
-
-        function fetchGitHubUpdateStatus() {
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
-            fetch(apiUrl).then(r => r.json()).then(data => {
-                if (data && data.length > 0) {
-                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
-                    document.getElementById('db-icon').classList.add('live');
-                }
-            }).catch(e => {
-                document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
-                document.getElementById('db-icon').classList.add('live');
-            });
-        }
 
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); }
+                complete: function(results) { processSmartData(results.data); },
+                error: function(err) {
+                    alert("Error loading CSV file. Please check the file path.");
+                }
             });
         }
 
@@ -1115,6 +1156,7 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
+                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e); 
                             map.setView([store.lat, store.lng], 14);
@@ -1141,8 +1183,9 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
+                        // Update Route Origin
                         routeOrigin = { lat: lat, lng: lng, name: "My Location" };
-                        searchInputMap.value = ""; 
+                        searchInputMap.value = ""; // Clear search bar visually
                         
                         searchPinLayer.clearLayers();
                         const myLocIcon = L.divIcon({
@@ -1171,6 +1214,7 @@
             clearTimeout(searchTimeoutMap);
             const query = this.value.trim();
             
+            // If user deletes search, reset origin to My Location
             if (!query) { 
                 suggestionsBoxMap.style.display = 'none'; 
                 if ("geolocation" in navigator) {
@@ -1196,6 +1240,7 @@
                                 searchInputMap.value = shortName;
                                 suggestionsBoxMap.style.display = 'none';
                                 
+                                // Update Route Origin to Searched Location
                                 routeOrigin = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: shortName };
                                 
                                 searchPinLayer.clearLayers();
