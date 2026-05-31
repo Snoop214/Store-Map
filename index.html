@@ -278,19 +278,6 @@
 
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         
-        /* Glowing highlight ring for clicked stores */
-        .store-highlight-ring {
-            border-radius: 50%;
-            background: rgba(255, 90, 0, 0.2);
-            border: 2px solid var(--primary-orange);
-            animation: pulseRing 1.5s infinite ease-out;
-            pointer-events: none;
-        }
-        @keyframes pulseRing {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0; }
-        }
-
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container { display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden; }
         .data-panel-top { flex: 3; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
@@ -464,7 +451,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v2.14<br>
+                        LS Operations Optimizer v2.15<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -563,12 +550,10 @@
         const previewRouteLayer = L.layerGroup().addTo(map);
         
         const territoryLayer = L.layerGroup().addTo(map);
-        const highlightLayer = L.layerGroup().addTo(map);
 
         let currentPopup = null;
 
         map.on('popupclose', function() {
-            highlightLayer.clearLayers(); 
             mapClickMode = null;
             document.getElementById('map').style.cursor = '';
             document.getElementById('map-toast').style.display = 'none';
@@ -832,15 +817,7 @@
             .setLatLng([store.lat, store.lng])
             .setContent(popupContent)
             .openOn(map);
-            
-            highlightLayer.clearLayers();
-            const hIcon = L.divIcon({
-                className: 'store-highlight-ring',
-                iconSize: [60, 60], iconAnchor: [30, 30]
-            });
-            L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
         }
-
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
@@ -906,7 +883,10 @@
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
-        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+        
+        // NEW HIGH CONTRAST PALETTE
+        // Orange, Blue, Green, Purple, Pink, Cyan, Yellow, Teal
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4', '#EAB308', '#14B8A6'];
 
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
@@ -1152,6 +1132,176 @@
             });
         }
 
+        function getDistanceKM(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
+        }
+
+        function selectChampion(champName, rowElement) {
+            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
+
+            let d = championUtilizationData[champName];
+            let pCard = document.getElementById('profile-card');
+            
+            let statusIcon = '✓';
+            if(d.status === 'Underutilized') statusIcon = '↘';
+            if(d.status === 'Medium Load') statusIcon = '⚠️';
+            if(d.status === 'Overloaded') statusIcon = '🔥';
+
+            pCard.innerHTML = `
+                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
+                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
+                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
+                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
+                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
+            `;
+
+            let sWrapper = document.getElementById('suggestions-wrapper');
+            sWrapper.innerHTML = '';
+
+            try {
+                let candidates = [];
+
+                if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                    parsedData.forEach(store => {
+                        let ownerData = championUtilizationData[store.championName];
+                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                            let newCount = d.stores.length + 1;
+                            let newOrders = d.totalOrders + store.orders;
+                            
+                            if (newCount <= 5 && newOrders < 500) { 
+                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
+                                if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                    candidates.push({ 
+                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
+                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } 
+                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                    d.stores.forEach(store => {
+                        Object.keys(championUtilizationData).forEach(otherChampName => {
+                            let otherData = championUtilizationData[otherChampName];
+                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
+                                let newCount = otherData.stores.length + 1;
+                                let newOrders = otherData.totalOrders + store.orders;
+                                
+                                if (newCount <= 5 && newOrders < 500) { 
+                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                        candidates.push({ 
+                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
+                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+
+                candidates.sort((a, b) => a.distance - b.distance);
+
+                let uniqueCandidates = [];
+                let seenStores = new Set();
+                for (let c of candidates) {
+                    if (!seenStores.has(c.store.locationName)) {
+                        uniqueCandidates.push(c);
+                        seenStores.add(c.store.locationName);
+                    }
+                    if (uniqueCandidates.length >= 3) break;
+                }
+
+                if (uniqueCandidates.length === 0) {
+                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
+                    return;
+                }
+
+                uniqueCandidates.forEach((c, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    let mapId = `minimap-${index}`;
+                    
+                    if (c.type === 'take') {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    sWrapper.appendChild(card);
+
+                    setTimeout(() => {
+                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                        let storeLatLng = [c.store.lat, c.store.lng];
+                        let anchorLatLng = [c.anchorLat, c.anchorLng];
+
+                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
+                        L.circleMarker(anchorLatLng, {
+                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
+
+                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                    }, 50); 
+                });
+
+            } catch (err) {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
+            }
+        }
+
         // --- MAP RENDERING ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
@@ -1166,6 +1316,7 @@
             });
         }
         
+        // Custom Math helper for mapping territory
         function getConvexHull(points) {
             if (points.length < 3) return points;
             points.sort((a, b) => a.lat === b.lat ? a.lng - b.lng : a.lat - b.lat);
@@ -1187,7 +1338,6 @@
         function renderMap() {
             markerLayer.clearLayers(); 
             territoryLayer.clearLayers();
-            highlightLayer.clearLayers();
             
             const selectedSups = getCheckedValues('supervisor-list'); 
             const selectedChains = getCheckedValues('chain-list');
@@ -1198,8 +1348,7 @@
             }
 
             let allBounds = []; 
-            let champPoints = [];
-            let champColor = '#FF5A00';
+            let champGroups = {}; // Track territory per champion
 
             parsedData.forEach(store => {
                 const supMatch = selectedSups.length === 0 || selectedSups.includes(store.supervisor);
@@ -1209,9 +1358,11 @@
                 if (supMatch && chainMatch && champMatch) {
                     const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                     
-                    if (selectedChamps.length === 1 && selectedChamps[0] === store.championName) {
-                        champPoints.push({lat: store.lat, lng: store.lng});
-                        champColor = supColor;
+                    if (selectedChamps.length >= 1) {
+                        if (!champGroups[store.championName]) {
+                            champGroups[store.championName] = { points: [], color: supColor };
+                        }
+                        champGroups[store.championName].points.push({lat: store.lat, lng: store.lng});
                     }
                     
                     const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
@@ -1243,16 +1394,21 @@
                 }
             });
             
-            if (selectedChamps.length === 1 && champPoints.length > 0) {
-                if (champPoints.length >= 3) {
-                    const hull = getConvexHull(champPoints);
-                    const latlngs = hull.map(p => [p.lat, p.lng]);
-                    L.polygon(latlngs, {color: champColor, fillColor: champColor, fillOpacity: 0.2, weight: 2}).addTo(territoryLayer);
-                } else if (champPoints.length === 2) {
-                    L.polyline(champPoints.map(p => [p.lat, p.lng]), {color: champColor, weight: 3}).addTo(territoryLayer);
-                }
-                map.fitBounds(champPoints.map(p => [p.lat, p.lng]), { padding: [50, 50] });
-            } else if (allBounds.length > 0) {
+            // --- DRAW TERRITORY FOR ALL SELECTED CHAMPIONS ---
+            if (selectedChamps.length >= 1) {
+                Object.keys(champGroups).forEach(champName => {
+                    const group = champGroups[champName];
+                    if (group.points.length >= 3) {
+                        const hull = getConvexHull(group.points);
+                        const latlngs = hull.map(p => [p.lat, p.lng]);
+                        L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.25, weight: 2}).addTo(territoryLayer);
+                    } else if (group.points.length === 2) {
+                        L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3}).addTo(territoryLayer);
+                    }
+                });
+            }
+
+            if (allBounds.length > 0) {
                 map.fitBounds(allBounds, { padding: [50, 50] });
             }
         }
@@ -1287,28 +1443,31 @@
                                 
                                 let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
                                 
-                                if (mapClickMode) {
-                                    routeData[mapClickMode] = searchPoint;
-                                    
-                                    const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
-                                    document.getElementById(selectId).classList.remove('waiting');
+                                availablePoints.searched_loc = searchPoint;
+                                if (mapClickMode === 'to') {
+                                    routeData.to = searchPoint;
                                     
                                     mapClickMode = null;
                                     document.getElementById('map').style.cursor = '';
                                     document.getElementById('map-toast').style.display = 'none';
+                                    document.getElementById('header-route-to').classList.remove('waiting');
+                                    
+                                    populateHeaderDropdowns();
+                                    updateRouteMap();
+                                } else if (mapClickMode === 'from') {
+                                    routeData.from = searchPoint;
+                                    
+                                    mapClickMode = null;
+                                    document.getElementById('map').style.cursor = '';
+                                    document.getElementById('map-toast').style.display = 'none';
+                                    document.getElementById('header-route-from').classList.remove('waiting');
                                     
                                     populateHeaderDropdowns();
                                     updateRouteMap();
                                 } else {
-                                    searchPinLayer.clearLayers();
-                                    const searchIcon = L.divIcon({
-                                        className: 'custom-teardrop',
-                                        html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                                        iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
-                                    });
-
-                                    L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
-                                    map.setView([item.lat, item.lon], 15);
+                                    routeData.to = searchPoint;
+                                    populateHeaderDropdowns();
+                                    updateRouteMap();
                                 }
                             };
                             suggestionsBoxMap.appendChild(div);
