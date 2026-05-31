@@ -245,7 +245,7 @@
             cursor: pointer; transition: all 0.2s; text-align: left;
         }
         .app-btn:hover { border-color: var(--primary-orange); background: #FFF5F0; }
-        .app-btn img { width: 32px; height: 32px; border-radius: 8px;}
+        .app-btn img, .app-btn svg { width: 32px; height: 32px; border-radius: 8px;}
         .app-btn span { font-size: 16px; font-weight: 700; color: var(--text-dark); }
         
         .modal-close {
@@ -297,12 +297,12 @@
                 <p>Choose your preferred navigation app to get live traffic and voice directions.</p>
             </div>
             <div class="app-grid">
-                <button onclick="launchApp('gmaps')" class="app-btn">
+                <button onclick="launchApp('gmaps', event)" class="app-btn">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" alt="Google Maps" />
                     <span>Google Maps</span>
                 </button>
-                <button onclick="launchApp('twogis')" class="app-btn">
-                    <img src="https://play-lh.googleusercontent.com/1-hPxafOcmCEI6zCEqBN7zJhtNPcS-k5-lJj9EhdgqY2c1oA8L4m0-4E8HjNn6h2S1c=w240-h480-rw" alt="2GIS" />
+                <button onclick="launchApp('twogis', event)" class="app-btn">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#A4D826"/><path d="M8.5 15.5L12 8L15.5 15.5H8.5Z" fill="#FFFFFF"/></svg>
                     <span>2GIS Navigation</span>
                 </button>
             </div>
@@ -370,7 +370,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.22<br>
+                        LS Operations Optimizer v15.23<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -453,7 +453,6 @@
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(map);
         
         const markerLayer = L.layerGroup().addTo(map);
-        const routeLayer = L.layerGroup().addTo(map);
         const searchPinLayer = L.layerGroup().addTo(map);
 
         let userCurrentLatLng = null;
@@ -534,22 +533,59 @@
             document.getElementById('navAppModal').classList.remove('active');
         }
 
-        function launchApp(appType) {
+        function launchApp(appType, event) {
             if (!targetNavLat || !targetNavLng) return;
             
-            if (appType === 'gmaps') {
-                // Official Deep link: Forces Google Maps to route from "My Location" to the Destination
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
-                window.open(gmapsLink, '_blank');
-            } 
-            else if (appType === 'twogis') {
-                // 2GIS Web routing link. By leaving the first part empty before the '|', it uses "My Location"
-                const twogisLink = `https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`;
-                window.open(twogisLink, '_blank');
-            }
+            // Show loading state on the button
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span style="font-size: 14px; font-weight: 700; color: var(--primary-orange);">📍 Locating GPS...</span>`;
             
-            closeNavModal();
-            closeBottomSheet();
+            // Try to grab live location, then inject it into the URLs
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const startLat = position.coords.latitude;
+                        const startLng = position.coords.longitude;
+                        
+                        if (appType === 'gmaps') {
+                            const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                            window.open(gmapsLink, '_blank');
+                        } 
+                        else if (appType === 'twogis') {
+                            const twogisLink = `https://2gis.ae/dubai/directions/profile/car/points/${startLng},${startLat}|${targetNavLng},${targetNavLat}?traffic`;
+                            window.open(twogisLink, '_blank');
+                        }
+                        
+                        btn.innerHTML = originalHTML; // Restore button
+                        closeNavModal();
+                        closeBottomSheet();
+                    },
+                    function(error) {
+                        // Fallback: If user denied GPS, open the apps without starting coordinates
+                        if (appType === 'gmaps') {
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
+                        } 
+                        else if (appType === 'twogis') {
+                            window.open(`https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
+                        }
+                        btn.innerHTML = originalHTML;
+                        closeNavModal();
+                        closeBottomSheet();
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            } else {
+                // Total fallback if browser completely lacks geolocation
+                if (appType === 'gmaps') {
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
+                } else if (appType === 'twogis') {
+                    window.open(`https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
+                }
+                btn.innerHTML = originalHTML;
+                closeNavModal();
+                closeBottomSheet();
+            }
         }
 
         // --- INITIALIZATION & DATA FETCH ---
@@ -710,7 +746,7 @@
         }
 
         function renderMap() {
-            markerLayer.clearLayers(); routeLayer.clearLayers();
+            markerLayer.clearLayers(); 
             const selectedSups = getCheckedValues('supervisor-list'); const selectedChains = getCheckedValues('chain-list');
             const selectedChamps = getCheckedValues('champion-list'); const noChampsSelected = selectedChamps.length === 0;
             let allBounds = []; 
@@ -722,9 +758,9 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
-                        // Clicking a store pin opens the Bottom Sheet
+                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
-                            L.DomEvent.stopPropagation(e); // prevent map click from immediately closing it
+                            L.DomEvent.stopPropagation(e); 
                             map.setView([store.lat, store.lng], 14);
                             openBottomSheet(store);
                         });
