@@ -156,7 +156,6 @@
             text-align: left; 
             flex-shrink: 0;
             margin-top: auto;
-            line-height: 1.4;
         }
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
@@ -192,6 +191,14 @@
         .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
         .pulse-loc-btn:hover { background: #EFF6FF !important; }
 
+        /* Instruction Toast */
+        #map-toast {
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+            background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
+            font-size: 14px; font-weight: 700; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
+        }
+
         /* Search Dropdown Suggestions */
         .suggestions-dropdown {
             background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -218,39 +225,49 @@
         
         /* Talabat X Close Button */
         .sheet-close-btn {
-            position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
+            position: absolute; top: 20px; right: 20px; width: 32px; height: 32px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
+            font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-        
+
         .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
+        
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
-        /* Interactive Route Info Box (Dropdowns) */
-        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        /* New Native Talabat Routing UI */
+        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative;}
         .route-info {
-            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
-            display: flex; flex-direction: column; gap: 10px; flex-grow: 1;
+            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; 
+            display: flex; flex-direction: column; flex-grow: 1;
         }
-        .route-row { display: flex; align-items: center; gap: 10px; position: relative;}
-        .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px;}
         
-        .route-select {
-            width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-dark);
-            font-family: 'Inter', sans-serif; appearance: none; outline: none; cursor: pointer;
-            text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding-right: 15px;
-        }
-        .route-select:focus { color: var(--primary-orange); }
-        .route-select.waiting { color: var(--status-blue); animation: pulseText 1.5s infinite; }
-        @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        .route-field { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0;}
+        .route-field:hover .route-val { color: var(--primary-orange); }
+        .route-divider { height: 1px; background: #E2E8F0; margin: 4px 0; }
+        
+        .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px; flex-shrink: 0;}
+        .route-val { font-size: 14px; font-weight: 700; color: var(--text-dark); flex-grow: 1; transition: color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .route-edit-icon { font-size: 12px; color: var(--text-muted); }
 
-        .route-row::after {
-            content: '▼'; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-            font-size: 10px; color: var(--text-muted); pointer-events: none;
+        /* Custom Dropdown Menus */
+        .custom-dropdown {
+            display: none; position: absolute; left: 14px; width: calc(100% - 90px);
+            background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 3000; overflow: hidden;
         }
+        .custom-dropdown.active { display: block; animation: dropIn 0.2s ease; }
+        @keyframes dropIn { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
         
+        .dd-item { padding: 14px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
+        .dd-item:last-child { border-bottom: none; }
+        .dd-item:hover { background: #FFF5F0; color: var(--primary-orange); }
+        
+        #dd-from { top: 40px; }
+        #dd-to { top: 80px; }
+        
+        /* Swap Button */
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
             border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
@@ -402,13 +419,6 @@
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
 
-        /* --- File Upload Fallback UI --- */
-        .upload-btn-ui {
-            background: var(--primary-orange); color: white; padding: 8px 12px; border-radius: 6px; text-align: center;
-            font-weight: 700; cursor: pointer; display: block; margin-top: 10px; transition: 0.2s; border: none; width: 100%;
-        }
-        .upload-btn-ui:hover { background: var(--primary-orange-hover); }
-
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
             .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -509,7 +519,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.39<br>
+                        LS Operations Optimizer v15.40<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -524,6 +534,8 @@
 
         <div class="main-content">
             
+            <div id="map-toast">👆 Tap map to select location</div>
+
             <div id="map-container">
                 <div class="map-search-wrapper">
                     <div class="map-search-bar">
@@ -542,16 +554,29 @@
                     
                     <div class="route-info-wrapper">
                         <div class="route-info">
-                            <div class="route-row">
-                                <div class="route-label">From:</div>
-                                <select id="bs-route-from" class="route-select" onchange="handleRouteSelectChange('from')"></select>
+                            <div class="route-field" onclick="toggleDropdown('from', event)">
+                                <span class="route-label">From:</span>
+                                <span class="route-val" id="route-from-text">📍 My Location</span>
+                                <span class="route-edit-icon">✎</span>
                             </div>
-                            <div class="route-row">
-                                <div class="route-label">To:</div>
-                                <select id="bs-route-to" class="route-select" onchange="handleRouteSelectChange('to')"></select>
+                            <div class="route-divider"></div>
+                            <div class="route-field" onclick="toggleDropdown('to', event)">
+                                <span class="route-label">To:</span>
+                                <span class="route-val" id="route-to-text">Select Destination</span>
+                                <span class="route-edit-icon">✎</span>
                             </div>
                         </div>
                         <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
+
+                        <div id="dd-from" class="custom-dropdown">
+                            <div class="dd-item" onclick="selectRouteOption('from', 'my_location', event)">📍 My Location</div>
+                            <div class="dd-item" onclick="selectRouteOption('from', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
+                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('from', event)">📌 Select from map...</div>
+                        </div>
+                        <div id="dd-to" class="custom-dropdown">
+                            <div class="dd-item" onclick="selectRouteOption('to', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
+                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('to', event)">📌 Select from map...</div>
+                        </div>
                     </div>
                     
                     <div class="sheet-metrics">
@@ -560,7 +585,7 @@
                         <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">Calc...</strong></div>
                     </div>
                     
-                    <button id="bs-nav-btn" class="btn-massive">🚗 Start Drive</button>
+                    <button id="bs-nav-btn" class="btn-massive" onclick="openNavModal()">🚗 Start Drive</button>
                 </div>
 
                 <div id="map"></div>
@@ -636,16 +661,66 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-        // --- GLOBAL POINTS DICTIONARY ---
+        // --- GLOBAL POINTS DICTIONARY FOR ROUTING ---
         let availablePoints = {
-            'my_location': { lat: null, lng: null, name: "My Location" },
-            'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
-            'selected_store': null, 
-            'searched_loc': null,
-            'clicked_loc': null
+            'my_location': { lat: null, lng: null, name: "📍 My Location" },
+            'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Dubai Office" }
+        };
+
+        let routeData = {
+            from: { lat: null, lng: null, name: "📍 My Location" },
+            to: { lat: null, lng: null, name: "Select Destination" }
         };
 
         let mapClickMode = null; 
+
+        // --- CUSTOM DROPDOWN LOGIC ---
+        function toggleDropdown(type, event) {
+            event.stopPropagation();
+            document.getElementById('dd-from').classList.remove('active');
+            document.getElementById('dd-to').classList.remove('active');
+            document.getElementById(`dd-${type}`).classList.add('active');
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('dd-from').classList.remove('active');
+            document.getElementById('dd-to').classList.remove('active');
+        });
+
+        function selectRouteOption(type, option, event) {
+            event.stopPropagation();
+            document.getElementById(`dd-${type}`).classList.remove('active');
+
+            if (option === 'my_location' && availablePoints.my_location.lat) {
+                if (type === 'from') routeData.from = availablePoints.my_location;
+                if (type === 'to') routeData.to = availablePoints.my_location;
+            } else if (option === 'talabat_office') {
+                if (type === 'from') routeData.from = availablePoints.talabat_office;
+                if (type === 'to') routeData.to = availablePoints.talabat_office;
+            }
+            refreshRouteUI();
+        }
+
+        function triggerMapSelect(type, event) {
+            event.stopPropagation();
+            document.getElementById(`dd-${type}`).classList.remove('active');
+            mapClickMode = type;
+            
+            document.getElementById('bottom-sheet').classList.remove('active');
+            document.getElementById('map').style.cursor = 'crosshair';
+            
+            const toast = document.getElementById('map-toast');
+            toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
+            toast.style.display = 'flex';
+        }
+
+        function exitMapClickMode() {
+            mapClickMode = null;
+            document.getElementById('map').style.cursor = '';
+            document.getElementById('map-toast').style.display = 'none';
+            document.getElementById('bottom-sheet').classList.add('active');
+            refreshRouteUI();
+        }
 
         // --- TALABAT OFFICE PIN ---
         const talabatOfficeIcon = L.divIcon({
@@ -659,21 +734,15 @@
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-
+            
             if (mapClickMode) {
-                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
-                populateRouteDropdowns();
-                document.getElementById(selectId).value = 'talabat_office';
-                document.getElementById(selectId).classList.remove('waiting');
-                
-                mapClickMode = null;
-                document.getElementById('map').style.cursor = '';
-                document.getElementById('bottom-sheet').classList.add('active');
-                updateRoutePreview();
+                if (mapClickMode === 'from') routeData.from = availablePoints.talabat_office;
+                if (mapClickMode === 'to') routeData.to = availablePoints.talabat_office;
+                exitMapClickMode();
             } else {
                 map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
                 openBottomSheet({
-                    locationName: availablePoints.talabat_office.name,
+                    locationName: "Talabat Dubai Office",
                     chainName: "Talabat HQ",
                     championName: "Corporate",
                     orders: 0,
@@ -687,6 +756,7 @@
             navigator.geolocation.getCurrentPosition(p => {
                 availablePoints.my_location.lat = p.coords.latitude;
                 availablePoints.my_location.lng = p.coords.longitude;
+                if(routeData.from.name === "📍 My Location") routeData.from = { ...availablePoints.my_location };
             }, () => {});
         }
 
@@ -712,76 +782,22 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
+
         if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
 
-        // --- BOTTOM SHEET ROUTING ---
-        function populateRouteDropdowns() {
-            const fromSelect = document.getElementById('bs-route-from');
-            const toSelect = document.getElementById('bs-route-to');
-            
-            let fromHtml = '';
-            fromHtml += `<option value="my_location">📍 Current Location</option>`;
-            fromHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
-            if(availablePoints.selected_store) fromHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
-            if(availablePoints.clicked_loc) fromHtml += `<option value="clicked_loc">📌 Pinned Location</option>`;
-            fromHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
-
-            let toHtml = '';
-            toHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
-            if(availablePoints.selected_store) toHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
-            if(availablePoints.clicked_loc) toHtml += `<option value="clicked_loc">📌 Pinned Location</option>`;
-            toHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
-
-            const currentFrom = fromSelect.value;
-            const currentTo = toSelect.value;
-
-            fromSelect.innerHTML = fromHtml;
-            toSelect.innerHTML = toHtml;
-
-            if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
-            if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
-        }
-
-        function handleRouteSelectChange(type) {
-            const selectId = type === 'from' ? 'bs-route-from' : 'bs-route-to';
-            const selectEl = document.getElementById(selectId);
-            
-            if (selectEl.value === 'click_map') {
-                mapClickMode = type;
-                document.getElementById('map').style.cursor = 'crosshair';
-                selectEl.options[selectEl.selectedIndex].text = "Tap on map to select...";
-                selectEl.classList.add('waiting');
-                
-                previewRouteLayer.clearLayers();
-                document.getElementById('bs-dist').innerText = "Waiting for tap...";
-                
-                // Hide bottom sheet to give user full view of map
-                document.getElementById('bottom-sheet').classList.remove('active');
-            } else {
-                if (mapClickMode === type) {
-                    mapClickMode = null;
-                    document.getElementById('map').style.cursor = '';
-                    selectEl.classList.remove('waiting');
-                }
-                updateRoutePreview();
-            }
-        }
-
-        function updateRoutePreview() {
-            const fromKey = document.getElementById('bs-route-from').value;
-            const toKey = document.getElementById('bs-route-to').value;
-            
-            const fromPoint = availablePoints[fromKey];
-            const toPoint = availablePoints[toKey];
+        // --- NATIVE ROUTING PREVIEW ---
+        function refreshRouteUI() {
+            document.getElementById('route-from-text').innerText = routeData.from.name;
+            document.getElementById('route-to-text').innerText = routeData.to.name;
 
             previewRouteLayer.clearLayers();
 
-            if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
-                let distKM = getDistanceKM(fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng);
+            if (routeData.from.lat && routeData.to.lat) {
+                let distKM = getDistanceKM(routeData.from.lat, routeData.from.lng, routeData.to.lat, routeData.to.lng);
                 document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
 
                 if(distKM > 0) {
-                    const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
+                    const latlngs = [ [routeData.from.lat, routeData.from.lng], [routeData.to.lat, routeData.to.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
                     
                     const originIcon = L.divIcon({
@@ -789,93 +805,63 @@
                         html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
                         iconSize: [24, 36], iconAnchor: [12, 36]
                     });
-                    L.marker([fromPoint.lat, fromPoint.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + fromPoint.name);
+                    L.marker([routeData.from.lat, routeData.from.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + routeData.from.name);
 
                     map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
                 }
             } else {
-                if(!mapClickMode) document.getElementById('bs-dist').innerText = "Select Origin/Dest";
+                document.getElementById('bs-dist').innerText = "Select Loc";
             }
         }
 
         function swapRoute() {
-            const fromSelect = document.getElementById('bs-route-from');
-            const toSelect = document.getElementById('bs-route-to');
-            
             if(mapClickMode) return;
-
-            const temp = fromSelect.value;
-            fromSelect.value = toSelect.value;
-            toSelect.value = temp;
-
-            updateRoutePreview();
+            const temp = { ...routeData.from };
+            routeData.from = { ...routeData.to };
+            routeData.to = temp;
+            refreshRouteUI();
         }
 
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
             previewRouteLayer.clearLayers();
             clickedPinLayer.clearLayers();
-            mapClickMode = null;
-            document.getElementById('map').style.cursor = '';
-            document.getElementById('bs-route-from').classList.remove('waiting');
-            document.getElementById('bs-route-to').classList.remove('waiting');
+            if(mapClickMode) exitMapClickMode();
         }
 
         function openBottomSheet(store) {
-            availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
-
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             
-            populateRouteDropdowns();
-            
-            const fromSelect = document.getElementById('bs-route-from');
-            const toSelect = document.getElementById('bs-route-to');
-            
-            if (availablePoints.searched_loc) {
-                fromSelect.value = "searched_loc";
-            } else {
-                fromSelect.value = "my_location";
-            }
-            toSelect.value = "selected_store";
+            // Auto Set 'To' field as clicked store
+            routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
 
-            if (!availablePoints.my_location.lat && "geolocation" in navigator) {
+            if (!routeData.from.lat && "geolocation" in navigator && routeData.from.name.includes("My Location")) {
                 navigator.geolocation.getCurrentPosition(p => {
                     availablePoints.my_location.lat = p.coords.latitude;
                     availablePoints.my_location.lng = p.coords.longitude;
-                    populateRouteDropdowns(); 
-                    fromSelect.value = "my_location";
-                    toSelect.value = "selected_store";
-                    updateRoutePreview();
-                }, () => { updateRoutePreview(); });
+                    routeData.from = { ...availablePoints.my_location };
+                    refreshRouteUI();
+                }, () => { refreshRouteUI(); });
             } else {
-                updateRoutePreview();
+                refreshRouteUI();
             }
 
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
+        // --- MAP CLICK HANDLER (EMPTY MAP) ---
         map.on('click', function(e) { 
             if (mapClickMode) {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
-                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
+                let newPoint = { lat: lat, lng: lng, name: "📌 Pinned Location" };
                 
-                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
-                
-                // Reset sheet UI to reflect generic pin if they click empty map
-                document.getElementById('bs-store-name').innerText = "Pinned Location";
-                document.getElementById('bs-chain-name').innerText = "Custom Drop";
-                document.getElementById('bs-champ').innerText = "N/A";
-                document.getElementById('bs-orders').innerText = "0";
-
-                populateRouteDropdowns();
-                document.getElementById(selectId).value = 'clicked_loc';
-                document.getElementById(selectId).classList.remove('waiting');
+                if (mapClickMode === 'from') routeData.from = newPoint;
+                if (mapClickMode === 'to') routeData.to = newPoint;
                 
                 clickedPinLayer.clearLayers();
                 const icon = L.divIcon({
@@ -885,11 +871,7 @@
                 });
                 L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
 
-                mapClickMode = null;
-                document.getElementById('map').style.cursor = '';
-                
-                document.getElementById('bottom-sheet').classList.add('active');
-                updateRoutePreview();
+                exitMapClickMode();
             } else {
                 closeBottomSheet(); 
             }
@@ -905,23 +887,22 @@
         }
 
         function launchApp(appType, event) {
-            const fromKey = document.getElementById('bs-route-from').value;
-            const toKey = document.getElementById('bs-route-to').value;
-            
-            const fromPoint = availablePoints[fromKey];
-            const toPoint = availablePoints[toKey];
-
-            if (!fromPoint || !fromPoint.lat || !toPoint || !toPoint.lat) {
+            if (!routeData.from.lat || !routeData.to.lat) {
                 alert("Valid Starting and Ending locations are required.");
                 return;
             }
 
+            const startLat = routeData.from.lat;
+            const startLng = routeData.from.lng;
+            const destLat = routeData.to.lat;
+            const destLng = routeData.to.lng;
+
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{fromPoint.lat},${fromPoint.lng}&destination=${toPoint.lat},${toPoint.lng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
-                const twogisLink = `https://2gis.ae/dubai/directions/points/${fromPoint.lng},${fromPoint.lat}|${toPoint.lng},${toPoint.lat}?traffic`;
+                const twogisLink = `https://2gis.ae/dubai/directions/points/${startLng},${startLat}|${destLng},${destLat}?traffic`;
                 window.open(twogisLink, '_blank');
             }
             
@@ -930,30 +911,11 @@
         }
 
         // --- DATA PROCESSING & FILTERING ---
-        function handleLocalCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); }
-            });
-        }
-
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { 
-                    console.error("Fetch failed.");
-                    document.querySelectorAll('.checkbox-list').forEach(el => {
-                        el.innerHTML = `
-                        <div class="empty-state" style="color:var(--status-red); font-size:11px;">
-                            <b>Blocked by Browser</b><br>
-                            Please manually upload your data.csv file below to view data.<br><br>
-                            <input type="file" accept=".csv" style="width:100%;" onchange="handleLocalCSV(event)">
-                        </div>`;
-                    });
-                }
+                error: function(err) { console.error("Error loading CSV"); }
             });
         }
 
@@ -1014,17 +976,10 @@
                     }
                     championUtilizationData[champ].stores.push(storeObj);
                     championUtilizationData[champ].totalOrders += dailyOrders;
-                } catch(e) {
-                    console.error("Safely caught row parse error:", e);
-                }
+                } catch(e) { }
             });
 
-            if(parsedData.length === 0) {
-                document.querySelectorAll('.checkbox-list').forEach(el => {
-                    el.innerHTML = `<div class="empty-state" style="color:var(--status-red);"><b>No valid GPS data found.</b><br>Check CSV columns.</div>`;
-                });
-                return;
-            }
+            if(parsedData.length === 0) return;
 
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
@@ -1040,9 +995,10 @@
                 }
             });
 
+            // ALL CHECKBOXES START UNCHECKED!
             buildSupervisorFilterList(); 
-            buildChainFilterList(true);
-            updateChampionDropdownScope(true); 
+            buildChainFilterList(false);
+            updateChampionDropdownScope(false); 
         }
 
         function buildSupervisorFilterList() {
@@ -1051,7 +1007,8 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
+                // Unchecked by default
+                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
 
@@ -1112,16 +1069,6 @@
             
             let activeChamps = getCheckedValues('champion-list');
             
-            if(activeChamps.length === 0) {
-                let tempSet = new Set();
-                const selectedSups = getCheckedValues('supervisor-list');
-                const selectedChains = getCheckedValues('chain-list');
-                parsedData.forEach(d => {
-                    if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName);
-                });
-                activeChamps = Array.from(tempSet);
-            }
-
             if(activeChamps.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
                 return;
@@ -1408,22 +1355,10 @@
                             L.DomEvent.stopPropagation(e); 
                             
                             if (mapClickMode) {
-                                availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
-                                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
-                                
-                                document.getElementById('bs-store-name').innerText = store.locationName;
-                                document.getElementById('bs-chain-name').innerText = store.chainName;
-                                document.getElementById('bs-champ').innerText = store.championName;
-                                document.getElementById('bs-orders').innerText = Math.round(store.orders);
-
-                                populateRouteDropdowns();
-                                document.getElementById(selectId).value = 'selected_store';
-                                document.getElementById(selectId).classList.remove('waiting');
-                                
-                                mapClickMode = null;
-                                document.getElementById('map').style.cursor = '';
-                                document.getElementById('bottom-sheet').classList.add('active');
-                                updateRoutePreview();
+                                let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
+                                if (mapClickMode === 'from') routeData.from = point;
+                                if (mapClickMode === 'to') routeData.to = point;
+                                exitMapClickMode();
                             } else {
                                 map.setView([store.lat, store.lng], 14);
                                 openBottomSheet(store);
@@ -1450,7 +1385,8 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        availablePoints.my_location = { lat: lat, lng: lng, name: "My Location" };
+                        availablePoints.my_location = { lat: lat, lng: lng, name: "📍 My Location" };
+                        if(routeData.from.name === "📍 My Location") routeData.from = { ...availablePoints.my_location };
 
                         searchInputMap.value = ""; 
                         searchPinLayer.clearLayers();
@@ -1468,8 +1404,7 @@
                         map.setView([lat, lng], 14);
 
                         if (document.getElementById('bottom-sheet').classList.contains('active')) {
-                            populateRouteDropdowns();
-                            updateRoutePreview();
+                            refreshRouteUI();
                         }
                     },
                     function(error) {
@@ -1505,7 +1440,14 @@
                                 searchInputMap.value = shortName;
                                 suggestionsBoxMap.style.display = 'none';
                                 
-                                availablePoints.searched_loc = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: shortName };
+                                let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
+                                
+                                if (mapClickMode === 'to') {
+                                    routeData.to = searchPoint;
+                                    exitMapClickMode();
+                                } else {
+                                    routeData.from = searchPoint;
+                                }
                                 
                                 searchPinLayer.clearLayers();
                                 
@@ -1522,9 +1464,7 @@
                                 map.setView([item.lat, item.lon], 15);
 
                                 if (document.getElementById('bottom-sheet').classList.contains('active')) {
-                                    populateRouteDropdowns();
-                                    document.getElementById('bs-route-from').value = "searched_loc";
-                                    updateRoutePreview();
+                                    refreshRouteUI();
                                 }
                             };
                             suggestionsBoxMap.appendChild(div);
@@ -1533,44 +1473,6 @@
                     }
                 });
             }, 500); 
-        });
-
-        // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
-        map.on('click', function(e) { 
-            if (mapClickMode) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-                
-                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
-                
-                const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
-                
-                // Reset sheet UI to reflect generic pin if they click empty map
-                document.getElementById('bs-store-name').innerText = "Pinned Location";
-                document.getElementById('bs-chain-name').innerText = "Custom Drop";
-                document.getElementById('bs-champ').innerText = "N/A";
-                document.getElementById('bs-orders').innerText = "0";
-
-                populateRouteDropdowns();
-                document.getElementById(selectId).value = 'clicked_loc';
-                document.getElementById(selectId).classList.remove('waiting');
-                
-                clickedPinLayer.clearLayers();
-                const icon = L.divIcon({
-                    className: 'custom-blue-teardrop',
-                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                    iconSize: [30, 45], iconAnchor: [15, 45]
-                });
-                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
-
-                mapClickMode = null;
-                document.getElementById('map').style.cursor = '';
-                
-                document.getElementById('bottom-sheet').classList.add('active');
-                updateRoutePreview();
-            } else {
-                closeBottomSheet(); 
-            }
         });
 
         document.addEventListener('DOMContentLoaded', () => { fetchHostedData(); });
