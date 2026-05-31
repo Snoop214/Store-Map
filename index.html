@@ -148,6 +148,7 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
+        /* Restored small muted footer */
         .app-footer { 
             border-top: 1px solid var(--border-color); 
             padding-top: 10px; 
@@ -501,7 +502,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.35<br>
+                        LS Operations Optimizer v15.36<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -653,6 +654,7 @@
             if(mapClickMode) return; // Ignore if in click-select mode
             L.DomEvent.stopPropagation(e);
             map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
+            // Treat Office like a store click for routing
             openBottomSheet({
                 locationName: availablePoints.talabat_office.name,
                 chainName: "Talabat HQ",
@@ -710,6 +712,9 @@
             
             html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
             
+            // "Click from map" locked in as the 3rd option
+            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
+            
             if(availablePoints.selected_store) {
                 html += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
             }
@@ -717,10 +722,8 @@
                 html += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
             }
             if(availablePoints.clicked_loc) {
-                html += `<option value="clicked_loc">📌 Map Selection</option>`;
+                html += `<option value="clicked_loc">📌 Pinned Location</option>`;
             }
-            
-            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
 
             const currentFrom = fromSelect.value;
             const currentTo = toSelect.value;
@@ -745,9 +748,11 @@
                 previewRouteLayer.clearLayers();
                 document.getElementById('bs-dist').innerText = "Waiting for tap...";
             } else {
-                mapClickMode = null;
-                document.getElementById('map').style.cursor = '';
-                selectEl.classList.remove('waiting');
+                if (mapClickMode === type) {
+                    mapClickMode = null;
+                    document.getElementById('map').style.cursor = '';
+                    selectEl.classList.remove('waiting');
+                }
                 updateRoutePreview();
             }
         }
@@ -762,13 +767,16 @@
             previewRouteLayer.clearLayers();
 
             if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
+                // Calculate distance
                 let distKM = getDistanceKM(fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng);
                 document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
 
+                // Draw Preview Line
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
                     
+                    // Put a pin at origin to make it visual
                     const originIcon = L.divIcon({
                         className: 'preview-origin-pin',
                         html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
@@ -779,7 +787,9 @@
                     map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
                 }
             } else {
-                document.getElementById('bs-dist').innerText = "Select Origin/Dest";
+                if(!mapClickMode) {
+                    document.getElementById('bs-dist').innerText = "Select Origin/Dest";
+                }
             }
         }
 
@@ -787,6 +797,7 @@
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
+            // Ignore if currently in tap mode
             if(mapClickMode) return;
 
             const temp = fromSelect.value;
@@ -807,6 +818,7 @@
         }
 
         function openBottomSheet(store) {
+            // Register this store globally so dropdowns can use it
             availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
 
             document.getElementById('bs-store-name').innerText = store.locationName;
@@ -816,6 +828,7 @@
             
             populateRouteDropdowns();
             
+            // Set defaults: From = My Location (or searched), To = Selected Store
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
@@ -826,11 +839,12 @@
             }
             toSelect.value = "selected_store";
 
+            // If GPS isn't locked yet, try to grab it
             if (!availablePoints.my_location.lat && "geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(p => {
                     availablePoints.my_location.lat = p.coords.latitude;
                     availablePoints.my_location.lng = p.coords.longitude;
-                    populateRouteDropdowns(); 
+                    populateRouteDropdowns(); // Re-populate to remove "(GPS Off)" text
                     fromSelect.value = "my_location";
                     toSelect.value = "selected_store";
                     updateRoutePreview();
@@ -848,7 +862,7 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
-                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Map Selection" };
+                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
                 
                 const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
                 const selectEl = document.getElementById(selectId);
@@ -857,13 +871,14 @@
                 selectEl.value = 'clicked_loc';
                 selectEl.classList.remove('waiting');
                 
+                // Draw custom pin for clicked location
                 clickedPinLayer.clearLayers();
                 const icon = L.divIcon({
                     className: 'custom-blue-teardrop',
                     html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
                     iconSize: [30, 45], iconAnchor: [15, 45]
                 });
-                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Map Selection").openTooltip();
+                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
 
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
@@ -895,7 +910,7 @@
             }
 
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${fromPoint.lat},${fromPoint.lng}&destination=${toPoint.lat},${toPoint.lng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{fromPoint.lat},${fromPoint.lng}&destination=${toPoint.lat},${toPoint.lng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -912,7 +927,7 @@
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { alert("Error loading CSV file"); }
+                error: function(err) { console.error("Error loading CSV file"); alert("Error loading CSV file");}
             });
         }
 
@@ -941,7 +956,7 @@
                 if (!ordersStr && keys.length > 11) ordersStr = row[keys[11]];
                 let dailyOrders = parseFloat(ordersStr); if(isNaN(dailyOrders)) dailyOrders = 100;
 
-                // REVERTED to stable logic to fix the loading bug!
+                // STABLE LOGIC for Store Name
                 let finalLocationName = clean(["Location", "Branch Loc", "Store Name"]) || "Store";
 
                 let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
@@ -960,9 +975,15 @@
                 let count = d.stores.length;
                 let o = d.totalOrders;
                 
-                if (count === 1) { d.status = (o < 200) ? 'Underutilized' : 'Optimal'; } 
-                else if (count > 5 || o >= 500) { d.status = 'Overloaded'; } 
-                else if (count === 5 || (o >= 400 && o < 500)) { d.status = 'Medium Load'; } 
+                if (count === 1) {
+                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
+                } 
+                else if (count > 5 || o >= 500) {
+                    d.status = 'Overloaded';
+                } 
+                else if (count === 5 || (o >= 400 && o < 500)) {
+                    d.status = 'Medium Load';
+                } 
                 else if (count < 5 && o < 400) {
                     if (count < 3 && o < 200) d.status = 'Underutilized';
                     else d.status = 'Optimal';
@@ -981,7 +1002,6 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                // Checked by default
                 supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
@@ -1348,7 +1368,6 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
-                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
                             if(mapClickMode) return; 
                             L.DomEvent.stopPropagation(e); 
