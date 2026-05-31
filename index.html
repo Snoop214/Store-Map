@@ -429,7 +429,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.46<br>
+                        LS Operations Optimizer v15.47<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -485,7 +485,7 @@
                                 </tr>
                             </thead>
                             <tbody id="utilization-tbody">
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -539,28 +539,19 @@
             document.getElementById('map-toast').style.display = 'none';
         });
 
-        // --- CLOCK SCRIPT ---
-        function updateDateTime() {
-            const now = new Date();
-            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            const dtElement = document.getElementById('live-datetime');
-            if(dtElement) dtElement.innerText = now.toLocaleDateString('en-US', options);
-        }
-        setInterval(updateDateTime, 1000);
-        updateDateTime();
-
         // --- ROUTING STATE ---
         let availablePoints = {
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Office" },
             'my_location': { lat: null, lng: null, name: "📍 My Location" },
             'selected_store': null, 
             'searched_loc': null,
-            'clicked_loc': null
+            'clicked_loc_from': null,
+            'clicked_loc_to': null
         };
 
         let routeData = {
             from: availablePoints.talabat_office,
-            to: null
+            to: { lat: null, lng: null, name: "" }
         };
 
         let mapClickMode = null; 
@@ -578,30 +569,44 @@
             const fromSelect = document.getElementById('header-route-from');
             const toSelect = document.getElementById('header-route-to');
             
-            let html = '';
+            // Build FROM Dropdown
+            let fromHtml = '';
             if(availablePoints.my_location.lat) {
-                html += `<option value="my_location">📍 My Location</option>`;
+                fromHtml += `<option value="my_location">📍 My Location</option>`;
             } else {
-                html += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
+                fromHtml += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
             }
-            html += `<option value="talabat_office">🏢 Talabat Office</option>`;
-            
+            fromHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
             if(availablePoints.selected_store) {
-                html += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
+                fromHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
             }
             if(availablePoints.searched_loc) {
-                html += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
+                fromHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
             }
-            if(availablePoints.clicked_loc) {
-                html += `<option value="clicked_loc">📌 Pinned Location</option>`;
+            if(availablePoints.clicked_loc_from) {
+                fromHtml += `<option value="clicked_loc_from">📌 Pinned Location</option>`;
             }
-            html += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
+            fromHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
+
+            // Build TO Dropdown
+            let toHtml = `<option value="" disabled hidden>Choose...</option>`;
+            toHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
+            if(availablePoints.selected_store) {
+                toHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
+            }
+            if(availablePoints.searched_loc) {
+                toHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
+            }
+            if(availablePoints.clicked_loc_to) {
+                toHtml += `<option value="clicked_loc_to">📌 Pinned Location</option>`;
+            }
+            toHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
 
             const currentFrom = fromSelect.value || 'talabat_office';
             const currentTo = toSelect.value || '';
 
-            fromSelect.innerHTML = html;
-            toSelect.innerHTML = `<option value="" disabled hidden>Choose...</option>` + html;
+            fromSelect.innerHTML = fromHtml;
+            toSelect.innerHTML = toHtml;
 
             if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
             if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
@@ -635,12 +640,13 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
-                availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
-                routeData[mapClickMode] = availablePoints.clicked_loc;
+                const locKey = mapClickMode === 'from' ? 'clicked_loc_from' : 'clicked_loc_to';
+                availablePoints[locKey] = { lat: lat, lng: lng, name: "Pinned Location" };
+                routeData[mapClickMode] = availablePoints[locKey];
                 
                 populateHeaderDropdowns();
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
-                document.getElementById(selectId).value = 'clicked_loc';
+                document.getElementById(selectId).value = locKey;
                 document.getElementById(selectId).classList.remove('waiting');
                 
                 clickedPinLayer.clearLayers();
@@ -656,7 +662,6 @@
                 document.getElementById('map-toast').style.display = 'none';
             } 
         });
-
 
         // --- TALABAT OFFICE PIN ---
         const talabatOfficeIcon = L.divIcon({
@@ -695,7 +700,6 @@
             }
         });
 
-
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -723,7 +727,6 @@
 
         // --- CLEAN POPUP LOGIC ---
         function openStorePopup(store) {
-            // Update Texts inside Template
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
             document.getElementById('bs-champ').innerText = store.championName;
@@ -757,7 +760,6 @@
             L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
         }
 
-
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
             if (!routeData.from || !routeData.from.lat || !routeData.to || !routeData.to.lat) {
@@ -778,7 +780,7 @@
             const destLng = routeData.to.lng;
 
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -805,7 +807,7 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
                 error: function(err) { 
-                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
+                    console.error("Fetch failed");
                     document.querySelectorAll('.checkbox-list').forEach(el => {
                         el.innerHTML = `
                         <div class="empty-state" style="color:var(--status-red); font-size:11px;">
@@ -899,7 +901,7 @@
             
             // EXACT REQUIREMENT: Supervisors UNCHECKED, Chains CHECKED, Champions UNCHECKED
             buildSupervisorFilterList(); 
-            buildChainFilterList(true);
+            buildChainFilterList(false);
             updateChampionDropdownScope(false); 
         }
 
@@ -1195,6 +1197,9 @@
                                     (from their ${c.anchorStoreName} store)
                                 </div>
                             </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                            </div>
                         `;
                     } else {
                         card.innerHTML = `
@@ -1211,6 +1216,9 @@
                                 <div style="font-size:10px; color:var(--text-muted); text-align:right;">
                                     (from their ${c.anchorStoreName} store)
                                 </div>
+                            </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
                             </div>
                         `;
                     }
@@ -1310,10 +1318,10 @@
                         
                         if (mapClickMode) {
                             let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-                            if (mapClickMode === 'from') routeData.from = point;
-                            if (mapClickMode === 'to') routeData.to = point;
                             
+                            routeData[mapClickMode] = point;
                             populateHeaderDropdowns();
+                            
                             const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
                             document.getElementById(selectId).value = 'selected_store';
 
