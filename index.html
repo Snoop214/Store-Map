@@ -502,7 +502,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.33<br>
+                        LS Operations Optimizer v15.34<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -922,7 +922,7 @@
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { console.error("Error loading CSV file"); }
+                error: function(err) { console.error("Error loading CSV file"); alert("Error loading CSV file");}
             });
         }
 
@@ -976,7 +976,7 @@
 
             buildSupervisorFilterList(); 
             buildChainFilterList(true);
-            updateChampionDropdownScope(true); // Ensures checkboxes check and dashboard renders on load!
+            updateChampionDropdownScope(true); // <--- FIX FOR "LOADING DATA..."
         }
 
         // --- FILTER BUILDING ---
@@ -986,7 +986,6 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                // Checked by default
                 supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
@@ -1353,7 +1352,6 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
-                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
                             if(mapClickMode) return; 
                             L.DomEvent.stopPropagation(e); 
