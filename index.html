@@ -310,8 +310,10 @@
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
+        .custom-search-pin { display: flex; align-items: center; justify-content: center; }
         .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
+        .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -499,7 +501,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.31<br>
+                        LS Operations Optimizer v15.32<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -651,6 +653,7 @@
             if(mapClickMode) return; // Ignore if in click-select mode
             L.DomEvent.stopPropagation(e);
             map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
+            // Treat Office like a store click for routing
             openBottomSheet({
                 locationName: availablePoints.talabat_office.name,
                 chainName: "Talabat HQ",
@@ -691,6 +694,7 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
+
         if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
 
         // --- INTERACTIVE BOTTOM SHEET ROUTING ---
@@ -759,9 +763,11 @@
             previewRouteLayer.clearLayers();
 
             if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
+                // Calculate distance
                 let distKM = getDistanceKM(fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng);
                 document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
 
+                // Draw Preview Line
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
@@ -816,6 +822,7 @@
             
             populateRouteDropdowns();
             
+            // Set defaults: From = My Location (or searched), To = Selected Store
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
@@ -826,11 +833,12 @@
             }
             toSelect.value = "selected_store";
 
+            // If GPS isn't locked yet, try to grab it
             if (!availablePoints.my_location.lat && "geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(p => {
                     availablePoints.my_location.lat = p.coords.latitude;
                     availablePoints.my_location.lng = p.coords.longitude;
-                    populateRouteDropdowns(); 
+                    populateRouteDropdowns(); // Re-populate to remove "(GPS Off)" text
                     fromSelect.value = "my_location";
                     toSelect.value = "selected_store";
                     updateRoutePreview();
@@ -965,7 +973,9 @@
                 }
             });
 
-            buildSupervisorFilterList(); buildChainFilterList(true);
+            buildSupervisorFilterList(); 
+            buildChainFilterList(true);
+            updateChampionDropdownScope(true); // <--- ENSURES CHAMPIONS CHECKED BY DEFAULT ON LOAD
         }
 
         // --- FILTER BUILDING ---
@@ -975,7 +985,8 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
+                // Checkboxes are checked by default now so data displays automatically
+                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
 
@@ -1002,10 +1013,10 @@
         }
 
         function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
-        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
-        function handleChainChange() { updateChampionDropdownScope(); }
+        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(false); }
+        function handleChainChange() { updateChampionDropdownScope(false); }
 
-        function updateChampionDropdownScope() {
+        function updateChampionDropdownScope(checkAll = false) {
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
             const previouslyCheckedChamps = getCheckedValues('champion-list');
@@ -1022,7 +1033,7 @@
             });
 
             Object.keys(champStoreCounts).sort().forEach(champ => {
-                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                const isChecked = (checkAll || previouslyCheckedChamps.includes(champ)) ? 'checked' : '';
                 champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
             });
             renderDashboard();
