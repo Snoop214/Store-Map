@@ -175,6 +175,7 @@
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
 
+        /* Search Dropdown Suggestions */
         .suggestions-dropdown {
             background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
@@ -319,11 +320,11 @@
             </div>
             <div class="app-grid">
                 <button onclick="launchApp('gmaps')" class="app-btn">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#34A853"/></svg>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" alt="Google Maps" />
                     <span>Google Maps</span>
                 </button>
                 <button onclick="launchApp('twogis')" class="app-btn">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#A4D826"/><path d="M8.5 15.5L12 8L15.5 15.5H8.5Z" fill="#FFFFFF"/></svg>
+                    <img src="https://play-lh.googleusercontent.com/1-hPxafOcmCEI6zCEqBN7zJhtNPcS-k5-lJj9EhdgqY2c1oA8L4m0-4E8HjNn6h2S1c=w240-h480-rw" alt="2GIS" />
                     <span>2GIS Navigation</span>
                 </button>
             </div>
@@ -392,7 +393,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.20<br>
+                        LS Operations Optimizer v15.21<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -503,13 +504,6 @@
         let targetNavLat = null;
         let targetNavLng = null;
 
-        // --- GLOBALS ---
-        let parsedData = [];
-        let supervisorStats = {}; 
-        let supervisorColors = {}; 
-        let championUtilizationData = {};
-        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
-
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -599,7 +593,7 @@
             }
             document.getElementById('bs-dist').innerText = distText;
 
-            // Preview the route on the map
+            // Preview the route visually on map before leaving app
             previewRoute(store.lat, store.lng);
 
             // Hook up the Start Drive button to launch the Modal
@@ -617,7 +611,6 @@
                     userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
                     const destLatLng = L.latLng(destLat, destLng);
 
-                    // Draws the route preview but hides instructions
                     currentRoutingControl = L.Routing.control({
                         waypoints: [userCurrentLatLng, destLatLng],
                         routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: true,
@@ -670,18 +663,46 @@
         function launchApp(appType) {
             if (!targetNavLat || !targetNavLng) return;
             
-            if (appType === 'gmaps') {
-                // Opens Google Maps directly into Driving Navigation from Current Location
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
-                window.open(gmapsLink, '_blank');
-            } 
-            else if (appType === 'twogis') {
-                // 2GIS uses Longitude, Latitude order. This universal link prompts the app to open.
-                const twogisLink = `https://2gis.ae/routeSearch/rsType/car/to/${targetNavLng},${targetNavLat}`;
-                window.open(twogisLink, '_blank');
+            // Try to get live location to pass into the Deep Links
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const startLat = position.coords.latitude;
+                        const startLng = position.coords.longitude;
+                        
+                        if (appType === 'gmaps') {
+                            const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                            window.open(gmapsLink, '_blank');
+                        } 
+                        else if (appType === 'twogis') {
+                            // Official 2GIS Routing URL format (StartLng,StartLat|DestLng,DestLat)
+                            const twogisLink = `https://2gis.ae/dubai/directions/profile/car/points/${startLng},${startLat}|${targetNavLng},${targetNavLat}?traffic`;
+                            window.open(twogisLink, '_blank');
+                        }
+                        closeNavModal();
+                    },
+                    function(error) {
+                        // Fallback if GPS fails - let the apps auto-determine start point
+                        if (appType === 'gmaps') {
+                            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                            window.open(gmapsLink, '_blank');
+                        } 
+                        else if (appType === 'twogis') {
+                            const twogisLink = `https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`;
+                            window.open(twogisLink, '_blank');
+                        }
+                        closeNavModal();
+                    }
+                );
+            } else {
+                // If browser has absolutely no geolocation support
+                if (appType === 'gmaps') {
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
+                } else if (appType === 'twogis') {
+                    window.open(`https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
+                }
+                closeNavModal();
             }
-            
-            closeNavModal();
         }
 
         // --- INITIALIZATION & DATA FETCH ---
@@ -709,6 +730,8 @@
             });
         }
 
+        // --- GLOBALS & DATA PROCESSING ---
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
