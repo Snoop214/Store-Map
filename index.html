@@ -278,6 +278,19 @@
 
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         
+        /* Glowing highlight ring for clicked stores */
+        .store-highlight-ring {
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.2);
+            border: 2px solid var(--primary-orange);
+            animation: pulseRing 1.5s infinite ease-out;
+            pointer-events: none;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container { display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden; }
         .data-panel-top { flex: 3; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
@@ -736,6 +749,15 @@
         });
 
         // --- TALABAT OFFICE PIN ---
+        const talabatOfficeStore = {
+            locationName: "🏢 Talabat Office",
+            chainName: "Talabat HQ",
+            championName: "Corporate",
+            orders: 0,
+            lat: 25.2092164334059,
+            lng: 55.26127999999603
+        };
+
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -748,7 +770,7 @@
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-
+            
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
@@ -819,6 +841,7 @@
             L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
         }
 
+
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
             if (!routeData.from || !routeData.from.lat || !routeData.to || !routeData.to.lat) {
@@ -866,7 +889,7 @@
         let championUtilizationData = {};
         let championColors = {};
         
-        // High Contrast Palette
+        // Expanded High-Contrast Palette
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4', '#EAB308', '#14B8A6', '#F43F5E', '#84CC16', '#6366F1', '#D946EF', '#F97316', '#0EA5E9'];
 
         function processSmartData(dataRows) {
@@ -939,7 +962,7 @@
                 }
             });
 
-            // Assign highly distinct colors to champions dynamically
+            // Assign unique colors to champions for territory heatmaps
             let cIdx = 0;
             Object.keys(championUtilizationData).sort().forEach(c => {
                 championColors[c] = colorPalette[cIdx % colorPalette.length];
@@ -1015,8 +1038,43 @@
             renderDashboard();
         }
 
-        function updateProfileCardView(selectedSups) {
+        function renderDashboard() { renderMap(); renderTable(); }
+
+        function renderTable() {
+            const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            const selectedSups = getCheckedValues('supervisor-list');
+            const selectedChains = getCheckedValues('chain-list');
+            let activeChamps = getCheckedValues('champion-list');
+            
             let pCard = document.getElementById('profile-card');
+
+            if (selectedSups.length === 0 && selectedChains.length === 0 && activeChamps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Please select a filter to view data.</td></tr>`;
+                pCard.innerHTML = `
+                    <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                    <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
+                `;
+                return;
+            }
+
+            if(activeChamps.length === 0) {
+                let tempSet = new Set();
+                parsedData.forEach(d => {
+                    const supMatch = selectedSups.length === 0 || selectedSups.includes(d.supervisor);
+                    const chainMatch = selectedChains.length === 0 || selectedChains.includes(d.chainName);
+                    if (supMatch && chainMatch) tempSet.add(d.championName);
+                });
+                activeChamps = Array.from(tempSet);
+            }
+
+            if(activeChamps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
+                return;
+            }
+
+            // --- SUPERVISOR PROFILE DETAIL VIEW ---
             if (selectedSups.length === 1 && getCheckedValues('champion-list').length === 0) {
                 let sup = selectedSups[0];
                 let champsCount = supervisorStats[sup] ? supervisorStats[sup].size : 0;
@@ -1034,44 +1092,11 @@
                     <div class="metric-row"><span class="metric-label">Total Store Count:</span><span class="metric-val">${storesCount}</span></div>
                     <div class="metric-row"><span class="metric-label">Total Daily Orders:</span><span class="metric-val">${Math.round(totalOrders)}</span></div>
                 `;
-            } else if (getCheckedValues('champion-list').length === 0) {
+            } else {
                 pCard.innerHTML = `
-                    <h3><span id="p-icon">👤</span> Profile</h3>
-                    <div class="empty-state" style="padding-top:20px;">Select a Champion from the table or a single Supervisor from the filters to view metrics.</div>
+                    <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                    <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
                 `;
-            }
-        }
-
-        function renderDashboard() { renderMap(); renderTable(); }
-
-        function renderTable() {
-            const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            const selectedSups = getCheckedValues('supervisor-list');
-            const selectedChains = getCheckedValues('chain-list');
-            let activeChamps = getCheckedValues('champion-list');
-            
-            updateProfileCardView(selectedSups);
-
-            if (selectedSups.length === 0 && selectedChains.length === 0 && activeChamps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Please select a filter to view data.</td></tr>`;
-                return;
-            }
-
-            if(activeChamps.length === 0) {
-                let tempSet = new Set();
-                parsedData.forEach(d => {
-                    const supMatch = selectedSups.length === 0 || selectedSups.includes(d.supervisor);
-                    const chainMatch = selectedChains.length === 0 || selectedChains.includes(d.chainName);
-                    if (supMatch && chainMatch) tempSet.add(d.championName);
-                });
-                activeChamps = Array.from(tempSet);
-            }
-
-            if(activeChamps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
-                return;
             }
 
             activeChamps.forEach(champ => {
@@ -1148,22 +1173,224 @@
             });
         }
 
+        function getDistanceKM(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
+        }
+
+        function selectChampion(champName, rowElement) {
+            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
+
+            let d = championUtilizationData[champName];
+            let pCard = document.getElementById('profile-card');
+            
+            let statusIcon = '✓';
+            if(d.status === 'Underutilized') statusIcon = '↘';
+            if(d.status === 'Medium Load') statusIcon = '⚠️';
+            if(d.status === 'Overloaded') statusIcon = '🔥';
+
+            pCard.innerHTML = `
+                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
+                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
+                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
+                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
+                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
+            `;
+
+            let sWrapper = document.getElementById('suggestions-wrapper');
+            sWrapper.innerHTML = '';
+
+            try {
+                let candidates = [];
+
+                if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                    parsedData.forEach(store => {
+                        let ownerData = championUtilizationData[store.championName];
+                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                            let newCount = d.stores.length + 1;
+                            let newOrders = d.totalOrders + store.orders;
+                            
+                            if (newCount <= 5 && newOrders < 500) { 
+                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
+                                if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                    candidates.push({ 
+                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
+                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } 
+                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                    d.stores.forEach(store => {
+                        Object.keys(championUtilizationData).forEach(otherChampName => {
+                            let otherData = championUtilizationData[otherChampName];
+                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
+                                let newCount = otherData.stores.length + 1;
+                                let newOrders = otherData.totalOrders + store.orders;
+                                
+                                if (newCount <= 5 && newOrders < 500) { 
+                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                        candidates.push({ 
+                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
+                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+
+                candidates.sort((a, b) => a.distance - b.distance);
+
+                let uniqueCandidates = [];
+                let seenStores = new Set();
+                for (let c of candidates) {
+                    if (!seenStores.has(c.store.locationName)) {
+                        uniqueCandidates.push(c);
+                        seenStores.add(c.store.locationName);
+                    }
+                    if (uniqueCandidates.length >= 3) break;
+                }
+
+                if (uniqueCandidates.length === 0) {
+                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
+                    return;
+                }
+
+                uniqueCandidates.forEach((c, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    let mapId = `minimap-${index}`;
+                    
+                    if (c.type === 'take') {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    sWrapper.appendChild(card);
+
+                    setTimeout(() => {
+                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                        let storeLatLng = [c.store.lat, c.store.lng];
+                        let anchorLatLng = [c.anchorLat, c.anchorLng];
+
+                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
+                        L.circleMarker(anchorLatLng, {
+                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
+
+                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                    }, 50); 
+                });
+
+            } catch (err) {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
+            }
+        }
+
+        // --- MAP RENDERING ---
+        function getCustomIcon(chainName, supervisorColor) {
+            const lowerChain = chainName.toLowerCase();
+            let brandBgColor = "#E2E8F0"; let brandTextColor = "#475569";
+            if (lowerChain.includes("carrefour")) { brandBgColor = "#DCE9F9"; brandTextColor = "#0054A6"; } 
+            else if (lowerChain.includes("lulu")) { brandBgColor = "#D5EEDD"; brandTextColor = "#007B3A"; } 
+            else if (lowerChain.includes("viva")) { brandBgColor = "#FAD2D8"; brandTextColor = "#B71234"; } 
+            return L.divIcon({
+                className: 'brand-solid-marker',
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; line-height: 1.1;">${chainName.trim().toUpperCase()}</div>`,
+                iconSize: [46, 46], iconAnchor: [23, 23]
+            });
+        }
+        
+        function getConvexHull(points) {
+            if (points.length < 3) return points;
+            points.sort((a, b) => a.lat === b.lat ? a.lng - b.lng : a.lat - b.lat);
+            const cross = (o, a, b) => (a.lng - o.lng) * (b.lat - o.lat) - (a.lat - o.lat) * (b.lng - o.lng);
+            const lower = [];
+            for (let i = 0; i < points.length; i++) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) lower.pop();
+                lower.push(points[i]);
+            }
+            const upper = [];
+            for (let i = points.length - 1; i >= 0; i--) {
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) upper.pop();
+                upper.push(points[i]);
+            }
+            upper.pop(); lower.pop();
+            return lower.concat(upper);
+        }
+
         function renderMap() {
             markerLayer.clearLayers(); 
             territoryLayer.clearLayers();
-            highlightLayer.clearLayers();
             
             const selectedSups = getCheckedValues('supervisor-list'); 
             const selectedChains = getCheckedValues('chain-list');
             const selectedChamps = getCheckedValues('champion-list'); 
             
             if (selectedSups.length === 0 && selectedChains.length === 0 && selectedChamps.length === 0) {
-                return; 
+                return; // Leaves map completely empty except for Talabat Pin
             }
 
             let allBounds = []; 
-            let supGroups = {}; 
             let champGroups = {}; 
+
+            const drawChampHulls = selectedChamps.length >= 1 || (selectedSups.length === 1 && selectedChamps.length === 0);
 
             parsedData.forEach(store => {
                 const supMatch = selectedSups.length === 0 || selectedSups.includes(store.supervisor);
@@ -1174,25 +1401,8 @@
                     const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                     const champColor = championColors[store.championName] || '#3B82F6';
                     
-                    // --- STRATEGY: IF 1 SUPERVISOR SELECT: CONNECT AND SEPARATE STORES VIA CHAMPION ---
-                    if (selectedSups.length === 1) {
-                        if (!champGroups[store.championName]) {
-                            champGroups[store.championName] = { points: [], color: champColor };
-                        }
-                        champGroups[store.championName].points.push({lat: store.lat, lng: store.lng});
-                    } 
-                    // --- STRATEGY: IF > 1 SUPERVISOR SELECT: GROUP AND CONNECT SOLELY BY SUPERVISOR ---
-                    else if (selectedSups.length > 1) {
-                        if (!supGroups[store.supervisor]) {
-                            supGroups[store.supervisor] = { points: [], color: supColor };
-                        }
-                        supGroups[store.supervisor].points.push({lat: store.lat, lng: store.lng});
-                    }
-                    // Fallback for standalone champion box selection
-                    else if (selectedChamps.length >= 1) {
-                        if (!champGroups[store.championName]) {
-                            champGroups[store.championName] = { points: [], color: champColor };
-                        }
+                    if (drawChampHulls) {
+                        if (!champGroups[store.championName]) champGroups[store.championName] = { points: [], color: champColor };
                         champGroups[store.championName].points.push({lat: store.lat, lng: store.lng});
                     }
                     
@@ -1205,8 +1415,8 @@
 
                         if (mapClickMode) {
                             routeData[mapClickMode] = point;
-                            populateHeaderDropdowns();
                             
+                            populateHeaderDropdowns();
                             const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
                             document.getElementById(selectId).classList.remove('waiting');
 
@@ -1225,29 +1435,19 @@
                 }
             });
             
-            // Draw Macro supervisor team shapes when more than 1 supervisor is on
-            Object.keys(supGroups).forEach(supName => {
-                const group = supGroups[supName];
-                if (group.points.length >= 3) {
-                    const hull = getConvexHull(group.points);
-                    const latlngs = hull.map(p => [p.lat, p.lng]);
-                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.16, weight: 2.5}).addTo(territoryLayer);
-                } else if (group.points.length === 2) {
-                    L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3}).addTo(territoryLayer);
-                }
-            });
-
-            // Draw individual champion shapes when exactly 1 supervisor is on
-            Object.keys(champGroups).forEach(champName => {
-                const group = champGroups[champName];
-                if (group.points.length >= 3) {
-                    const hull = getConvexHull(group.points);
-                    const latlngs = hull.map(p => [p.lat, p.lng]);
-                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.18, weight: 2}).addTo(territoryLayer);
-                } else if (group.points.length === 2) {
-                    L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3}).addTo(territoryLayer);
-                }
-            });
+            // --- DRAW TERRITORY HEATMAPS ---
+            if (drawChampHulls) {
+                Object.keys(champGroups).forEach(champName => {
+                    const group = champGroups[champName];
+                    if (group.points.length >= 3) {
+                        const hull = getConvexHull(group.points);
+                        const latlngs = hull.map(p => [p.lat, p.lng]);
+                        L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.25, weight: 2}).addTo(territoryLayer);
+                    } else if (group.points.length === 2) {
+                        L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3}).addTo(territoryLayer);
+                    }
+                });
+            }
 
             if (allBounds.length > 0) {
                 map.fitBounds(allBounds, { padding: [50, 50] });
