@@ -82,17 +82,20 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
-        .database-status {
-            display: flex; align-items: center; gap: 12px;
-            background: #F8FAFC; border: 1px solid var(--border-color);
-            padding: 6px 14px; border-radius: 20px;
+        /* Current Date/Time Display */
+        .datetime-display {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-orange);
+            background: #FFF5F0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #FFDDCB;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.3px;
         }
-
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
-        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
-        
-        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .db-text strong { color: var(--text-dark); }
 
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
@@ -163,7 +166,7 @@
 
         .map-search-input {
             border: none; background: #F8FAFC; padding: 10px 12px; border-radius: 6px;
-            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0;
+            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0; width: 100%;
         }
         .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
 
@@ -174,7 +177,7 @@
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
         
-        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE;}
+        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
         .pulse-loc-btn:hover { background: #EFF6FF !important; }
 
         /* Search Dropdown Suggestions */
@@ -204,14 +207,26 @@
         .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;}
         
+        /* Interactive Route Info Box */
+        .route-info-wrapper {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+        }
         .route-info {
             background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
-            display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px;
+            display: flex; flex-direction: column; gap: 8px; flex-grow: 1;
         }
         .route-row { display: flex; align-items: flex-start; gap: 10px;}
         .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 45px; margin-top: 2px;}
         .route-val { font-size: 14px; font-weight: 700; color: var(--text-dark); flex-grow: 1; line-height: 1.3;}
         
+        /* Swap Button */
+        .swap-btn {
+            background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
+            border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0;
+        }
+        .swap-btn:hover { background: #E2E8F0; transform: scale(1.05); }
+
         .sheet-metrics {
             display: flex; justify-content: space-between; background: #FFFFFF; padding: 12px 16px; 
             border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 10px;
@@ -267,6 +282,8 @@
 
         /* Custom Teardrop Pin styling */
         .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
+        /* Preview Origin Pin */
+        .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -353,6 +370,25 @@
             font-size: 9px !important; font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
+
+        /* --- RESPONSIVE MOBILE VIEW FIXES --- */
+        @media (max-width: 768px) {
+            .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+            .header-left { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .logo { text-align: left; }
+            .tabs { width: 100%; justify-content: flex-start; }
+            .app-body { height: calc(100vh - 100px); }
+            
+            .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
+            .sidebar-content { width: 280px; }
+            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; }
+
+            .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px 20px max(40px, env(safe-area-inset-bottom)) 20px; }
+            
+            #data-container { padding: 12px; overflow-y: auto; }
+            .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
+            .profile-card, .suggestions-container { flex: none; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -385,15 +421,12 @@
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
-        <div class="database-status">
-            <div class="db-icon" id="db-icon"></div>
-            <div class="db-text" id="db-status-text">Database: <strong>Checking updates...</strong></div>
-        </div>
+        <div id="live-datetime" class="datetime-display"></div>
     </div>
 
     <div class="app-body">
         
-        <div class="sidebar-container" id="sidebar">
+        <div class="sidebar-container collapsed" id="sidebar">
             <div class="sidebar-content-wrapper">
                 <div class="sidebar-content">
                     
@@ -464,15 +497,21 @@
                 <div id="bottom-sheet" class="bottom-sheet">
                     <div class="sheet-handle"></div>
                     
-                    <div class="route-info">
-                        <div class="route-row">
-                            <div class="route-label">From:</div>
-                            <div class="route-val" id="bs-route-from" style="color: var(--status-blue);">My Location</div>
+                    <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
+                    <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
+                    
+                    <div class="route-info-wrapper">
+                        <div class="route-info">
+                            <div class="route-row">
+                                <div class="route-label">From:</div>
+                                <div class="route-val" id="bs-route-from" style="color: var(--status-blue);">My Location</div>
+                            </div>
+                            <div class="route-row">
+                                <div class="route-label">To:</div>
+                                <div class="route-val" id="bs-route-to">Select Store</div>
+                            </div>
                         </div>
-                        <div class="route-row">
-                            <div class="route-label">To:</div>
-                            <div class="route-val" id="bs-route-to">Select Store</div>
-                        </div>
+                        <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
                     </div>
                     
                     <div class="sheet-metrics">
@@ -534,10 +573,6 @@
     <script>
         // ====== ADMIN CONFIGURATION ======
         const CSV_FILE_PATH = "data.csv"; 
-        
-        // GITHUB API CONNECTION
-        const GITHUB_USERNAME = "Snoop214"; 
-        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
         // --- MAP INIT ---
@@ -547,24 +582,46 @@
         
         const markerLayer = L.layerGroup().addTo(map);
         const searchPinLayer = L.layerGroup().addTo(map);
-        
-        // Added permanent static layer for Talabat Office
         const staticPinLayer = L.layerGroup().addTo(map);
+        const previewRouteLayer = L.layerGroup().addTo(map); // New layer for drawing lines
 
-        // Render Permanent Talabat Office Pin
-        const talabatOfficeLatLng = [25.2092164334059, 55.26127999999603];
+        // --- CLOCK SCRIPT ---
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('live-datetime').innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // --- TALABAT OFFICE PIN (Interactive) ---
+        const talabatOfficeStore = {
+            locationName: "Talabat Dubai Office",
+            chainName: "Talabat HQ",
+            championName: "Corporate",
+            supervisor: "Management",
+            orders: 0,
+            lat: 25.2092164334059,
+            lng: 55.26127999999603
+        };
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
             iconSize: [64, 28], iconAnchor: [32, 14]
         });
-        L.marker(talabatOfficeLatLng, {icon: talabatOfficeIcon})
+        const talabatMarker = L.marker([talabatOfficeStore.lat, talabatOfficeStore.lng], {icon: talabatOfficeIcon})
             .addTo(staticPinLayer)
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
-
+        
+        talabatMarker.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            map.setView([talabatOfficeStore.lat, talabatOfficeStore.lng], 14);
+            openBottomSheet(talabatOfficeStore);
+        });
 
         // --- ROUTING ORIGIN LOGIC ---
         let routeOrigin = { lat: null, lng: null, name: "My Location" };
+        let currentDestination = null; // Stores the full object of the selected destination
         let targetNavLat = null;
         let targetNavLng = null;
 
@@ -597,21 +654,92 @@
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
 
+        if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
+
+        // --- ROUTE PREVIEW DRAWING ---
+        function drawRoutePreview() {
+            previewRouteLayer.clearLayers();
+            if (routeOrigin && routeOrigin.lat && currentDestination && currentDestination.lat) {
+                const latlngs = [
+                    [routeOrigin.lat, routeOrigin.lng],
+                    [currentDestination.lat, currentDestination.lng]
+                ];
+                // Draw Dashed Orange Line
+                L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
+
+                // If origin is a searched location, drop a blue dot to mark the start
+                if (routeOrigin.name !== "My Location") {
+                    const originIcon = L.divIcon({
+                        className: 'preview-origin-pin',
+                        html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                        iconSize: [24, 36], iconAnchor: [12, 36]
+                    });
+                    L.marker([routeOrigin.lat, routeOrigin.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + routeOrigin.name);
+                }
+
+                map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
+            }
+        }
+
+        // --- SWAP FROM/TO BUTTON ---
+        function swapRoute() {
+            if (!routeOrigin || !routeOrigin.lat || !currentDestination) return;
+
+            // Store current destination to swap
+            const tempDestName = currentDestination.locationName;
+            const tempDestLat = currentDestination.lat;
+            const tempDestLng = currentDestination.lng;
+
+            // Move Origin into Destination
+            currentDestination.locationName = routeOrigin.name;
+            currentDestination.lat = routeOrigin.lat;
+            currentDestination.lng = routeOrigin.lng;
+
+            // Move old Destination into Origin
+            routeOrigin = {
+                lat: tempDestLat,
+                lng: tempDestLng,
+                name: tempDestName
+            };
+
+            // Update Global Nav Targets
+            targetNavLat = currentDestination.lat;
+            targetNavLng = currentDestination.lng;
+
+            // Update UI
+            document.getElementById('bs-route-from').innerText = routeOrigin.name;
+            document.getElementById('bs-route-to').innerText = currentDestination.locationName;
+            
+            // Re-render
+            let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
+            document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
+            drawRoutePreview();
+        }
+
         // --- BOTTOM SHEET UI (MAP TAB) ---
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
+            previewRouteLayer.clearLayers();
         }
 
         function openBottomSheet(store) {
-            document.getElementById('bs-route-to').innerText = `${store.locationName} (${store.chainName})`;
-            document.getElementById('bs-champ').innerText = store.championName;
-            document.getElementById('bs-orders').innerText = Math.round(store.orders);
+            // Clone the store object so swapping doesn't break original parsedData
+            currentDestination = { ...store };
+            targetNavLat = currentDestination.lat;
+            targetNavLng = currentDestination.lng;
+
+            document.getElementById('bs-store-name').innerText = currentDestination.locationName;
+            document.getElementById('bs-chain-name').innerText = currentDestination.chainName;
+            document.getElementById('bs-champ').innerText = currentDestination.championName;
+            document.getElementById('bs-orders').innerText = Math.round(currentDestination.orders);
+            document.getElementById('bs-route-to').innerText = currentDestination.locationName;
             
             const renderDistance = () => {
                 if (routeOrigin.lat && routeOrigin.lng) {
-                    let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, store.lat, store.lng);
+                    let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
                     document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
                     document.getElementById('bs-route-from').innerText = routeOrigin.name;
+                    drawRoutePreview();
                 } else {
                     document.getElementById('bs-dist').innerText = "Select Origin";
                     document.getElementById('bs-route-from').innerText = "Unknown";
@@ -630,7 +758,7 @@
             }
 
             const navBtn = document.getElementById('bs-nav-btn');
-            navBtn.onclick = () => { openNavModal(store.lat, store.lng); };
+            navBtn.onclick = () => { openNavModal(); };
 
             document.getElementById('bottom-sheet').classList.add('active');
         }
@@ -638,9 +766,7 @@
         map.on('click', function() { closeBottomSheet(); });
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
-        function openNavModal(lat, lng) {
-            targetNavLat = lat;
-            targetNavLng = lng;
+        function openNavModal() {
             document.getElementById('navAppModal').classList.add('active');
         }
 
@@ -650,7 +776,6 @@
 
         function launchApp(appType, event) {
             if (!targetNavLat || !targetNavLng) return;
-            
             if (!routeOrigin.lat || !routeOrigin.lng) {
                 alert("Starting location not found. Please click '📍 Me' or search for a location first.");
                 return;
@@ -660,7 +785,7 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=$?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -674,21 +799,8 @@
 
         // --- INITIALIZATION & DATA FETCH ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData(); fetchGitHubUpdateStatus();
+            fetchHostedData(); 
         });
-
-        function fetchGitHubUpdateStatus() {
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
-            fetch(apiUrl).then(r => r.json()).then(data => {
-                if (data && data.length > 0) {
-                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
-                    document.getElementById('db-icon').classList.add('live');
-                }
-            }).catch(e => {
-                document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
-                document.getElementById('db-icon').classList.add('live');
-            });
-        }
 
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
@@ -698,7 +810,11 @@
         }
 
         // --- GLOBALS & DATA PROCESSING ---
-        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
+        let parsedData = [];
+        let supervisorStats = {}; 
+        let supervisorColors = {}; 
+        let championUtilizationData = {};
+        
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
@@ -1156,7 +1272,6 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        // Update Route Origin
                         routeOrigin = { lat: lat, lng: lng, name: "My Location" };
                         searchInputMap.value = ""; // Clear search bar visually
                         
@@ -1174,6 +1289,16 @@
                             .bindPopup(`<b>Your Current Location</b>`);
 
                         map.setView([lat, lng], 14);
+
+                        // Update Route Origin in UI if Bottom Sheet is active
+                        if (document.getElementById('bottom-sheet').classList.contains('active')) {
+                            document.getElementById('bs-route-from').innerText = routeOrigin.name;
+                            if (currentDestination) {
+                                let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
+                                document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
+                                drawRoutePreview();
+                            }
+                        }
                     },
                     function(error) {
                         alert("Could not access your location. Please check browser permissions.");
@@ -1194,6 +1319,15 @@
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(p => {
                         routeOrigin = { lat: p.coords.latitude, lng: p.coords.longitude, name: "My Location" };
+                        
+                        if (document.getElementById('bottom-sheet').classList.contains('active')) {
+                            document.getElementById('bs-route-from').innerText = routeOrigin.name;
+                            if (currentDestination) {
+                                let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
+                                document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
+                                drawRoutePreview();
+                            }
+                        }
                     }, () => {});
                 }
                 return; 
@@ -1231,6 +1365,16 @@
                                     .bindPopup(`<b>${shortName}</b>`);
 
                                 map.setView([item.lat, item.lon], 15);
+
+                                // Automatically update the Bottom Sheet if open
+                                if (document.getElementById('bottom-sheet').classList.contains('active')) {
+                                    document.getElementById('bs-route-from').innerText = routeOrigin.name;
+                                    if (currentDestination) {
+                                        let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
+                                        document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
+                                        drawRoutePreview();
+                                    }
+                                }
                             };
                             suggestionsBoxMap.appendChild(div);
                         });
