@@ -128,8 +128,24 @@
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #FFF5F0; }
 
+        /* Current Date/Time Display */
+        .datetime-display {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-orange);
+            background: #FFF5F0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #FFDDCB;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
         /* --- MAIN APP LAYOUT --- */
-        .app-body { display: flex; flex-grow: 1; height: 100%; position: relative; overflow: hidden; }
+        .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
 
         /* --- SIDEBAR --- */
         .sidebar-container {
@@ -196,7 +212,6 @@
         #map-container { height: 100%; width: 100%; position: relative;}
         #map { height: 100%; width: 100%; cursor: grab;}
 
-        /* Instruction Toast */
         #map-toast {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
@@ -210,17 +225,17 @@
             padding: 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
-        .custom-small-popup .leaflet-popup-content { margin: 0; width: 240px !important; }
+        .custom-small-popup .leaflet-popup-content { margin: 0; width: 220px !important; }
         .custom-small-popup .leaflet-popup-tip { background: white; }
         
         .store-popup-container {
-            background: white; border-radius: 16px; padding: 16px;
+            background: white; border-radius: 16px; padding: 14px;
             display: flex; flex-direction: column; box-sizing: border-box;
         }
-        .sp-title { font-size: 14px; font-weight: 800; color: var(--text-dark); margin: 0 0 2px 0; line-height: 1.3;}
+        .sp-title { font-size: 14px; font-weight: 800; color: var(--text-dark); margin: 0 0 2px 0; line-height: 1.2; padding-right: 15px;}
         .sp-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;}
         .sp-divider { height: 1px; background: #E2E8F0; margin: 6px 0; }
-        .sp-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 6px; }
+        .sp-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; }
         .sp-label { color: var(--text-muted); font-weight: 600; }
         .sp-val { color: var(--text-dark); font-weight: 800; }
 
@@ -378,17 +393,20 @@
             </div>
         </div>
         <div class="header-right">
-            <div class="header-routing">
-                <div class="mobile-route-row">
-                    <label>From:</label>
-                    <select id="header-route-from" class="header-route-select" onchange="handleHeaderRouteChange('from')"></select>
+            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                <div class="header-routing">
+                    <div class="mobile-route-row">
+                        <label>From:</label>
+                        <select id="header-route-from" class="header-route-select" onchange="handleHeaderRouteChange('from')"></select>
+                    </div>
+                    <span class="route-divider">|</span>
+                    <div class="mobile-route-row">
+                        <label>To:</label>
+                        <select id="header-route-to" class="header-route-select" onchange="handleHeaderRouteChange('to')"></select>
+                    </div>
+                    <button class="go-btn" onclick="openNavModal()">GO</button>
                 </div>
-                <span class="route-divider">|</span>
-                <div class="mobile-route-row">
-                    <label>To:</label>
-                    <select id="header-route-to" class="header-route-select" onchange="handleHeaderRouteChange('to')"></select>
-                </div>
-                <button class="go-btn" onclick="openNavModal()">GO</button>
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 4px; padding-right: 4px;">Press Esc or Delete to clear</div>
             </div>
 
             <div class="header-search-wrapper">
@@ -397,6 +415,7 @@
                 </div>
                 <div id="search-suggestions" class="suggestions-dropdown"></div>
             </div>
+            <div id="live-datetime" class="datetime-display"></div>
         </div>
     </div>
 
@@ -446,7 +465,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.48<br>
+                        LS Operations Optimizer v15.49<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -557,6 +576,16 @@
             document.getElementById('map-toast').style.display = 'none';
         });
 
+        // --- CLOCK SCRIPT ---
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const dtElement = document.getElementById('live-datetime');
+            if(dtElement) dtElement.innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
         // --- ROUTING STATE ---
         let availablePoints = {
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Office" },
@@ -567,9 +596,10 @@
             'clicked_loc_to': null
         };
 
+        // BOTH START BLANK
         let routeData = {
-            from: availablePoints.talabat_office,
-            to: null
+            from: { lat: null, lng: null, name: "" },
+            to: { lat: null, lng: null, name: "" }
         };
 
         let mapClickMode = null; 
@@ -582,52 +612,66 @@
             }, () => {});
         }
 
+        // --- KEYBOARD CLEAR LISTENER ---
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.key === 'Delete' || e.key === 'Backspace') {
+                if (document.activeElement === document.getElementById('mapSearchInput')) return;
+
+                routeData.from = { lat: null, lng: null, name: "" };
+                routeData.to = { lat: null, lng: null, name: "" };
+                
+                populateHeaderDropdowns();
+                
+                previewRouteLayer.clearLayers();
+                clickedPinLayer.clearLayers();
+                
+                if (mapClickMode) {
+                    mapClickMode = null;
+                    document.getElementById('map').style.cursor = '';
+                    document.getElementById('map-toast').style.display = 'none';
+                    document.getElementById('header-route-from').classList.remove('waiting');
+                    document.getElementById('header-route-to').classList.remove('waiting');
+                }
+            }
+        });
+
         // --- HEADER ROUTING LOGIC ---
         function populateHeaderDropdowns() {
             const fromSelect = document.getElementById('header-route-from');
             const toSelect = document.getElementById('header-route-to');
             
-            // Build FROM Dropdown
-            let fromHtml = '';
+            let baseHtml = `<option value="" disabled hidden>Choose...</option>`;
+            
+            let optionsHtml = '';
             if(availablePoints.my_location.lat) {
-                fromHtml += `<option value="my_location">📍 My Location</option>`;
+                optionsHtml += `<option value="my_location">📍 My Location</option>`;
             } else {
-                fromHtml += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
+                optionsHtml += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
             }
-            fromHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
+            optionsHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
+            
             if(availablePoints.selected_store) {
-                fromHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
+                optionsHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
             }
             if(availablePoints.searched_loc) {
-                fromHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
+                optionsHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
             }
             if(availablePoints.clicked_loc_from) {
-                fromHtml += `<option value="clicked_loc_from">📌 Pinned Location</option>`;
-            }
-            fromHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
-
-            // Build TO Dropdown
-            let toHtml = `<option value="" disabled hidden>Choose...</option>`;
-            toHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
-            if(availablePoints.selected_store) {
-                toHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
-            }
-            if(availablePoints.searched_loc) {
-                toHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
+                optionsHtml += `<option value="clicked_loc_from">📌 Pinned Location (From)</option>`;
             }
             if(availablePoints.clicked_loc_to) {
-                toHtml += `<option value="clicked_loc_to">📌 Pinned Location</option>`;
+                optionsHtml += `<option value="clicked_loc_to">📌 Pinned Location (To)</option>`;
             }
-            toHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
+            optionsHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
 
-            const currentFrom = fromSelect.value || 'talabat_office';
-            const currentTo = toSelect.value || '';
+            const currentFrom = routeData.from.lat ? fromSelect.value : '';
+            const currentTo = routeData.to.lat ? toSelect.value : '';
 
-            fromSelect.innerHTML = fromHtml;
-            toSelect.innerHTML = toHtml;
+            fromSelect.innerHTML = baseHtml + optionsHtml;
+            toSelect.innerHTML = baseHtml + optionsHtml;
 
-            if(currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) fromSelect.value = currentFrom;
-            if(currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) toSelect.value = currentTo;
+            fromSelect.value = currentFrom;
+            toSelect.value = currentTo;
         }
 
         function handleHeaderRouteChange(type) {
@@ -665,8 +709,6 @@
                 const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                 L.polyline(latlngs, {color: '#3B82F6', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
                 
-                // Add pins only if they are not existing store pins or office (which are already on map)
-                // Actually, let's just add nice markers for start and end to make it super clear
                 drawCustomPin(fromPoint.lat, fromPoint.lng, 'origin', fromPoint.name);
                 drawCustomPin(toPoint.lat, toPoint.lng, 'dest', toPoint.name);
 
@@ -704,6 +746,14 @@
                 document.getElementById(selectId).value = locKey;
                 document.getElementById(selectId).classList.remove('waiting');
                 
+                clickedPinLayer.clearLayers();
+                const icon = L.divIcon({
+                    className: 'custom-blue-teardrop',
+                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                    iconSize: [30, 45], iconAnchor: [15, 45]
+                });
+                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
+
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('map-toast').style.display = 'none';
@@ -734,11 +784,10 @@
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-            
-            let point = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
 
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
+                populateHeaderDropdowns();
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
                 document.getElementById(selectId).value = 'talabat_office';
                 document.getElementById(selectId).classList.remove('waiting');
@@ -749,9 +798,6 @@
                 updateRouteMap();
             } else {
                 openStorePopup(talabatOfficeStore);
-                routeData.to = point;
-                document.getElementById('header-route-to').value = 'talabat_office';
-                updateRouteMap();
             }
         });
 
@@ -789,7 +835,7 @@
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
 
             availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-            populateHeaderDropdowns();
+            populateHeaderDropdowns(); // Just updates available list, DOES NOT assign value to routeData
 
             const popupContent = document.getElementById('store-popup-template').innerHTML;
 
@@ -804,7 +850,6 @@
             .setContent(popupContent)
             .openOn(map);
             
-            // Draw Glowing Ring
             highlightLayer.clearLayers();
             const hIcon = L.divIcon({
                 className: 'store-highlight-ring',
@@ -950,10 +995,8 @@
                 }
             });
 
-            // Set up UI Options
             populateHeaderDropdowns();
             
-            // EXACT REQUIREMENT: ALL UNCHECKED
             buildSupervisorFilterList(); 
             buildChainFilterList(false);
             updateChampionDropdownScope(false); 
@@ -1131,6 +1174,176 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
+        }
+
+        function selectChampion(champName, rowElement) {
+            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
+
+            let d = championUtilizationData[champName];
+            let pCard = document.getElementById('profile-card');
+            
+            let statusIcon = '✓';
+            if(d.status === 'Underutilized') statusIcon = '↘';
+            if(d.status === 'Medium Load') statusIcon = '⚠️';
+            if(d.status === 'Overloaded') statusIcon = '🔥';
+
+            pCard.innerHTML = `
+                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
+                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
+                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
+                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
+                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
+            `;
+
+            let sWrapper = document.getElementById('suggestions-wrapper');
+            sWrapper.innerHTML = '';
+
+            try {
+                let candidates = [];
+
+                if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                    parsedData.forEach(store => {
+                        let ownerData = championUtilizationData[store.championName];
+                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                            let newCount = d.stores.length + 1;
+                            let newOrders = d.totalOrders + store.orders;
+                            
+                            if (newCount <= 5 && newOrders < 500) { 
+                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
+                                if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                    candidates.push({ 
+                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
+                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } 
+                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                    d.stores.forEach(store => {
+                        Object.keys(championUtilizationData).forEach(otherChampName => {
+                            let otherData = championUtilizationData[otherChampName];
+                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
+                                let newCount = otherData.stores.length + 1;
+                                let newOrders = otherData.totalOrders + store.orders;
+                                
+                                if (newCount <= 5 && newOrders < 500) { 
+                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                        candidates.push({ 
+                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
+                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+
+                candidates.sort((a, b) => a.distance - b.distance);
+
+                let uniqueCandidates = [];
+                let seenStores = new Set();
+                for (let c of candidates) {
+                    if (!seenStores.has(c.store.locationName)) {
+                        uniqueCandidates.push(c);
+                        seenStores.add(c.store.locationName);
+                    }
+                    if (uniqueCandidates.length >= 3) break;
+                }
+
+                if (uniqueCandidates.length === 0) {
+                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
+                    return;
+                }
+
+                uniqueCandidates.forEach((c, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    let mapId = `minimap-${index}`;
+                    
+                    if (c.type === 'take') {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                            </div>
+                        `;
+                    }
+
+                    sWrapper.appendChild(card);
+
+                    setTimeout(() => {
+                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                        let storeLatLng = [c.store.lat, c.store.lng];
+                        let anchorLatLng = [c.anchorLat, c.anchorLng];
+
+                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
+                        L.circleMarker(anchorLatLng, {
+                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
+
+                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                    }, 50); 
+                });
+
+            } catch (err) {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
+            }
+        }
+
         // --- MAP RENDERING ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
@@ -1145,7 +1358,6 @@
             });
         }
         
-        // Custom Math helper for mapping territory
         function getConvexHull(points) {
             if (points.length < 3) return points;
             points.sort((a, b) => a.lat === b.lat ? a.lng - b.lng : a.lat - b.lat);
@@ -1173,7 +1385,6 @@
             const selectedChains = getCheckedValues('chain-list');
             const selectedChamps = getCheckedValues('champion-list'); 
             
-            // --- HIDE STORES ON INITIAL LOAD IF NOTHING CHECKED ---
             if (selectedSups.length === 0 && selectedChains.length === 0 && selectedChamps.length === 0) {
                 return; // Leaves map completely empty except for Talabat Pin
             }
@@ -1216,10 +1427,6 @@
                             updateRouteMap();
                         } else {
                             openStorePopup(store);
-                            // Set as destination automatically when clicking popup
-                            routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-                            document.getElementById('header-route-to').value = 'selected_store';
-                            updateRouteMap();
                         }
                     });
 
@@ -1228,7 +1435,6 @@
                 }
             });
             
-            // --- TERRITORY FEATURE ---
             if (selectedChamps.length === 1 && champPoints.length > 0) {
                 if (champPoints.length >= 3) {
                     const hull = getConvexHull(champPoints);
@@ -1277,17 +1483,38 @@
                                 if (mapClickMode === 'to') {
                                     routeData.to = searchPoint;
                                     document.getElementById('header-route-to').value = 'searched_loc';
-                                    exitMapClickMode();
+                                    
+                                    mapClickMode = null;
+                                    document.getElementById('map').style.cursor = '';
+                                    document.getElementById('map-toast').style.display = 'none';
+                                    document.getElementById('header-route-to').classList.remove('waiting');
+                                    updateRouteMap();
                                 } else if (mapClickMode === 'from') {
                                     routeData.from = searchPoint;
                                     document.getElementById('header-route-from').value = 'searched_loc';
-                                    exitMapClickMode();
+                                    
+                                    mapClickMode = null;
+                                    document.getElementById('map').style.cursor = '';
+                                    document.getElementById('map-toast').style.display = 'none';
+                                    document.getElementById('header-route-from').classList.remove('waiting');
+                                    updateRouteMap();
                                 } else {
                                     routeData.to = searchPoint;
+                                    populateHeaderDropdowns();
                                     document.getElementById('header-route-to').value = 'searched_loc';
                                     updateRouteMap();
                                 }
                                 
+                                searchPinLayer.clearLayers();
+                                const searchIcon = L.divIcon({
+                                    className: 'custom-teardrop',
+                                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                                    iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
+                                });
+
+                                L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
+                                map.setView([item.lat, item.lon], 15);
+
                             };
                             suggestionsBoxMap.appendChild(div);
                         });
