@@ -212,27 +212,35 @@
             display: none; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
         }
 
-        /* --- TALABAT UI (BOTTOM SHEET OVERLAY) --- */
-        .bottom-sheet {
-            position: absolute; bottom: -150%; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 450px; background: white; border-radius: 24px 24px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.2); padding: 24px; z-index: 2000;
-            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
-            max-height: 85vh; overflow-y: auto;
+        /* --- CUSTOM LEAFLET POPUP STYLES --- */
+        .custom-store-popup .leaflet-popup-content-wrapper {
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .bottom-sheet.active { bottom: 0; }
+        .custom-store-popup .leaflet-popup-content { margin: 0; width: 340px !important; }
+        .custom-store-popup .leaflet-popup-tip { background: white; }
         
-        /* Talabat X Close Button */
+        .store-popup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
         .sheet-close-btn {
-            position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
+            position: absolute; top: 15px; right: 15px; width: 28px; height: 28px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
+            font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         
         .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
         /* Interactive Route Info Box (Native UI) */
@@ -260,9 +268,6 @@
         .r-dot.origin { border: 3px solid var(--status-blue); background: white; }
         .r-dot.dest { background: var(--primary-orange); }
         
-        .icon-btn { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 12px; padding: 4px 6px; cursor: pointer; transition: 0.2s;}
-        .icon-btn:hover { background: #E2E8F0; transform: scale(1.05); }
-
         /* Custom Dropdown Menus */
         .custom-dropdown {
             display: none; position: absolute; left: 14px; width: calc(100% - 90px);
@@ -272,14 +277,13 @@
         .custom-dropdown.active { display: block; animation: dropIn 0.2s ease; }
         @keyframes dropIn { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
         
-        .dd-item { padding: 14px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
+        .dd-item { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
         .dd-item:last-child { border-bottom: none; }
         .dd-item:hover { background: #FFF5F0; color: var(--primary-orange); }
         
         #dd-from { top: 40px; }
         #dd-to { top: 80px; }
         
-        /* Swap Button */
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
             border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
@@ -289,14 +293,14 @@
 
         .sheet-metrics {
             display: flex; justify-content: space-between; background: #FFFFFF; padding: 12px 16px; 
-            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 10px; margin-top: 10px;
+            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 5px;
         }
         .s-metric { display: flex; flex-direction: column; }
         .s-metric span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
         .s-metric strong { font-size: 15px; color: var(--text-dark); font-weight: 800; margin-top: 2px;}
 
         .btn-massive {
-            background: var(--primary-orange); color: white; border: none; padding: 16px;
+            background: var(--primary-orange); color: white; border: none; padding: 14px;
             border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3); transition: all 0.2s;
             display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; flex-shrink: 0;
@@ -340,8 +344,6 @@
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
-        .custom-search-pin { display: flex; align-items: center; justify-content: center; }
-        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
@@ -457,10 +459,6 @@
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
 
-            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; max-width: calc(100% - 60px); }
-
-            .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
-
             #data-container { padding: 12px; overflow-y: auto; }
             .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
             .profile-card, .suggestions-container { flex: none; width: 100%; }
@@ -554,7 +552,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.44<br>
+                        LS Operations Optimizer v15.45<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -573,46 +571,45 @@
 
             <div id="map-container">
                 
-                <div id="bottom-sheet" class="bottom-sheet">
-                    <button class="sheet-close-btn" onclick="closeBottomSheet()">✕</button>
-                    <div class="sheet-handle"></div>
-                    
-                    <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
-                    <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
-                    
-                    <div class="route-info-wrapper" id="routing-section" style="display: none; margin-top: 10px;">
-                        <div class="routing-inputs-container">
-                            <div class="r-input-group" id="from-group" onclick="setActiveInput('from')">
-                                <span class="r-dot origin"></span>
-                                <input type="text" id="route-from-text" readonly value="📍 My Location">
-                                <button onclick="setMyLocation('from'); event.stopPropagation();" class="icon-btn" title="Use My Location">📍</button>
+                <div id="store-popup-template" style="display: none;">
+                    <div class="store-popup-container">
+                        <button class="sheet-close-btn" onclick="map.closePopup()">✕</button>
+                        <div class="sheet-handle"></div>
+                        
+                        <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
+                        <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
+                        
+                        <div class="route-info-wrapper" id="routing-section" style="display: none; margin-top: 10px;">
+                            <div class="routing-inputs-container">
+                                <div class="r-input-group" id="from-group" onclick="setActiveInput('from')">
+                                    <span class="r-dot origin"></span>
+                                    <input type="text" id="route-from-text" readonly value="🏢 Talabat Dubai Office">
+                                </div>
+                                <div class="r-input-group active" id="to-group" onclick="setActiveInput('to')">
+                                    <span class="r-dot dest"></span>
+                                    <input type="text" id="route-to-text" readonly value="Select Destination...">
+                                </div>
                             </div>
-                            <div class="r-input-group active" id="to-group" onclick="setActiveInput('to')">
-                                <span class="r-dot dest"></span>
-                                <input type="text" id="route-to-text" readonly value="Select Destination...">
-                                <button onclick="setMyLocation('to'); event.stopPropagation();" class="icon-btn" title="Use My Location">📍</button>
-                            </div>
-                        </div>
-                        <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
+                            <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
 
-                        <div id="dd-from" class="custom-dropdown">
-                            <div class="dd-item" onclick="selectRouteOption('from', 'my_location', event)">📍 My Location</div>
-                            <div class="dd-item" onclick="selectRouteOption('from', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
-                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('from', event)">📌 Select from map...</div>
+                            <div id="dd-from" class="custom-dropdown">
+                                <div class="dd-item" onclick="selectRouteOption('from', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
+                                <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('from', event)">📌 Select from map...</div>
+                            </div>
+                            <div id="dd-to" class="custom-dropdown">
+                                <div class="dd-item" onclick="selectRouteOption('to', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
+                                <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('to', event)">📌 Select from map...</div>
+                            </div>
                         </div>
-                        <div id="dd-to" class="custom-dropdown">
-                            <div class="dd-item" onclick="selectRouteOption('to', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
-                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('to', event)">📌 Select from map...</div>
+                        
+                        <div class="sheet-metrics" style="margin-top: 10px;">
+                            <div class="s-metric"><span>Champion</span><strong id="bs-champ">Name</strong></div>
+                            <div class="s-metric"><span>Avg Orders</span><strong id="bs-orders">0</strong></div>
+                            <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">---</strong></div>
                         </div>
+                        
+                        <button id="bs-nav-btn" class="btn-massive" onclick="handleDirectionClick()">🚗 Direction</button>
                     </div>
-                    
-                    <div class="sheet-metrics" style="margin-top: 10px;">
-                        <div class="s-metric"><span>Champion</span><strong id="bs-champ">Name</strong></div>
-                        <div class="s-metric"><span>Avg Orders</span><strong id="bs-orders">0</strong></div>
-                        <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">---</strong></div>
-                    </div>
-                    
-                    <button id="bs-nav-btn" class="btn-massive" onclick="handleDirectionClick()">🚗 Direction</button>
                 </div>
 
                 <div id="map"></div>
@@ -636,7 +633,7 @@
                                 </tr>
                             </thead>
                             <tbody id="utilization-tbody">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -682,6 +679,19 @@
         const territoryLayer = L.layerGroup().addTo(map);
         const highlightLayer = L.layerGroup().addTo(map);
 
+        // Current active popup tracking
+        let currentPopup = null;
+
+        // Clean up visual states when ANY popup is closed
+        map.on('popupclose', function() {
+            previewRouteLayer.clearLayers();
+            clickedPinLayer.clearLayers();
+            highlightLayer.clearLayers(); 
+            mapClickMode = null;
+            document.getElementById('map').style.cursor = '';
+            document.getElementById('map-toast').style.display = 'none';
+        });
+
         // --- CLOCK SCRIPT ---
         function updateDateTime() {
             const now = new Date();
@@ -694,15 +704,15 @@
 
         // --- ROUTING STATE ---
         let availablePoints = {
-            'my_location': { lat: null, lng: null, name: "📍 My Location" },
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Dubai Office" }
         };
 
         let routeData = {
-            from: { lat: null, lng: null, name: "📍 My Location" },
+            from: { lat: availablePoints.talabat_office.lat, lng: availablePoints.talabat_office.lng, name: "🏢 Talabat Dubai Office" },
             to: { lat: null, lng: null, name: "Select Destination..." }
         };
 
+        let mapClickMode = null; 
         let activeInput = 'to'; 
 
         function setActiveInput(type) {
@@ -710,27 +720,6 @@
             document.getElementById('from-group').classList.remove('active');
             document.getElementById('to-group').classList.remove('active');
             document.getElementById(type + '-group').classList.add('active');
-        }
-
-        function setMyLocation(type) {
-            if (!availablePoints.my_location.lat) {
-                alert("GPS location not found. Please ensure location permissions are enabled.");
-                return;
-            }
-            if (type === 'from') routeData.from = { ...availablePoints.my_location };
-            if (type === 'to') routeData.to = { ...availablePoints.my_location };
-            updateRouteUI();
-        }
-
-        // Background GPS fetch
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(p => {
-                availablePoints.my_location.lat = p.coords.latitude;
-                availablePoints.my_location.lng = p.coords.longitude;
-                if (routeData.from.name === "📍 My Location") {
-                    routeData.from = { ...availablePoints.my_location };
-                }
-            }, () => {});
         }
 
         // --- CUSTOM DROPDOWN LOGIC ---
@@ -750,10 +739,7 @@
             event.stopPropagation();
             document.getElementById(`dd-${type}`).classList.remove('active');
 
-            if (option === 'my_location' && availablePoints.my_location.lat) {
-                if (type === 'from') routeData.from = availablePoints.my_location;
-                if (type === 'to') routeData.to = availablePoints.my_location;
-            } else if (option === 'talabat_office') {
+            if (option === 'talabat_office') {
                 if (type === 'from') routeData.from = availablePoints.talabat_office;
                 if (type === 'to') routeData.to = availablePoints.talabat_office;
             }
@@ -765,20 +751,13 @@
             document.getElementById(`dd-${type}`).classList.remove('active');
             mapClickMode = type;
             
-            document.getElementById('bottom-sheet').classList.remove('active');
+            // Just close the popup so we can see map to click
+            map.closePopup();
             document.getElementById('map').style.cursor = 'crosshair';
             
             const toast = document.getElementById('map-toast');
             toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
             toast.style.display = 'flex';
-        }
-
-        function exitMapClickMode() {
-            mapClickMode = null;
-            document.getElementById('map').style.cursor = '';
-            document.getElementById('map-toast').style.display = 'none';
-            document.getElementById('bottom-sheet').classList.add('active');
-            updateRouteUI();
         }
 
         // --- TALABAT OFFICE PIN ---
@@ -805,10 +784,19 @@
             L.DomEvent.stopPropagation(e);
             let point = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
             
-            if (document.getElementById('routing-section').style.display === 'flex') {
-                if (activeInput === 'from') routeData.from = point;
+            if (mapClickMode) {
+                if (mapClickMode === 'from') routeData.from = point;
                 else routeData.to = point;
-                updateRouteUI();
+                
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                document.getElementById('map-toast').style.display = 'none';
+                
+                // Reopen the modal they were working on
+                if(currentPopup) {
+                    currentPopup.openOn(map);
+                    updateRouteUI();
+                }
             } else {
                 openBottomSheet(talabatOfficeStore);
             }
@@ -870,7 +858,8 @@
                     });
                     L.marker([routeData.from.lat, routeData.from.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + routeData.from.name);
 
-                    map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
+                    // Re-align popup if needed when line is drawn
+                    if(currentPopup) currentPopup.update();
                 }
             } else {
                 document.getElementById('bs-dist').innerText = "Select Loc";
@@ -898,45 +887,48 @@
             updateRouteUI();
         }
 
-        function closeBottomSheet() {
-            document.getElementById('bottom-sheet').classList.remove('active');
-            previewRouteLayer.clearLayers();
-            clickedPinLayer.clearLayers();
-            highlightLayer.clearLayers(); 
-            
-            routeData.to = { lat: null, lng: null, name: "Select Destination..." };
-            if(availablePoints.my_location.lat) {
-                routeData.from = { ...availablePoints.my_location };
-            }
-            setActiveInput('to');
-        }
-
-        // --- STORE CLICK: PURE INFO MODE ---
+        // --- STORE CLICK: FLOATING POPUP MODE ---
         function openBottomSheet(store) {
+            // Update Texts inside Template
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             document.getElementById('bs-dist').innerText = "---";
             
+            // Hide routing section initially
             document.getElementById('routing-section').style.display = 'none';
             let navBtn = document.getElementById('bs-nav-btn');
             navBtn.innerHTML = '🚗 Direction';
             navBtn.setAttribute('onclick', 'handleDirectionClick()');
 
+            // Prep defaults but do NOT draw lines yet
+            routeData.from = { ...availablePoints.talabat_office }; // Default From is office
             routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
 
-            previewRouteLayer.clearLayers();
-            clickedPinLayer.clearLayers();
+            // Show popup container (it's normally hidden in body)
+            const popupTemplate = document.getElementById('store-popup-template');
+            popupTemplate.style.display = 'block';
+
+            // Create Leaflet Popup bound to marker coordinate
+            currentPopup = L.popup({
+                closeButton: false, // Custom close button used
+                autoPanPadding: [50, 50],
+                minWidth: 340,
+                maxWidth: 340,
+                className: 'custom-store-popup'
+            })
+            .setLatLng([store.lat, store.lng])
+            .setContent(popupTemplate)
+            .openOn(map);
             
+            // Draw Glowing Ring
             highlightLayer.clearLayers();
             const hIcon = L.divIcon({
                 className: 'store-highlight-ring',
                 iconSize: [60, 60], iconAnchor: [30, 30]
             });
             L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
-
-            document.getElementById('bottom-sheet').classList.add('active');
         }
 
         // --- DIRECTION BUTTON CLICK: ACTIVATE ROUTING ---
@@ -946,35 +938,33 @@
             btn.innerHTML = '🚗 Start Drive';
             btn.setAttribute('onclick', 'openNavModal()');
             
-            if (!routeData.from.lat && "geolocation" in navigator && routeData.from.name.includes("My Location")) {
-                navigator.geolocation.getCurrentPosition(p => {
-                    availablePoints.my_location.lat = p.coords.latitude;
-                    availablePoints.my_location.lng = p.coords.longitude;
-                    routeData.from = { ...availablePoints.my_location };
-                    updateRouteUI();
-                }, () => { updateRouteUI(); });
-            } else {
-                updateRouteUI();
-            }
+            // Update Leaflet popup size to fit new content perfectly
+            if(currentPopup) currentPopup.update();
+            
+            // NOW we draw the line
+            updateRouteUI();
         }
 
         // --- MAP CLICK HANDLER (EMPTY MAP) ---
         map.on('click', function(e) { 
-            if (document.getElementById('routing-section').style.display === 'flex' && activeInput) {
+            if (mapClickMode) {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 let newPoint = { lat: lat, lng: lng, name: "📌 Pinned Location" };
                 
-                if (activeInput === 'from') routeData.from = newPoint;
-                if (activeInput === 'to') routeData.to = newPoint;
-
-                if (activeInput === 'from' && !routeData.to.lat) setActiveInput('to');
-                else if (activeInput === 'to' && !routeData.from.lat) setActiveInput('from');
+                if (mapClickMode === 'from') routeData.from = newPoint;
+                if (mapClickMode === 'to') routeData.to = newPoint;
                 
-                updateRouteUI();
-            } else {
-                closeBottomSheet(); 
-            }
+                mapClickMode = null;
+                document.getElementById('map').style.cursor = '';
+                document.getElementById('map-toast').style.display = 'none';
+
+                // Re-open popup
+                if(currentPopup) {
+                    currentPopup.openOn(map);
+                    updateRouteUI();
+                }
+            } 
         });
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
@@ -1007,15 +997,34 @@
             }
             
             closeNavModal();
-            closeBottomSheet();
+            map.closePopup();
         }
 
         // --- DATA PROCESSING & FILTERING ---
+        function handleLocalCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: function(results) { processSmartData(results.data); }
+            });
+        }
+
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { console.error("Error loading CSV"); }
+                error: function(err) { 
+                    console.error("Fetch failed");
+                    document.querySelectorAll('.checkbox-list').forEach(el => {
+                        el.innerHTML = `
+                        <div class="empty-state" style="color:var(--status-red); font-size:11px;">
+                            <b>Blocked by Browser</b><br>
+                            Please manually upload your data.csv file below to view data.<br><br>
+                            <input type="file" accept=".csv" style="width:100%;" onchange="handleLocalCSV(event)">
+                        </div>`;
+                    });
+                }
             });
         }
 
@@ -1095,10 +1104,10 @@
                 }
             });
 
-            // --- ALL DEFAULTS IMPLEMENTED ---
+            // ALL DEFAULTS IMPLEMENTED
             buildSupervisorFilterList(); // Supervisors Unchecked
             buildChainFilterList(true);  // Chains ALL Checked
-            updateChampionDropdownScope(); // Champions Unchecked
+            updateChampionDropdownScope(false); // Champions Unchecked
         }
 
         function buildSupervisorFilterList() {
@@ -1137,10 +1146,10 @@
         }
 
         function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
-        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
-        function handleChainChange() { updateChampionDropdownScope(); }
+        function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(false); }
+        function handleChainChange() { updateChampionDropdownScope(false); }
 
-        function updateChampionDropdownScope() {
+        function updateChampionDropdownScope(checkAll = false) {
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
             const previouslyCheckedChamps = getCheckedValues('champion-list');
@@ -1157,7 +1166,7 @@
             });
 
             Object.keys(champStoreCounts).sort().forEach(champ => {
-                const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
+                const isChecked = (checkAll || previouslyCheckedChamps.includes(champ)) ? 'checked' : '';
                 champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
             });
             renderDashboard();
@@ -1389,7 +1398,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     } else {
@@ -1409,7 +1418,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     }
@@ -1502,10 +1511,13 @@
                     storeMarker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e); 
                         
-                        if (document.getElementById('routing-section').style.display === 'flex') {
+                        if (document.getElementById('routing-section').style.display === 'flex' && activeInput) {
                             let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
                             if (activeInput === 'from') routeData.from = point;
                             if (activeInput === 'to') routeData.to = point;
+                            
+                            // Keep popup open, just update data
+                            if(currentPopup) currentPopup.openOn(map);
                             updateRouteUI();
                         } else {
                             openBottomSheet(store);
@@ -1577,7 +1589,7 @@
                                 L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
                                 map.setView([item.lat, item.lon], 15);
 
-                                if (document.getElementById('bottom-sheet').classList.contains('active') && document.getElementById('routing-section').style.display === 'flex') {
+                                if (document.getElementById('routing-section').style.display === 'flex' && currentPopup) {
                                     updateRouteUI();
                                 }
                             };
