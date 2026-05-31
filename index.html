@@ -355,7 +355,6 @@
             
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
-
             #data-container { padding: 12px; overflow-y: auto; }
             .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
             .profile-card, .suggestions-container { flex: none; width: 100%; }
@@ -465,7 +464,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.49<br>
+                        LS Operations Optimizer v2.14<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -563,7 +562,6 @@
         const clickedPinLayer = L.layerGroup().addTo(map);
         const previewRouteLayer = L.layerGroup().addTo(map);
         
-        // Layers for Champion Territory Polygon and Clicked Store Glow
         const territoryLayer = L.layerGroup().addTo(map);
         const highlightLayer = L.layerGroup().addTo(map);
 
@@ -589,14 +587,10 @@
         // --- ROUTING STATE ---
         let availablePoints = {
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Office" },
-            'my_location': { lat: null, lng: null, name: "📍 My Location" },
-            'selected_store': null, 
-            'searched_loc': null,
-            'clicked_loc_from': null,
-            'clicked_loc_to': null
+            'my_location': { lat: null, lng: null, name: "📍 My Location" }
         };
 
-        // BOTH START BLANK
+        // Starts blank
         let routeData = {
             from: { lat: null, lng: null, name: "" },
             to: { lat: null, lng: null, name: "" }
@@ -640,38 +634,44 @@
             const fromSelect = document.getElementById('header-route-from');
             const toSelect = document.getElementById('header-route-to');
             
-            let baseHtml = `<option value="" disabled hidden>Choose...</option>`;
-            
-            let optionsHtml = '';
-            if(availablePoints.my_location.lat) {
-                optionsHtml += `<option value="my_location">📍 My Location</option>`;
+            const buildOptions = (point, isFrom) => {
+                let html = `<option value="" disabled hidden>Choose...</option>`;
+                
+                // If current point is custom, add it so the select can display it, but keep it hidden from menu
+                let isCustom = point && point.lat && point.name !== "📍 My Location" && point.name !== "🏢 Talabat Office";
+                if (isCustom) {
+                    html += `<option value="custom_${isFrom ? 'from' : 'to'}" hidden>${point.name}</option>`;
+                }
+
+                if(availablePoints.my_location.lat) {
+                    html += `<option value="my_location">📍 My Location</option>`;
+                } else {
+                    html += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
+                }
+                html += `<option value="talabat_office">🏢 Talabat Office</option>`;
+                html += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
+                
+                return html;
+            };
+
+            fromSelect.innerHTML = buildOptions(routeData.from, true);
+            toSelect.innerHTML = buildOptions(routeData.to, false);
+
+            if (routeData.from && routeData.from.lat) {
+                if (routeData.from.name === "📍 My Location") fromSelect.value = 'my_location';
+                else if (routeData.from.name === "🏢 Talabat Office") fromSelect.value = 'talabat_office';
+                else fromSelect.value = 'custom_from';
             } else {
-                optionsHtml += `<option value="my_location" disabled>📍 My Location (GPS Off)</option>`;
+                fromSelect.value = '';
             }
-            optionsHtml += `<option value="talabat_office">🏢 Talabat Office</option>`;
-            
-            if(availablePoints.selected_store) {
-                optionsHtml += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
-            }
-            if(availablePoints.searched_loc) {
-                optionsHtml += `<option value="searched_loc">🔍 ${availablePoints.searched_loc.name}</option>`;
-            }
-            if(availablePoints.clicked_loc_from) {
-                optionsHtml += `<option value="clicked_loc_from">📌 Pinned Location (From)</option>`;
-            }
-            if(availablePoints.clicked_loc_to) {
-                optionsHtml += `<option value="clicked_loc_to">📌 Pinned Location (To)</option>`;
-            }
-            optionsHtml += `<option value="click_map" style="color: var(--primary-orange);">📌 Select from map...</option>`;
 
-            const currentFrom = routeData.from.lat ? fromSelect.value : '';
-            const currentTo = routeData.to.lat ? toSelect.value : '';
-
-            fromSelect.innerHTML = baseHtml + optionsHtml;
-            toSelect.innerHTML = baseHtml + optionsHtml;
-
-            fromSelect.value = currentFrom;
-            toSelect.value = currentTo;
+            if (routeData.to && routeData.to.lat) {
+                if (routeData.to.name === "📍 My Location") toSelect.value = 'my_location';
+                else if (routeData.to.name === "🏢 Talabat Office") toSelect.value = 'talabat_office';
+                else toSelect.value = 'custom_to';
+            } else {
+                toSelect.value = '';
+            }
         }
 
         function handleHeaderRouteChange(type) {
@@ -687,7 +687,7 @@
                 toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
                 toast.style.display = 'flex';
                 map.closePopup();
-            } else {
+            } else if (val === 'my_location' || val === 'talabat_office') {
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById(selectId).classList.remove('waiting');
@@ -698,7 +698,6 @@
             }
         }
 
-        // Draw Line and Pins when BOTH are selected
         function updateRouteMap() {
             previewRouteLayer.clearLayers();
 
@@ -715,10 +714,8 @@
                 map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
             } else if (fromPoint && fromPoint.lat) {
                 drawCustomPin(fromPoint.lat, fromPoint.lng, 'origin', fromPoint.name);
-                map.setView([fromPoint.lat, fromPoint.lng], 14);
             } else if (toPoint && toPoint.lat) {
                 drawCustomPin(toPoint.lat, toPoint.lng, 'dest', toPoint.name);
-                map.setView([toPoint.lat, toPoint.lng], 14);
             }
         }
 
@@ -737,34 +734,23 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
-                const locKey = mapClickMode === 'from' ? 'clicked_loc_from' : 'clicked_loc_to';
-                availablePoints[locKey] = { lat: lat, lng: lng, name: "Pinned Location" };
-                routeData[mapClickMode] = availablePoints[locKey];
+                routeData[mapClickMode] = { lat: lat, lng: lng, name: "📌 Pinned Location" };
                 
-                populateHeaderDropdowns();
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
-                document.getElementById(selectId).value = locKey;
                 document.getElementById(selectId).classList.remove('waiting');
                 
-                clickedPinLayer.clearLayers();
-                const icon = L.divIcon({
-                    className: 'custom-blue-teardrop',
-                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                    iconSize: [30, 45], iconAnchor: [15, 45]
-                });
-                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
-
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('map-toast').style.display = 'none';
 
+                populateHeaderDropdowns();
                 updateRouteMap();
             } 
         });
 
         // --- TALABAT OFFICE PIN ---
         const talabatOfficeStore = {
-            locationName: "🏢 Talabat Dubai Office",
+            locationName: "🏢 Talabat Office",
             chainName: "Talabat HQ",
             championName: "Corporate",
             orders: 0,
@@ -787,14 +773,14 @@
 
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
-                populateHeaderDropdowns();
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
-                document.getElementById(selectId).value = 'talabat_office';
                 document.getElementById(selectId).classList.remove('waiting');
                 
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('map-toast').style.display = 'none';
+                
+                populateHeaderDropdowns();
                 updateRouteMap();
             } else {
                 openStorePopup(talabatOfficeStore);
@@ -834,9 +820,6 @@
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
 
-            availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-            populateHeaderDropdowns(); // Just updates available list, DOES NOT assign value to routeData
-
             const popupContent = document.getElementById('store-popup-template').innerHTML;
 
             if(currentPopup) map.closePopup(currentPopup);
@@ -862,7 +845,7 @@
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
             if (!routeData.from || !routeData.from.lat || !routeData.to || !routeData.to.lat) {
-                alert("Please select both a valid 'From' and 'To' location in the header.");
+                alert("Please select both a valid 'From' and 'To' location in the header before clicking GO.");
                 return;
             }
             document.getElementById('navAppModal').classList.add('active');
@@ -879,7 +862,7 @@
             const destLng = routeData.to.lng;
 
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                const gmapsLink = `http://googleusercontent.com/maps.google.com/maps?saddr=${startLat},${startLng}&daddr=${destLat},${destLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -995,6 +978,7 @@
                 }
             });
 
+            // Set up UI Options
             populateHeaderDropdowns();
             
             buildSupervisorFilterList(); 
@@ -1168,182 +1152,6 @@
             });
         }
 
-        function getDistanceKM(lat1, lon1, lat2, lon2) {
-            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
-            let minDist = Infinity;
-            let closestStore = null;
-            targetChampStores.forEach(s => {
-                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestStore = s;
-                }
-            });
-            return { distance: minDist, anchorStore: closestStore };
-        }
-
-        function selectChampion(champName, rowElement) {
-            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
-            rowElement.classList.add('selected');
-
-            let d = championUtilizationData[champName];
-            let pCard = document.getElementById('profile-card');
-            
-            let statusIcon = '✓';
-            if(d.status === 'Underutilized') statusIcon = '↘';
-            if(d.status === 'Medium Load') statusIcon = '⚠️';
-            if(d.status === 'Overloaded') statusIcon = '🔥';
-
-            pCard.innerHTML = `
-                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
-                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
-                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
-                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
-                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
-            `;
-
-            let sWrapper = document.getElementById('suggestions-wrapper');
-            sWrapper.innerHTML = '';
-
-            try {
-                let candidates = [];
-
-                if (d.status === 'Underutilized' || d.status === 'Optimal') {
-                    parsedData.forEach(store => {
-                        let ownerData = championUtilizationData[store.championName];
-                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
-                            let newCount = d.stores.length + 1;
-                            let newOrders = d.totalOrders + store.orders;
-                            
-                            if (newCount <= 5 && newOrders < 500) { 
-                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
-                                if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                    candidates.push({ 
-                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
-                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                    });
-                                }
-                            }
-                        }
-                    });
-                } 
-                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
-                    d.stores.forEach(store => {
-                        Object.keys(championUtilizationData).forEach(otherChampName => {
-                            let otherData = championUtilizationData[otherChampName];
-                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
-                                let newCount = otherData.stores.length + 1;
-                                let newOrders = otherData.totalOrders + store.orders;
-                                
-                                if (newCount <= 5 && newOrders < 500) { 
-                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
-                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                        candidates.push({ 
-                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
-                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }
-
-                candidates.sort((a, b) => a.distance - b.distance);
-
-                let uniqueCandidates = [];
-                let seenStores = new Set();
-                for (let c of candidates) {
-                    if (!seenStores.has(c.store.locationName)) {
-                        uniqueCandidates.push(c);
-                        seenStores.add(c.store.locationName);
-                    }
-                    if (uniqueCandidates.length >= 3) break;
-                }
-
-                if (uniqueCandidates.length === 0) {
-                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
-                    return;
-                }
-
-                uniqueCandidates.forEach((c, index) => {
-                    let card = document.createElement('div');
-                    card.className = 'suggestion-card';
-                    let mapId = `minimap-${index}`;
-                    
-                    if (c.type === 'take') {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            <div id="${mapId}" class="mini-map"></div>
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
-                            </div>
-                        `;
-                    } else {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            <div id="${mapId}" class="mini-map"></div>
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
-                            </div>
-                        `;
-                    }
-
-                    sWrapper.appendChild(card);
-
-                    setTimeout(() => {
-                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
-                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
-
-                        let storeLatLng = [c.store.lat, c.store.lng];
-                        let anchorLatLng = [c.anchorLat, c.anchorLng];
-
-                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
-                        L.circleMarker(anchorLatLng, {
-                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
-
-                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
-                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
-                    }, 50); 
-                });
-
-            } catch (err) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
-            }
-        }
-
         // --- MAP RENDERING ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
@@ -1411,14 +1219,14 @@
                     storeMarker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e); 
                         
+                        let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
+
                         if (mapClickMode) {
-                            let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-                            
                             routeData[mapClickMode] = point;
-                            populateHeaderDropdowns();
                             
+                            populateHeaderDropdowns();
                             const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
-                            document.getElementById(selectId).value = 'selected_store';
+                            document.getElementById(selectId).classList.remove('waiting');
 
                             mapClickMode = null;
                             document.getElementById('map').style.cursor = '';
@@ -1479,42 +1287,29 @@
                                 
                                 let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
                                 
-                                availablePoints.searched_loc = searchPoint;
-                                if (mapClickMode === 'to') {
-                                    routeData.to = searchPoint;
-                                    document.getElementById('header-route-to').value = 'searched_loc';
+                                if (mapClickMode) {
+                                    routeData[mapClickMode] = searchPoint;
+                                    
+                                    const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
+                                    document.getElementById(selectId).classList.remove('waiting');
                                     
                                     mapClickMode = null;
                                     document.getElementById('map').style.cursor = '';
                                     document.getElementById('map-toast').style.display = 'none';
-                                    document.getElementById('header-route-to').classList.remove('waiting');
-                                    updateRouteMap();
-                                } else if (mapClickMode === 'from') {
-                                    routeData.from = searchPoint;
-                                    document.getElementById('header-route-from').value = 'searched_loc';
                                     
-                                    mapClickMode = null;
-                                    document.getElementById('map').style.cursor = '';
-                                    document.getElementById('map-toast').style.display = 'none';
-                                    document.getElementById('header-route-from').classList.remove('waiting');
+                                    populateHeaderDropdowns();
                                     updateRouteMap();
                                 } else {
-                                    routeData.to = searchPoint;
-                                    populateHeaderDropdowns();
-                                    document.getElementById('header-route-to').value = 'searched_loc';
-                                    updateRouteMap();
+                                    searchPinLayer.clearLayers();
+                                    const searchIcon = L.divIcon({
+                                        className: 'custom-teardrop',
+                                        html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                                        iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
+                                    });
+
+                                    L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
+                                    map.setView([item.lat, item.lon], 15);
                                 }
-                                
-                                searchPinLayer.clearLayers();
-                                const searchIcon = L.divIcon({
-                                    className: 'custom-teardrop',
-                                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                                    iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
-                                });
-
-                                L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
-                                map.setView([item.lat, item.lon], 15);
-
                             };
                             suggestionsBoxMap.appendChild(div);
                         });
