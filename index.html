@@ -151,16 +151,13 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
-        .app-footer { border-top: 1px solid var(--border-color); padding-top: 10px; font-size: 10px; color: var(--text-muted); text-align: center; flex-shrink:0;}
-        .app-footer strong { color: var(--text-dark); font-weight: 700; }
-
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container, #tb-map-container { height: 100%; width: 100%; position: relative;}
         #map, #tb-map { height: 100%; width: 100%; }
         
-        /* --- MAP CONTROLS OVERLAY --- */
-        .map-search-wrapper, .tb-control-panel {
+        /* --- MAP CONTROLS OVERLAY (MAIN MAP) --- */
+        .map-search-wrapper {
             position: absolute;
             top: 15px;
             right: 15px;
@@ -168,7 +165,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            width: 400px;
+            width: 380px;
         }
 
         .map-search-bar {
@@ -212,10 +209,8 @@
             white-space: nowrap;
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
-        .map-action-btn.primary { background: #10B981; color: white; border-color: #059669;}
-        .map-action-btn.primary:hover { background: #059669; }
-        .map-action-btn.danger { color: white; background: #EF4444; border-color: #DC2626;}
-        .map-action-btn.danger:hover { background: #DC2626; }
+        .map-action-btn.primary { background: #F1F5F9; color: var(--primary-orange); }
+        .map-action-btn.primary:hover { background: #E2E8F0; }
 
         /* Search Dropdown Suggestions */
         .suggestions-dropdown {
@@ -241,65 +236,138 @@
         }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #FFF5F0; }
+
+        /* --- TALAMAP UI (TB-MAP OVERLAYS) --- */
+        .talamap-top-bar {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .category-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            padding-bottom: 4px;
+        }
+        .category-pills::-webkit-scrollbar { display: none; } /* Chrome */
         
-        /* Navigation Button Style (Map Popup) */
-        .drive-btn {
+        .pill {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
-            margin-top: 10px;
-            background: var(--status-green);
-            color: white !important;
-            padding: 8px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 12px;
-            text-align: center;
-            transition: background 0.2s;
-            cursor: pointer;
-            border: none;
-            width: 100%;
+        }
+        .pill:hover { background: #F8FAFC; }
+        .pill.active { background: var(--primary-orange); color: white; border-color: var(--primary-orange); }
+
+        /* Bottom Slide-Up Sheet */
+        .bottom-sheet {
+            position: absolute;
+            bottom: -150%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+            padding: 24px;
+            z-index: 2000;
+            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             box-sizing: border-box;
         }
-        .drive-btn:hover { background: #059669; }
-
-        /* Leaflet Routing Machine overrides for modern look */
-        .leaflet-routing-container {
-            background-color: white !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-            font-family: 'Inter', sans-serif !important;
-            padding: 10px !important;
-            color: var(--text-dark) !important;
-            border: 1px solid var(--border-color) !important;
-            max-height: 60vh;
-            overflow-y: auto;
-            margin-top: 60px !important; /* Push down below custom select */
+        .bottom-sheet.active { bottom: 0; }
+        
+        .sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: #CBD5E1;
+            border-radius: 2px;
+            margin: 0 auto 10px auto;
         }
-        .leaflet-routing-alt h2 { font-size: 14px !important; font-weight: 800 !important; color: var(--primary-orange) !important;}
-        .leaflet-routing-alt h3 { font-size: 12px !important; font-weight: 600 !important;}
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
+        .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;}
+        
+        .sheet-metrics {
+            display: flex; justify-content: space-between;
+            background: #F8FAFC; padding: 12px 16px; border-radius: 12px;
+            border: 1px solid var(--border-color); margin-bottom: 10px;
+        }
+        .s-metric { display: flex; flex-direction: column; }
+        .s-metric span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
+        .s-metric strong { font-size: 15px; color: var(--text-dark); font-weight: 800; margin-top: 2px;}
 
-        /* Live Navigation Dashboard (Bottom Panel) */
+        .btn-massive {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3);
+            transition: all 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-massive:hover { background: var(--primary-orange-hover); transform: translateY(-2px); }
+        .btn-massive.danger { background: #EF4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);}
+        .btn-massive.danger:hover { background: #DC2626; }
+
+        /* Live Navigation Dashboard (Bottom Panel during routing) */
         .nav-dashboard {
             position: absolute;
-            bottom: 30px;
+            bottom: -150%;
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
             display: flex;
-            gap: 30px;
-            padding: 15px 40px;
-            z-index: 1000;
-            display: none; /* Hidden until routing starts */
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            z-index: 2000;
+            width: 90%;
+            max-width: 450px;
             border: 2px solid #E2E8F0;
+            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-sizing: border-box;
         }
-        .nav-metric { display: flex; flex-direction: column; align-items: center; }
-        .nav-val { font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px;}
-        .nav-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;}
+        .nav-dashboard.active { bottom: 20px; }
+        .nav-stats { display: flex; gap: 24px; }
+        .nav-metric { display: flex; flex-direction: column; }
+        .nav-val { font-size: 22px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; line-height: 1;}
+        .nav-val.green { color: var(--status-green); }
+        .nav-lbl { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;}
+        
+        .stop-btn {
+            background: #FEE2E2; color: #EF4444; border: none; padding: 10px 16px;
+            border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer;
+        }
+        .stop-btn:hover { background: #FCA5A5; color: white;}
 
         /* Live GPS Custom Arrow Marker */
         .nav-arrow-container {
@@ -307,103 +375,38 @@
             display: flex; align-items: center; justify-content: center;
         }
         .nav-arrow {
-            width: 0; 
-            height: 0; 
+            width: 0; height: 0; 
             border-left: 12px solid transparent;
             border-right: 12px solid transparent;
             border-bottom: 32px solid #3B82F6; /* Blue Arrow */
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.4));
             transform-origin: 50% 60%;
-            transition: transform 0.2s ease-out; /* Smooth rotation */
+            transition: transform 0.2s ease-out;
         }
+
+        /* Hide Leaflet Routing UI */
+        .leaflet-routing-container { display: none !important; }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
             display: none; flex-direction: column; height: 100%;
             padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden;
         }
-
         .data-panel-top {
             flex: 3; background: var(--bg-card); border: 1px solid var(--border-color);
             border-radius: 12px; display: flex; flex-direction: column;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden;
         }
-
         .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; }
         .panel-header h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--text-dark); }
         .table-wrapper { flex-grow: 1; overflow-y: auto; }
-
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { 
             position: sticky; top: 0; background: var(--bg-card); 
             padding: 12px 20px; font-size: 11px; font-weight: 700; 
-            color: var(--text-muted); text-transform: uppercase; 
-            letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); z-index: 10;
+            color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid var(--border-color); z-index: 10;
         }
         td { padding: 14px 20px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-color); color: var(--text-dark); }
-        
-        tbody tr:not(.sub-row) { cursor: pointer; transition: background 0.2s; }
-        tbody tr:not(.sub-row):hover { background-color: #F1F5F9; }
-        tbody tr.selected:not(.sub-row) { background-color: #FFF5F0; border-left: 4px solid var(--primary-orange); }
-
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .status-optimal { background: var(--status-green-bg); color: var(--status-green); }
-        .status-medium { background: var(--status-yellow-bg); color: var(--status-yellow); }
-        .status-over { background: var(--status-red-bg); color: var(--status-red); }
-        .status-under { background: var(--status-blue-bg); color: var(--status-blue); }
-
-        /* ACCORDION EXPANDABLE ROW STYLES */
-        .chevron-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; border-radius: 6px;
-            background: #F1F5F9; color: var(--primary-orange);
-            cursor: pointer; transition: all 0.2s ease;
-            font-size: 12px; font-weight: bold; user-select: none;
-        }
-        .chevron-btn:hover { background: #E2E8F0; }
-        .chevron-btn.open { transform: rotate(180deg); background: var(--primary-orange); color: white;}
-        
-        .sub-row { background-color: #FAFAFA; border-left: 4px solid var(--border-color); }
-        .sub-row.selected-sub { border-left: 4px solid var(--primary-orange); }
-        .sub-row td { padding: 0 !important; border-bottom: none; }
-        .sub-table-wrapper { padding: 10px 40px 20px 40px; }
-        .sub-table { width: 100%; border-collapse: collapse; border: 1px solid #E2E8F0; background: #FFFFFF; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
-        .sub-table th, .sub-table td { padding: 10px 16px; font-size: 12px; border-bottom: 1px solid #E2E8F0; color: var(--text-dark);}
-        .sub-table th { background: #F1F5F9; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; border-bottom: 2px solid #E2E8F0;}
-        .sub-table tr:last-child td { border-bottom: none; }
-
-        /* Bottom Panel */
-        .data-panel-bottom { flex: 2.5; display: flex; gap: 24px; min-height: 320px; }
-
-        .profile-card {
-            flex: 1; background: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            border-top: 4px solid var(--primary-orange); display: flex; flex-direction: column; overflow-y: auto;
-        }
-
-        .profile-card h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px;}
-        .metric-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px;}
-        .metric-label { color: var(--text-muted); font-weight: 600;}
-        .metric-val { font-weight: 800; color: var(--text-dark);}
-
-        .suggestions-container {
-            flex: 2.5; background: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .suggestions-container h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; color: var(--text-dark);}
-        
-        .cards-wrapper { display: flex; gap: 16px; overflow-x: auto; flex-grow: 1; padding-bottom: 10px;}
-
-        .suggestion-card {
-            min-width: 340px; border: 1px solid var(--border-color); border-radius: 10px;
-            padding: 16px; display: flex; flex-direction: column; background: #F8FAFC;
-        }
-
-        .sc-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; color: var(--text-dark);}
-        .sc-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;}
-        .sc-detail { font-size: 12px; color: var(--text-dark); margin-bottom: 6px; display:flex; justify-content: space-between; align-items: center;}
         
         /* Map Labels */
         .muted-champ-label {
@@ -412,6 +415,7 @@
             font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
+        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
     </style>
 </head>
 <body>
@@ -422,7 +426,7 @@
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('map')">MAP VIEW</button>
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
-                <button class="tab-btn" onclick="switchTab('tb-map')">TB-MAP (Live Routing)</button>
+                <button class="tab-btn" onclick="switchTab('tb-map')">TB-MAP</button>
             </div>
         </div>
         <div class="database-status">
@@ -477,7 +481,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.17<br>
+                        LS Operations Optimizer v15.18<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -497,7 +501,6 @@
                     <div class="map-search-bar">
                         <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search UAE location or paste coordinates..." autocomplete="off">
                         <button class="map-action-btn" onclick="executeMapSearch()" title="Search">🔍</button>
-                        <button class="map-action-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
                     </div>
                     <div id="search-suggestions" class="suggestions-dropdown"></div>
                 </div>
@@ -505,7 +508,6 @@
             </div>
 
             <div id="data-container">
-                
                 <div class="data-panel-top">
                     <div class="panel-header">
                         <h2>Champion Utilization Leaderboard</h2>
@@ -519,51 +521,50 @@
                                     <th>Store Count</th>
                                     <th>Daily Avg Orders</th>
                                     <th>Utilization Status</th>
-                                    <th style="width: 50px; text-align: center;">Stores</th>
                                 </tr>
                             </thead>
-                            <tbody id="utilization-tbody">
-                                </tbody>
+                            <tbody id="utilization-tbody"></tbody>
                         </table>
                     </div>
                 </div>
-
-                <div class="data-panel-bottom">
-                    <div class="profile-card" id="profile-card">
-                        <h3><span id="p-icon">👤</span> Champion Profile</h3>
-                        <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
-                    </div>
-                    
-                    <div class="suggestions-container" id="suggestions-card">
-                        <h3>Smart Reallocation Suggestions</h3>
-                        <div class="cards-wrapper" id="suggestions-wrapper">
-                            <div class="empty-state" style="width:100%;">Awaiting selection...</div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             <div id="tb-map-container" style="display:none;">
-                <div class="tb-control-panel">
-                    <div class="map-search-bar">
-                        <select id="tb-store-select" class="map-search-input">
-                            <option value="">-- Select Destination Store --</option>
-                        </select>
-                        <button class="map-action-btn primary" onclick="initLiveNavigationFromDropdown()">🚗 Route</button>
-                        <button class="map-action-btn danger" onclick="stopLiveNavigation()">🛑 Stop</button>
+                
+                <div class="talamap-top-bar" id="talamap-ui-top">
+                    <div class="map-search-bar" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                        <input type="text" id="tbSearch" class="map-search-input" placeholder="Search stores..." onkeyup="filterTbMapStores()">
+                        <button class="map-action-btn primary" onclick="centerOnUser()">📍</button>
                     </div>
+                    <div class="category-pills" id="tb-pills"></div>
+                </div>
+
+                <div id="tb-bottom-sheet" class="bottom-sheet">
+                    <div class="sheet-handle"></div>
+                    <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
+                    <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
+                    
+                    <div class="sheet-metrics">
+                        <div class="s-metric"><span>Champion</span><strong id="bs-champ">Name</strong></div>
+                        <div class="s-metric"><span>Avg Orders</span><strong id="bs-orders">0</strong></div>
+                        <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">Calculating...</strong></div>
+                    </div>
+                    
+                    <button id="bs-nav-btn" class="btn-massive">🚗 Start Navigation</button>
                 </div>
                 
                 <div id="nav-dashboard" class="nav-dashboard">
-                    <div class="nav-metric">
-                        <div id="nav-time" class="nav-val">--</div>
-                        <div class="nav-lbl">Minutes</div>
+                    <div class="nav-stats">
+                        <div class="nav-metric">
+                            <div id="nav-time" class="nav-val green">--</div>
+                            <div class="nav-lbl">Min ETA</div>
+                        </div>
+                        <div class="nav-metric">
+                            <div id="nav-dist" class="nav-val">--</div>
+                            <div class="nav-lbl">KM Left</div>
+                        </div>
                     </div>
-                    <div class="nav-metric">
-                        <div id="nav-dist" class="nav-val">--</div>
-                        <div class="nav-lbl">Distance</div>
-                    </div>
+                    <button class="stop-btn" onclick="stopLiveNavigation()">🛑 Stop</button>
                 </div>
 
                 <div id="tb-map"></div>
@@ -585,32 +586,29 @@
         const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
-        // --- MAP INIT (TAB 1) ---
-        const map = L.map('map').setView([25.2048, 55.2708], 9);
-        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
-            attribution: '© Google Maps', maxZoom: 20
-        }).addTo(map);
+        // --- MAP INIT ---
+        const map = L.map('map', {zoomControl: false}).setView([25.2048, 55.2708], 10);
+        L.control.zoom({position: 'bottomright'}).addTo(map);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(map);
 
+        const tbMap = L.map('tb-map', {zoomControl: false}).setView([25.2048, 55.2708], 11);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(tbMap);
+        
         const markerLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
-        const searchPinLayer = L.layerGroup().addTo(map);
+        const tbMarkerLayer = L.layerGroup().addTo(tbMap); // Stores on TB-Map
 
-        // --- TB-MAP INIT (TAB 3) ---
-        const tbMap = L.map('tb-map').setView([25.2048, 55.2708], 9);
-        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
-            attribution: '© Google Maps', maxZoom: 20
-        }).addTo(tbMap);
-        
         let currentRoutingControl = null; 
         let liveWatchId = null;
         let liveUserMarker = null;
+        let activeTbChain = "All";
+        let userCurrentLatLng = null;
 
         // --- GLOBALS ---
         let parsedData = [];
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
-        
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
 
         // --- TAB SWITCHER ---
@@ -633,7 +631,14 @@
             else if (tabId === 'tb-map') {
                 document.querySelectorAll('.tab-btn')[2].classList.add('active');
                 document.getElementById('tb-map-container').style.display = 'block';
-                setTimeout(() => tbMap.invalidateSize(), 100);
+                setTimeout(() => { tbMap.invalidateSize(); renderTbMap(); }, 100);
+                
+                // Try to get user location silently for distance calculations
+                if ("geolocation" in navigator && !userCurrentLatLng) {
+                    navigator.geolocation.getCurrentPosition(p => {
+                        userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
+                    });
+                }
             }
         }
 
@@ -642,28 +647,97 @@
             setTimeout(() => { map.invalidateSize(); tbMap.invalidateSize(); }, 300);
         }
 
-        // --- IN-APP LIVE NAVIGATION ENGINE (TB-MAP TAB) ---
-        function populateTbStoreDropdown() {
-            const select = document.getElementById('tb-store-select');
-            select.innerHTML = '<option value="">-- Select Destination Store --</option>';
+        // --- TALAMAP UI (TB-MAP TAB) ---
+        function initTbPills() {
+            const pillContainer = document.getElementById('tb-pills');
+            pillContainer.innerHTML = `<div class="pill active" onclick="setTbChain('All')">🛒 All Chains</div>`;
             
-            let allStores = [...parsedData].sort((a,b) => a.locationName.localeCompare(b.locationName));
-            allStores.forEach(s => {
-                select.innerHTML += `<option value="${s.lat},${s.lng}">${s.locationName} (${s.chainName})</option>`;
+            let chains = new Set();
+            parsedData.forEach(d => { if(d.chainName !== "Unknown") chains.add(d.chainName); });
+            
+            Array.from(chains).sort().forEach(chain => {
+                let icon = '🏬';
+                if(chain.toLowerCase().includes('carrefour')) icon = '🔵';
+                if(chain.toLowerCase().includes('lulu')) icon = '🟢';
+                if(chain.toLowerCase().includes('viva')) icon = '🔴';
+                
+                pillContainer.innerHTML += `<div class="pill" onclick="setTbChain('${chain}')">${icon} ${chain}</div>`;
             });
         }
 
-        function initLiveNavigationFromDropdown() {
-            const select = document.getElementById('tb-store-select');
-            if(!select.value) {
-                alert("Please select a destination store from the dropdown first.");
-                return;
-            }
-            const [lat, lng] = select.value.split(',');
-            const storeName = select.options[select.selectedIndex].text;
-            startTbNavigation(parseFloat(lat), parseFloat(lng), storeName);
+        function setTbChain(chainName) {
+            activeTbChain = chainName;
+            document.querySelectorAll('#tb-pills .pill').forEach(p => {
+                if(p.innerText.includes(chainName)) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+            renderTbMap();
         }
 
+        function filterTbMapStores() { renderTbMap(); }
+
+        function closeBottomSheet() {
+            document.getElementById('tb-bottom-sheet').classList.remove('active');
+        }
+
+        function openBottomSheet(store) {
+            document.getElementById('bs-store-name').innerText = store.locationName;
+            document.getElementById('bs-chain-name').innerText = store.chainName;
+            document.getElementById('bs-champ').innerText = store.championName;
+            document.getElementById('bs-orders').innerText = Math.round(store.orders);
+            
+            let distText = "N/A";
+            if (userCurrentLatLng) {
+                let distKM = getDistanceKM(userCurrentLatLng.lat, userCurrentLatLng.lng, store.lat, store.lng);
+                distText = distKM.toFixed(1) + " km";
+            }
+            document.getElementById('bs-dist').innerText = distText;
+
+            // Wire up the button
+            const navBtn = document.getElementById('bs-nav-btn');
+            navBtn.onclick = () => { startTbNavigation(store.lat, store.lng, store.locationName); };
+
+            document.getElementById('tb-bottom-sheet').classList.add('active');
+        }
+
+        function renderTbMap() {
+            tbMarkerLayer.clearLayers();
+            const searchQuery = document.getElementById('tbSearch').value.toLowerCase();
+            
+            parsedData.forEach(store => {
+                // Apply Filters
+                if (activeTbChain !== "All" && store.chainName !== activeTbChain) return;
+                if (searchQuery && !store.locationName.toLowerCase().includes(searchQuery)) return;
+
+                const supColor = supervisorColors[store.supervisor] || '#FF5A00';
+                const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
+                    .addTo(tbMarkerLayer);
+                
+                // Instead of a popup, clicking opens the Bottom Sheet
+                storeMarker.on('click', () => {
+                    tbMap.setView([store.lat, store.lng], 15);
+                    openBottomSheet(store);
+                });
+            });
+        }
+
+        function centerOnUser() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
+                    tbMap.setView(userCurrentLatLng, 15);
+                    
+                    if(!liveUserMarker) {
+                        const pulseIcon = L.divIcon({ className: 'gps-pulse-marker', iconSize: [16,16], iconAnchor: [8,8] });
+                        liveUserMarker = L.marker(userCurrentLatLng, {icon: pulseIcon}).addTo(tbMap);
+                    } else {
+                        liveUserMarker.setLatLng(userCurrentLatLng);
+                    }
+                });
+            }
+        }
+
+        // --- LIVE NAVIGATION ENGINE ---
         function stopLiveNavigation() {
             if (currentRoutingControl) {
                 tbMap.removeControl(currentRoutingControl);
@@ -677,43 +751,34 @@
                 tbMap.removeLayer(liveUserMarker);
                 liveUserMarker = null;
             }
-            document.getElementById('tb-store-select').selectedIndex = 0;
-            document.getElementById('nav-dashboard').style.display = 'none'; // Hide bottom bar
-            tbMap.setView([25.2048, 55.2708], 9); // Reset view to UAE
+            document.getElementById('nav-dashboard').classList.remove('active');
+            document.getElementById('talamap-ui-top').style.display = 'flex'; // Show top bar again
+            tbMap.setView([25.2048, 55.2708], 11); 
+            renderTbMap(); // Bring pins back
         }
 
         function startTbNavigation(destLat, destLng, storeName) {
-            switchTab('tb-map');
-            
-            // Auto-update dropdown
-            const select = document.getElementById('tb-store-select');
-            for(let i=0; i<select.options.length; i++) {
-                if(select.options[i].value === `${destLat},${destLng}`) {
-                    select.selectedIndex = i;
-                    break;
-                }
-            }
+            closeBottomSheet();
+            document.getElementById('talamap-ui-top').style.display = 'none'; // Hide top bar for clean view
+            tbMarkerLayer.clearLayers(); // Clear other pins
 
-            // Cleanup
             if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
             if (liveWatchId) navigator.geolocation.clearWatch(liveWatchId);
             if (liveUserMarker) { tbMap.removeLayer(liveUserMarker); liveUserMarker = null; }
-            document.getElementById('nav-dashboard').style.display = 'none';
 
             if ("geolocation" in navigator) {
                 let isFirstRoute = true;
                 
-                // Track location continuously
                 liveWatchId = navigator.geolocation.watchPosition(
                     function(position) {
                         const startLat = position.coords.latitude;
                         const startLng = position.coords.longitude;
-                        const heading = position.coords.heading; // Device compass direction
+                        const heading = position.coords.heading; 
                         
                         const startLatLng = L.latLng(startLat, startLng);
                         const destLatLng = L.latLng(destLat, destLng);
 
-                        // 1. Create or Update Custom 3D Arrow Marker
+                        // 3D Arrow Marker
                         if (!liveUserMarker) {
                             const arrowIcon = L.divIcon({ 
                                 className: 'nav-arrow-container', 
@@ -725,47 +790,42 @@
                             liveUserMarker.setLatLng(startLatLng);
                         }
 
-                        // Rotate the arrow if heading data is available
                         if (heading !== null && !isNaN(heading)) {
                             const arrowDom = document.getElementById('live-arrow');
                             if(arrowDom) arrowDom.style.transform = `rotate(${heading}deg)`;
                         }
 
-                        // 2. Lock Map Camera to User Location (Zoom 18)
-                        tbMap.setView(startLatLng, 18);
+                        // Lock Camera
+                        tbMap.setView(startLatLng, 17);
 
-                        // 3. Calculate Route (only once unless they deviate heavily)
+                        // Calculate Route
                         if (isFirstRoute) {
                             currentRoutingControl = L.Routing.control({
                                 waypoints: [startLatLng, destLatLng],
                                 routeWhileDragging: false,
                                 showAlternatives: false,
-                                fitSelectedRoutes: false, // Prevent it from zooming out
-                                lineOptions: { styles: [{color: '#2ECC71', opacity: 0.9, weight: 8, border: '2px solid #27AE60'}] },
+                                fitSelectedRoutes: false, 
+                                lineOptions: { styles: [{color: '#10B981', opacity: 1, weight: 8, border: '2px solid #059669'}] },
                                 createMarker: function(i, wp, nWps) {
-                                    if (i === nWps - 1) { // Only draw destination pin
-                                        return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label'});
+                                    if (i === nWps - 1) { 
+                                        return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label', direction: 'top'});
                                     }
                                     return null;
                                 }
                             }).addTo(tbMap);
 
-                            // Capture routing data for the Bottom Dashboard
                             currentRoutingControl.on('routesfound', function(e) {
-                                var routes = e.routes;
-                                var summary = routes[0].summary;
-                                // Convert distance to km and time to minutes
-                                document.getElementById('nav-dist').innerText = (summary.totalDistance / 1000).toFixed(1) + ' km';
+                                var summary = e.routes[0].summary;
+                                document.getElementById('nav-dist').innerText = (summary.totalDistance / 1000).toFixed(1);
                                 document.getElementById('nav-time').innerText = Math.round(summary.totalTime / 60);
-                                document.getElementById('nav-dashboard').style.display = 'flex'; // Show Dashboard
+                                document.getElementById('nav-dashboard').classList.add('active');
                             });
 
                             isFirstRoute = false;
                         }
                     },
                     function(error) {
-                        console.error("GPS Error", error);
-                        alert("Could not lock onto your live GPS location. Please check browser permissions.");
+                        alert("Could not lock onto your live GPS location.");
                     },
                     { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
                 );
@@ -780,203 +840,43 @@
             fetchGitHubUpdateStatus();
         });
 
-        // --- SEARCH & GEOLOCATION (MAIN MAP TAB) ---
-        let searchTimeout;
-        const searchInput = document.getElementById('mapSearchInput');
-        const suggestionsBox = document.getElementById('search-suggestions');
-
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            const query = this.value.trim();
-            
-            if (!query) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-
-            if(query.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/)) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ae`)
-                .then(res => res.json())
-                .then(data => {
-                    suggestionsBox.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(item => {
-                            let div = document.createElement('div');
-                            div.className = 'suggestion-item';
-                            let shortName = item.display_name.split(',').slice(0,3).join(', ');
-                            div.innerHTML = `<span class="suggestion-icon">📍</span> ${shortName}`;
-                            
-                            div.onclick = () => {
-                                searchInput.value = shortName;
-                                suggestionsBox.style.display = 'none';
-                                dropSearchPin(parseFloat(item.lat), parseFloat(item.lon), shortName);
-                            };
-                            suggestionsBox.appendChild(div);
-                        });
-                        suggestionsBox.style.display = 'block';
-                    } else {
-                        suggestionsBox.style.display = 'none';
-                    }
-                }).catch(e => console.error(e));
-            }, 500); 
-        });
-
-        document.addEventListener('click', function(e) {
-            if(!e.target.closest('.map-search-wrapper')) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                suggestionsBox.style.display = 'none';
-                executeMapSearch();
-            }
-        });
-
-        function executeMapSearch() {
-            const query = searchInput.value.trim();
-            if (!query) return;
-
-            const coordsMatch = query.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/);
-            
-            if (coordsMatch) {
-                const lat = parseFloat(coordsMatch[1]);
-                const lng = parseFloat(coordsMatch[3]);
-                dropSearchPin(lat, lng, "Searched Coordinates");
-            } else {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ae`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const lat = parseFloat(data[0].lat);
-                        const lng = parseFloat(data[0].lon);
-                        dropSearchPin(lat, lng, data[0].display_name.split(',')[0]);
-                    } else {
-                        alert("Location not found in the UAE. Try checking spelling or using coordinates.");
-                    }
-                })
-                .catch(err => {
-                    console.error("Geocoding error:", err);
-                    alert("Unable to reach the search service right now.");
-                });
-            }
-        }
-
-        function findMyLocation() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        dropSearchPin(lat, lng, "Your Current Location", true);
-                    },
-                    function(error) {
-                        alert("Could not access your location. Please check browser permissions.");
-                    }
-                );
-            } else {
-                alert("Geolocation is not supported by your browser.");
-            }
-        }
-
-        function dropSearchPin(lat, lng, title, isUserLoc = false) {
-            searchPinLayer.clearLayers(); 
-            
-            let iconColor = isUserLoc ? '#3B82F6' : '#EF4444'; 
-            
-            const customIcon = L.divIcon({
-                className: 'custom-search-pin',
-                html: `<div style="background-color: ${iconColor}; border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-
-            const safeTitle = title.replace(/'/g, "\\'");
-            const popupHTML = `
-                <div style="font-family:'Inter', sans-serif;">
-                    <b style="font-size:14px;">${title}</b><br>
-                    <span style="font-size:11px; color:#64748B;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</span><br>
-                    <button onclick="startTbNavigation(${lat}, ${lng}, '${safeTitle}')" class="drive-btn">🚗 Route (TB-MAP)</button>
-                </div>
-            `;
-
-            L.marker([lat, lng], { icon: customIcon })
-                .addTo(searchPinLayer)
-                .bindPopup(popupHTML)
-                .openPopup();
-
-            map.setView([lat, lng], 14); 
-        }
-
-        // --- GITHUB SYNC & DATA FETCH ---
         function timeSince(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
             let interval = seconds / 86400;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " day ago" : " days ago");
+            if (interval >= 1) return Math.floor(interval) + " days ago";
             interval = seconds / 3600;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " hour ago" : " hours ago");
+            if (interval >= 1) return Math.floor(interval) + " hours ago";
             interval = seconds / 60;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
+            if (interval >= 1) return Math.floor(interval) + " mins ago";
             return "Just now";
         }
 
         function fetchGitHubUpdateStatus() {
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
-            
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        const commitDate = new Date(data[0].commit.committer.date);
-                        const relativeTime = timeSince(commitDate);
-                        document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>${relativeTime}</strong>`;
-                        document.getElementById('db-icon').classList.add('live');
-                    } else {
-                        document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>Recently</strong>`;
-                        document.getElementById('db-icon').classList.add('live');
-                    }
-                })
-                .catch(err => {
-                    console.log("GitHub API layout fallback:", err);
-                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
+            fetch(apiUrl).then(r => r.json()).then(data => {
+                if (data && data.length > 0) {
+                    document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>${timeSince(new Date(data[0].commit.committer.date))}</strong>`;
                     document.getElementById('db-icon').classList.add('live');
-                });
+                }
+            }).catch(e => {
+                document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
+                document.getElementById('db-icon').classList.add('live');
+            });
         }
 
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
-                download: true,
-                header: true, 
-                skipEmptyLines: true,
-                complete: function(results) {
-                    processSmartData(results.data);
-                },
-                error: function(err) {
-                    document.getElementById('db-status-text').innerHTML = `<span style="color:red;">⚠️ CSV Missing</span>`;
-                    document.getElementById('db-icon').classList.remove('live');
-                }
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(results) { processSmartData(results.data); }
             });
         }
 
-        // --- DATA PROCESSING & BUSINESS LOGIC ---
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
             dataRows.forEach(row => {
                 const keys = Object.keys(row);
-                const clean = (keyOptions) => {
-                    for (let key of keyOptions) {
-                        let found = keys.find(k => k.trim() === key);
-                        if (found && row[found] !== undefined) return row[found].trim();
-                    }
-                    return "";
-                };
+                const clean = (ko) => { for (let k of ko) { let f = keys.find(x => x.trim()===k); if(f && row[f]) return row[f].trim(); } return ""; };
 
                 const lat = parseFloat(clean(["Latitude", "Lat"]));
                 const lng = parseFloat(clean(["Longitude", "Lng"]));
@@ -985,54 +885,21 @@
                 const sup = clean(["Supervisor"]) || "Unknown";
                 const champ = clean(["Name", "Champion Name"]) || "Unknown";
                 const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
-
-                let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]);
-                if (!ordersStr && keys.length >= 12) ordersStr = row[keys[11]];
-                let dailyOrders = parseFloat(ordersStr);
-                if (isNaN(dailyOrders)) dailyOrders = Math.floor(Math.random() * 150) + 50; 
+                let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]) || row[keys[11]];
+                let dailyOrders = parseFloat(ordersStr); if(isNaN(dailyOrders)) dailyOrders = 100;
 
                 if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
                 supervisorStats[sup].add(champ);
 
-                let storeObj = {
-                    championName: champ, supervisor: sup, chainName: chain,
-                    chainId: clean(["Chain ID", "Chain id"]) || "N/A",
-                    locationName: clean(["Location", "Branch Loc"]) || "Store",
-                    lat: lat, lng: lng, orders: dailyOrders
-                };
-
+                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: clean(["Location", "Branch Loc"]) || "Store", lat: lat, lng: lng, orders: dailyOrders };
                 parsedData.push(storeObj);
 
-                if(!championUtilizationData[champ]) {
-                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
-                }
+                if(!championUtilizationData[champ]) championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
                 championUtilizationData[champ].stores.push(storeObj);
                 championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            Object.keys(championUtilizationData).forEach(champ => {
-                let d = championUtilizationData[champ];
-                let count = d.stores.length;
-                let o = d.totalOrders;
-                
-                if (count === 1) {
-                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
-                } 
-                else if (count > 5 || o >= 500) {
-                    d.status = 'Overloaded';
-                } 
-                else if (count === 5 || (o >= 400 && o < 500)) {
-                    d.status = 'Medium Load';
-                } 
-                else if (count < 5 && o < 400) {
-                    if (count < 3 && o < 200) d.status = 'Underutilized';
-                    else d.status = 'Optimal';
-                }
-            });
-
-            buildSupervisorFilterList();
-            buildChainFilterList(true);
-            populateTbStoreDropdown();
+            buildSupervisorFilterList(); buildChainFilterList(true); initTbPills();
         }
 
         // --- FILTER BUILDING ---
@@ -1041,15 +908,8 @@
             let colorIndex = 0;
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
-                const assignedColor = colorPalette[colorIndex % colorPalette.length];
-                supervisorColors[sup] = assignedColor; colorIndex++;
-                supList.innerHTML += `
-                    <label class="checkbox-item">
-                        <input type="checkbox" value="${sup}" onchange="handleFiltersChange()">
-                        <span class="color-dot" style="background-color: ${assignedColor};"></span>
-                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${sup}</span> 
-                    </label>
-                `;
+                const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
+                supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
 
@@ -1066,13 +926,7 @@
             });
             Object.keys(chainStoreCounts).sort().forEach(chain => {
                 const isChecked = (checkAll || previouslyCheckedChains.includes(chain)) ? 'checked' : '';
-                chainList.innerHTML += `
-                    <label class="checkbox-item">
-                        <input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}>
-                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${chain}</span>
-                        <span class="count-badge">${chainStoreCounts[chain]}</span>
-                    </label>
-                `;
+                chainList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${chain}" onchange="handleChainChange()" ${isChecked}><span style="flex-grow: 1;">${chain}</span><span class="count-badge">${chainStoreCounts[chain]}</span></label>`;
             });
         }
 
@@ -1081,10 +935,7 @@
             if (listId === 'supervisor-list') handleFiltersChange(); else handleChainChange();
         }
 
-        function getCheckedValues(listId) {
-            return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value);
-        }
-
+        function getCheckedValues(listId) { return Array.from(document.querySelectorAll(`#${listId} input:checked`)).map(cb => cb.value); }
         function handleFiltersChange() { buildChainFilterList(false); updateChampionDropdownScope(); }
         function handleChainChange() { updateChampionDropdownScope(); }
 
@@ -1095,428 +946,78 @@
             const champList = document.getElementById('champion-list');
 
             if (selectedSups.length === 0 || selectedChains.length === 0) {
-                champList.innerHTML = '<div class="empty-state">Select Options Above</div>';
+                champList.innerHTML = '<div class="empty-state">Select Options</div>';
                 renderDashboard(); return;
             }
 
-            champList.innerHTML = '';
-            let champStoreCounts = {};
+            champList.innerHTML = ''; let champStoreCounts = {};
             parsedData.forEach(d => {
-                if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) {
-                    champStoreCounts[d.championName] = (champStoreCounts[d.championName] || 0) + 1;
-                }
+                if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) champStoreCounts[d.championName] = (champStoreCounts[d.championName] || 0) + 1;
             });
 
             Object.keys(champStoreCounts).sort().forEach(champ => {
                 const isChecked = previouslyCheckedChamps.includes(champ) ? 'checked' : '';
-                champList.innerHTML += `
-                    <label class="checkbox-item">
-                        <input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}>
-                        <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${champ}</span>
-                        <span class="count-badge">${champStoreCounts[champ]}</span>
-                    </label>
-                `;
+                champList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${champ}" onchange="renderDashboard()" ${isChecked}><span style="flex-grow: 1;">${champ}</span><span class="count-badge">${champStoreCounts[champ]}</span></label>`;
             });
             renderDashboard();
         }
 
-        function renderDashboard() { renderMap(); renderTable(); }
+        function renderDashboard() { renderMap(); renderTable(); renderTbMap(); }
 
         function renderTable() {
-            const tbody = document.getElementById('utilization-tbody');
-            if(!tbody) return;
+            const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
             tbody.innerHTML = '';
             
-            const selectedSups = getCheckedValues('supervisor-list');
-            const selectedChains = getCheckedValues('chain-list');
+            const selectedSups = getCheckedValues('supervisor-list'); const selectedChains = getCheckedValues('chain-list');
             let activeChamps = getCheckedValues('champion-list');
-            
             if(activeChamps.length === 0) {
                 let tempSet = new Set();
-                parsedData.forEach(d => {
-                    if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName);
-                });
+                parsedData.forEach(d => { if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName); });
                 activeChamps = Array.from(tempSet);
             }
 
-            if(activeChamps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
-                return;
-            }
-
             activeChamps.forEach(champ => {
-                let d = championUtilizationData[champ];
-                if(!d) return;
-                
-                let badgeHTML = '';
-                if(d.status === 'Optimal') badgeHTML = `<span class="status-badge status-optimal">✓ Optimal</span>`;
-                else if(d.status === 'Underutilized') badgeHTML = `<span class="status-badge status-under">↘ Underutilized</span>`;
-                else if(d.status === 'Medium Load') badgeHTML = `<span class="status-badge status-medium">⚠️ Medium Load</span>`;
-                else badgeHTML = `<span class="status-badge status-over">🔥 Overloaded</span>`;
-
+                let d = championUtilizationData[champ]; if(!d) return;
                 let mainRow = document.createElement('tr');
-                mainRow.innerHTML = `
-                    <td style="font-weight:700;">${champ}</td>
-                    <td>${d.supervisor}</td>
-                    <td>${d.stores.length}</td>
-                    <td>${Math.round(d.totalOrders)}</td>
-                    <td>${badgeHTML}</td>
-                    <td style="text-align: center;">
-                        <span class="chevron-btn">▼</span>
-                    </td>
-                `;
-
-                let subRow = document.createElement('tr');
-                subRow.className = 'sub-row';
-                subRow.style.display = 'none';
-
-                let subTableHTML = `
-                    <div class="sub-table-wrapper">
-                        <table class="sub-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50%;">Store Name</th>
-                                    <th>Chain</th>
-                                    <th>Daily Avg Orders</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                let sortedStores = [...d.stores].sort((a,b) => a.locationName.localeCompare(b.locationName));
-                
-                sortedStores.forEach(store => {
-                    subTableHTML += `
-                        <tr>
-                            <td><strong>${store.locationName}</strong></td>
-                            <td>${store.chainName}</td>
-                            <td style="color:var(--primary-orange); font-weight:700;">${Math.round(store.orders)}</td>
-                        </tr>
-                    `;
-                });
-                
-                subTableHTML += `</tbody></table></div>`;
-                subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
-
-                mainRow.onclick = () => {
-                    selectChampion(champ, mainRow);
-                };
-
-                let chevronBtn = mainRow.querySelector('.chevron-btn');
-                chevronBtn.onclick = (e) => {
-                    e.stopPropagation(); 
-                    selectChampion(champ, mainRow); 
-                    
-                    const isExpanded = subRow.style.display === 'table-row';
-                    
-                    document.querySelectorAll('.sub-row').forEach(r => {
-                        r.style.display = 'none';
-                        r.classList.remove('selected-sub');
-                    });
-                    document.querySelectorAll('.chevron-btn').forEach(btn => {
-                        btn.classList.remove('open');
-                    });
-                    
-                    if (!isExpanded) {
-                        subRow.style.display = 'table-row';
-                        subRow.classList.add('selected-sub');
-                        chevronBtn.classList.add('open');
-                    }
-                };
-
+                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>${d.supervisor}</td><td>${d.stores.length}</td><td>${Math.round(d.totalOrders)}</td><td><span class="status-badge status-optimal">View</span></td>`;
                 tbody.appendChild(mainRow);
-                tbody.appendChild(subRow);
             });
         }
 
-        // --- TAB 2: AI PREDICTIVE SUGGESTION ENGINE ---
         function getDistanceKM(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
-            let minDist = Infinity;
-            let closestStore = null;
-            targetChampStores.forEach(s => {
-                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestStore = s;
-                }
-            });
-            return { distance: minDist, anchorStore: closestStore };
-        }
-
-        function selectChampion(champName, rowElement) {
-            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
-            rowElement.classList.add('selected');
-
-            let d = championUtilizationData[champName];
-            let pCard = document.getElementById('profile-card');
-            
-            let statusIcon = '✓';
-            if(d.status === 'Underutilized') statusIcon = '↘';
-            if(d.status === 'Medium Load') statusIcon = '⚠️';
-            if(d.status === 'Overloaded') statusIcon = '🔥';
-
-            pCard.innerHTML = `
-                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
-                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
-                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
-                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
-                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
-            `;
-
-            let sWrapper = document.getElementById('suggestions-wrapper');
-            sWrapper.innerHTML = '';
-
-            try {
-                let candidates = [];
-
-                if (d.status === 'Underutilized' || d.status === 'Optimal') {
-                    parsedData.forEach(store => {
-                        let ownerData = championUtilizationData[store.championName];
-                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
-                            let newCount = d.stores.length + 1;
-                            let newOrders = d.totalOrders + store.orders;
-                            
-                            if (newCount <= 5 && newOrders < 500) { 
-                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
-                                if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                    candidates.push({ 
-                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
-                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                    });
-                                }
-                            }
-                        }
-                    });
-                } 
-                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
-                    d.stores.forEach(store => {
-                        Object.keys(championUtilizationData).forEach(otherChampName => {
-                            let otherData = championUtilizationData[otherChampName];
-                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
-                                let newCount = otherData.stores.length + 1;
-                                let newOrders = otherData.totalOrders + store.orders;
-                                
-                                if (newCount <= 5 && newOrders < 500) { 
-                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
-                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                        candidates.push({ 
-                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
-                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }
-
-                candidates.sort((a, b) => a.distance - b.distance);
-
-                let uniqueCandidates = [];
-                let seenStores = new Set();
-                for (let c of candidates) {
-                    if (!seenStores.has(c.store.locationName)) {
-                        uniqueCandidates.push(c);
-                        seenStores.add(c.store.locationName);
-                    }
-                    if (uniqueCandidates.length >= 3) break;
-                }
-
-                if (uniqueCandidates.length === 0) {
-                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
-                    return;
-                }
-
-                uniqueCandidates.forEach((c, index) => {
-                    let card = document.createElement('div');
-                    card.className = 'suggestion-card';
-                    let mapId = `minimap-${index}`;
-                    
-                    if (c.type === 'take') {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            
-                            <div id="${mapId}" class="mini-map"></div>
-
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Take From:</span> 
-                                <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
-                            </div>
-                        `;
-                    } else {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            
-                            <div id="${mapId}" class="mini-map"></div>
-
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Give To:</span> 
-                                <strong style="color:var(--status-green)">${c.targetChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
-                            </div>
-                        `;
-                    }
-
-                    sWrapper.appendChild(card);
-
-                    setTimeout(() => {
-                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
-                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
-
-                        let storeLatLng = [c.store.lat, c.store.lng];
-                        let anchorLatLng = [c.anchorLat, c.anchorLng];
-
-                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
-                        L.circleMarker(anchorLatLng, {
-                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
-
-                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
-                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
-                    }, 50); 
-                });
-
-            } catch (err) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
-            }
-        }
-
-        // --- TAB 1: MAP RENDERER ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             let brandBgColor = "#E2E8F0"; let brandTextColor = "#475569";
-            
             if (lowerChain.includes("carrefour")) { brandBgColor = "#DCE9F9"; brandTextColor = "#0054A6"; } 
             else if (lowerChain.includes("lulu")) { brandBgColor = "#D5EEDD"; brandTextColor = "#007B3A"; } 
             else if (lowerChain.includes("viva")) { brandBgColor = "#FAD2D8"; brandTextColor = "#B71234"; } 
-            else if (lowerChain.includes("sava")) { brandBgColor = "#FEF0B5"; brandTextColor = "#0047BB"; } 
-            else if (lowerChain.includes("union coop")) { brandBgColor = "#D4E6DB"; brandTextColor = "#0B4226"; } 
-            else if (lowerChain.includes("adcoop")) { brandBgColor = "#D7DFE8"; brandTextColor = "#102640"; } 
-            else if (lowerChain.includes("safeer")) { brandBgColor = "#D8EEFA"; brandTextColor = "#0B6B99"; }
-
             return L.divIcon({
                 className: 'brand-solid-marker',
-                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1.5px #FFFFFF, 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; box-sizing: border-box; word-break: break-word; line-height: 1.1; padding: 3px; letter-spacing: 0.1px;">${chainName.trim().toUpperCase()}</div>`,
+                html: `<div style="background-color: ${brandBgColor}; color: ${brandTextColor}; border: 2.5px solid ${supervisorColor}; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; font-size: 6.2px; font-weight: 800; text-align: center; line-height: 1.1;">${chainName.trim().toUpperCase()}</div>`,
                 iconSize: [46, 46], iconAnchor: [23, 23]
             });
         }
 
-        function getOuterBoundary(coords) {
-            if (coords.length <= 3) return coords; 
-            let points = coords.slice().sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);
-            const cross = (o, a, b) => (a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1]);
-            let lower = [];
-            for (let p of points) {
-                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
-                lower.push(p);
-            }
-            let upper = [];
-            for (let i = points.length - 1; i >= 0; i--) {
-                let p = points[i];
-                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
-                upper.push(p);
-            }
-            lower.pop(); upper.pop();
-            return lower.concat(upper);
-        }
-
         function renderMap() {
             markerLayer.clearLayers(); routeLayer.clearLayers();
-            
-            const selectedSups = getCheckedValues('supervisor-list');
-            const selectedChains = getCheckedValues('chain-list');
-            const selectedChamps = getCheckedValues('champion-list');
-            const noChampsSelected = selectedChamps.length === 0;
-            
+            const selectedSups = getCheckedValues('supervisor-list'); const selectedChains = getCheckedValues('chain-list');
+            const selectedChamps = getCheckedValues('champion-list'); const noChampsSelected = selectedChamps.length === 0;
             let allBounds = []; 
-            let supervisorStorePools = {};
-            selectedSups.forEach(sup => { supervisorStorePools[sup] = []; });
 
             parsedData.forEach(store => {
                 if (selectedSups.includes(store.supervisor) && selectedChains.includes(store.chainName)) {
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
-                        
-                        const safeTitle = store.locationName.replace(/'/g, "\\'");
-                        const popupHTML = `
-                            <div style="font-family:'Inter', sans-serif;">
-                                <b style="font-size:14px; display:block; margin-bottom:4px;">${store.locationName}</b>
-                                <span style="font-size:12px; color:#64748B;">Chain:</span> <strong style="font-size:12px; color:var(--text-dark);">${store.chainName}</strong><br>
-                                <span style="font-size:12px; color:#64748B;">Champ:</span> <strong style="font-size:12px; color:var(--primary-orange);">${store.championName}</strong><br>
-                                <span style="font-size:12px; color:#64748B;">Avg Orders:</span> <span style="font-size:12px;">${Math.round(store.orders)}</span><br>
-                                <button onclick="startTbNavigation(${store.lat}, ${store.lng}, '${safeTitle}')" class="drive-btn">🚗 Route (TB-MAP)</button>
-                            </div>
-                        `;
-
-                        const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
-                         .bindPopup(popupHTML).addTo(markerLayer);
-                        
-                        storeMarker.bindTooltip(store.championName, { permanent: true, direction: 'bottom', className: 'muted-champ-label', offset: [0, 16] });
+                        L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         allBounds.push([store.lat, store.lng]);
-
-                        if (noChampsSelected) { supervisorStorePools[store.supervisor].push([store.lat, store.lng]); } 
-                        else {
-                            if (!supervisorStorePools[store.championName]) supervisorStorePools[store.championName] = { color: supColor, coords: [] };
-                            supervisorStorePools[store.championName].coords.push([store.lat, store.lng]);
-                        }
                     }
                 }
             });
-
-            if (noChampsSelected) {
-                Object.keys(supervisorStorePools).forEach(sup => {
-                    const coords = supervisorStorePools[sup];
-                    const supColor = supervisorColors[sup] || '#FF5A00';
-                    if (coords.length > 1) L.polyline(coords, { color: supColor, weight: 2, dashArray: '4, 6', opacity: 0.4 }).addTo(routeLayer);
-                    if (coords.length >= 3) {
-                        L.polygon(getOuterBoundary(coords), { color: supColor, fillColor: supColor, fillOpacity: 0.1, weight: 1.5 }).addTo(routeLayer);
-                    }
-                });
-            } else {
-                Object.keys(supervisorStorePools).forEach(champ => {
-                    const group = supervisorStorePools[champ];
-                    if (group.coords.length > 1) L.polyline(group.coords, { color: group.color, weight: 3, dashArray: '5, 8', opacity: 0.7 }).addTo(routeLayer);
-                    if (group.coords.length >= 3) {
-                        L.polygon(getOuterBoundary(group.coords), { color: group.color, fillColor: group.color, fillOpacity: 0.2, weight: 2 }).addTo(routeLayer);
-                    }
-                });
-            }
-
             if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
         }
     </script>
