@@ -6,6 +6,7 @@
     <title>LS_Operations & Territory Optimizer</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     
     <style>
         /* UI/UX & Design System - Enterprise Dashboard Theme */
@@ -155,8 +156,8 @@
 
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
-        #map-container { height: 100%; width: 100%; position: relative;}
-        #map { height: 100%; width: 100%; }
+        #map-container, #tb-map-container { height: 100%; width: 100%; position: relative;}
+        #map, #tb-map { height: 100%; width: 100%; }
         
         /* --- MAP SEARCH OVERLAY --- */
         .map-search-wrapper {
@@ -256,8 +257,25 @@
             font-size: 12px;
             text-align: center;
             transition: background 0.2s;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
         }
         .drive-btn:hover { background: #059669; }
+
+        /* Leaflet Routing Machine overrides for modern look */
+        .leaflet-routing-container {
+            background-color: white !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            padding: 10px !important;
+            color: var(--text-dark) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        .leaflet-routing-alt h2 { font-size: 14px !important; font-weight: 800 !important; color: var(--primary-orange) !important;}
+        .leaflet-routing-alt h3 { font-size: 12px !important; font-weight: 600 !important;}
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -389,7 +407,7 @@
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('map')">MAP VIEW</button>
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
-            </div>
+                <button class="tab-btn" onclick="switchTab('tb-map')">TB-MAP</button> </div>
         </div>
         <div class="database-status">
             <div class="db-icon" id="db-icon"></div>
@@ -443,7 +461,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.14<br>
+                        LS Operations Optimizer v15.15<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -512,11 +530,16 @@
 
             </div>
 
+            <div id="tb-map-container" style="display:none;">
+                <div id="tb-map"></div>
+            </div>
+
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     
     <script>
         // ====== ADMIN CONFIGURATION ======
@@ -527,7 +550,7 @@
         const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
-        // --- MAP INIT ---
+        // --- MAP INIT (TAB 1) ---
         const map = L.map('map').setView([25.2048, 55.2708], 9);
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
             attribution: '© Google Maps', maxZoom: 20
@@ -536,6 +559,13 @@
         const markerLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
         const searchPinLayer = L.layerGroup().addTo(map);
+
+        // --- TB-MAP INIT (TAB 3) ---
+        const tbMap = L.map('tb-map').setView([25.2048, 55.2708], 9);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
+            attribution: '© Google Maps', maxZoom: 20
+        }).addTo(tbMap);
+        let currentRoutingControl = null; // Holds the active route
 
         // --- GLOBALS ---
         let parsedData = [];
@@ -548,22 +578,80 @@
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('data-container').style.display = 'none';
+            document.getElementById('tb-map-container').style.display = 'none';
+
             if (tabId === 'map') {
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 document.getElementById('map-container').style.display = 'block';
-                document.getElementById('data-container').style.display = 'none';
                 setTimeout(() => map.invalidateSize(), 100);
-            } else {
+            } 
+            else if (tabId === 'data') {
                 document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('map-container').style.display = 'none';
                 document.getElementById('data-container').style.display = 'flex';
                 renderTable(); 
+            }
+            else if (tabId === 'tb-map') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('tb-map-container').style.display = 'block';
+                setTimeout(() => tbMap.invalidateSize(), 100);
             }
         }
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
-            setTimeout(() => map.invalidateSize(), 300);
+            setTimeout(() => { map.invalidateSize(); tbMap.invalidateSize(); }, 300);
+        }
+
+        // --- IN-APP NAVIGATION ENGINE (2GIS Style) ---
+        function startTbNavigation(destLat, destLng, storeName) {
+            // Immediately switch to the TB-MAP tab so the user sees action
+            switchTab('tb-map');
+            
+            // Clean up any old route
+            if (currentRoutingControl) {
+                tbMap.removeControl(currentRoutingControl);
+                currentRoutingControl = null;
+            }
+
+            if ("geolocation" in navigator) {
+                // Request live location from the browser
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const startLat = position.coords.latitude;
+                        const startLng = position.coords.longitude;
+
+                        // Create the 2GIS style turn-by-turn route
+                        currentRoutingControl = L.Routing.control({
+                            waypoints: [
+                                L.latLng(startLat, startLng), // Start (My Location)
+                                L.latLng(destLat, destLng)    // Destination (Store)
+                            ],
+                            routeWhileDragging: true,
+                            showAlternatives: true,
+                            fitSelectedRoutes: true,
+                            lineOptions: {
+                                styles: [{color: '#3B82F6', opacity: 0.8, weight: 6}]
+                            },
+                            createMarker: function(i, wp, nWps) {
+                                // Custom Markers for Start/End
+                                if (i === 0) {
+                                    return L.marker(wp.latLng).bindTooltip("Your Location", {permanent:true});
+                                } else if (i === nWps - 1) {
+                                    return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label'});
+                                }
+                            }
+                        }).addTo(tbMap);
+                    },
+                    function(error) {
+                        alert("Please allow location permissions in your browser to calculate the route.");
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("Your browser does not support geolocation.");
+            }
         }
 
         // --- INITIALIZATION ---
@@ -689,14 +777,13 @@
                 iconAnchor: [12, 12]
             });
 
-            // Native Google Maps Directions deep-link
-            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-
+            // Replaced raw google maps link with internal TB-MAP function
+            const safeTitle = title.replace(/'/g, "\\'");
             const popupHTML = `
                 <div style="font-family:'Inter', sans-serif;">
                     <b style="font-size:14px;">${title}</b><br>
                     <span style="font-size:11px; color:#64748B;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</span><br>
-                    <a href="${gmapsLink}" target="_blank" class="drive-btn">🚗 Start Navigation</a>
+                    <button onclick="startTbNavigation(${lat}, ${lng}, '${safeTitle}')" class="drive-btn">🚗 Start Navigation</button>
                 </div>
             `;
 
@@ -709,6 +796,17 @@
         }
 
         // --- GITHUB SYNC & DATA FETCH ---
+        function timeSince(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 86400;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " day ago" : " days ago");
+            interval = seconds / 3600;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " hour ago" : " hours ago");
+            interval = seconds / 60;
+            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
+            return "Just now";
+        }
+
         function fetchGitHubUpdateStatus() {
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
             
@@ -1255,16 +1353,14 @@
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                         
-                        // Native Google Maps Directions deep-link for Store Pins
-                        const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}&travelmode=driving`;
-                        
+                        const safeTitle = store.locationName.replace(/'/g, "\\'");
                         const popupHTML = `
                             <div style="font-family:'Inter', sans-serif;">
                                 <b style="font-size:14px; display:block; margin-bottom:4px;">${store.locationName}</b>
                                 <span style="font-size:12px; color:#64748B;">Chain:</span> <strong style="font-size:12px; color:var(--text-dark);">${store.chainName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Champ:</span> <strong style="font-size:12px; color:var(--primary-orange);">${store.championName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Avg Orders:</span> <span style="font-size:12px;">${Math.round(store.orders)}</span><br>
-                                <a href="${gmapsLink}" target="_blank" class="drive-btn">🚗 Start Navigation</a>
+                                <button onclick="startTbNavigation(${store.lat}, ${store.lng}, '${safeTitle}')" class="drive-btn">🚗 Start Navigation</button>
                             </div>
                         `;
 
