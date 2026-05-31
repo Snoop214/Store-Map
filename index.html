@@ -218,90 +218,90 @@
             padding: 0;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .custom-store-popup .leaflet-popup-content { margin: 0; width: 340px !important; }
+        .custom-store-popup .leaflet-popup-content { margin: 0; width: 280px !important; }
         .custom-store-popup .leaflet-popup-tip { background: white; }
         
         .store-popup-container {
             background: white;
             border-radius: 20px;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             box-sizing: border-box;
             position: relative;
         }
 
         .sheet-close-btn {
-            position: absolute; top: 15px; right: 15px; width: 28px; height: 28px;
+            position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
+            font-size: 12px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
-        .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
+        .sheet-title { font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px; line-height: 1.2;}
+        .sheet-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
         /* Interactive Route Info Box (Native UI) */
-        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative;}
+        .route-info-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; position: relative;}
         
         .routing-inputs-container {
-            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; 
-            display: flex; flex-direction: column; gap: 8px; flex-grow: 1;
+            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; 
+            display: flex; flex-direction: column; gap: 6px; flex-grow: 1;
         }
 
         .r-input-group {
-            display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0;
-            padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1px solid #E2E8F0;
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
         }
         .r-input-group.active {
             border-color: var(--primary-orange); box-shadow: 0 0 0 3px rgba(255,90,0,0.1);
         }
         .r-input-group input {
-            border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--text-dark);
+            border: none; background: transparent; font-size: 12px; font-weight: 700; color: var(--text-dark);
             width: 100%; outline: none; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
             font-family: 'Inter', sans-serif;
         }
         
-        .r-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;}
-        .r-dot.origin { border: 3px solid var(--status-blue); background: white; }
+        .r-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;}
+        .r-dot.origin { border: 2.5px solid var(--status-blue); background: white; }
         .r-dot.dest { background: var(--primary-orange); }
         
         /* Custom Dropdown Menus */
         .custom-dropdown {
-            display: none; position: absolute; left: 14px; width: calc(100% - 90px);
-            background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px;
+            display: none; position: absolute; left: 10px; width: calc(100% - 70px);
+            background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 3000; overflow: hidden;
         }
         .custom-dropdown.active { display: block; animation: dropIn 0.2s ease; }
         @keyframes dropIn { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
         
-        .dd-item { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
+        .dd-item { padding: 10px 14px; font-size: 12px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
         .dd-item:last-child { border-bottom: none; }
         .dd-item:hover { background: #FFF5F0; color: var(--primary-orange); }
         
-        #dd-from { top: 40px; }
-        #dd-to { top: 80px; }
+        #dd-from { top: 35px; }
+        #dd-to { top: 70px; }
         
+        /* Swap Button */
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
-            border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0;
+            border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0;
         }
         .swap-btn:hover { background: #E2E8F0; transform: scale(1.05); }
 
         .sheet-metrics {
-            display: flex; justify-content: space-between; background: #FFFFFF; padding: 12px 16px; 
-            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 5px;
+            display: flex; justify-content: space-between; background: #FFFFFF; padding: 10px 14px; 
+            border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 5px;
         }
         .s-metric { display: flex; flex-direction: column; }
-        .s-metric span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
-        .s-metric strong { font-size: 15px; color: var(--text-dark); font-weight: 800; margin-top: 2px;}
+        .s-metric span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
+        .s-metric strong { font-size: 14px; color: var(--text-dark); font-weight: 800; margin-top: 2px;}
 
         .btn-massive {
-            background: var(--primary-orange); color: white; border: none; padding: 14px;
-            border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer;
+            background: var(--primary-orange); color: white; border: none; padding: 12px;
+            border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3); transition: all 0.2s;
             display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; flex-shrink: 0;
         }
@@ -459,6 +459,8 @@
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
 
+            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; max-width: calc(100% - 60px); }
+
             #data-container { padding: 12px; overflow-y: auto; }
             .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
             .profile-card, .suggestions-container { flex: none; width: 100%; }
@@ -574,7 +576,7 @@
                 <div id="store-popup-template" style="display: none;">
                     <div class="store-popup-container">
                         <button class="sheet-close-btn" onclick="map.closePopup()">✕</button>
-                        <div class="sheet-handle"></div>
+                        <div class="sheet-handle" style="display: none;"></div>
                         
                         <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
                         <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
@@ -602,10 +604,10 @@
                             </div>
                         </div>
                         
-                        <div class="sheet-metrics" style="margin-top: 10px;">
+                        <div class="sheet-metrics" style="margin-top: 5px;">
                             <div class="s-metric"><span>Champion</span><strong id="bs-champ">Name</strong></div>
                             <div class="s-metric"><span>Avg Orders</span><strong id="bs-orders">0</strong></div>
-                            <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">---</strong></div>
+                            <div class="s-metric" id="dist-metric" style="display:none;"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">---</strong></div>
                         </div>
                         
                         <button id="bs-nav-btn" class="btn-massive" onclick="handleDirectionClick()">🚗 Direction</button>
@@ -633,7 +635,7 @@
                                 </tr>
                             </thead>
                             <tbody id="utilization-tbody">
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -665,7 +667,7 @@
         // ==================================
 
         // --- MAP INIT ---
-        const map = L.map('map', {zoomControl: false}).setView([25.2048, 55.2708], 10);
+        const map = L.map('map', {zoomControl: false}).setView([25.2092, 55.2612], 11);
         L.control.zoom({position: 'bottomright'}).addTo(map);
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(map);
         
@@ -898,6 +900,8 @@
             
             // Hide routing section initially
             document.getElementById('routing-section').style.display = 'none';
+            document.getElementById('dist-metric').style.display = 'none';
+            
             let navBtn = document.getElementById('bs-nav-btn');
             navBtn.innerHTML = '🚗 Direction';
             navBtn.setAttribute('onclick', 'handleDirectionClick()');
@@ -914,8 +918,8 @@
             currentPopup = L.popup({
                 closeButton: false, // Custom close button used
                 autoPanPadding: [50, 50],
-                minWidth: 340,
-                maxWidth: 340,
+                minWidth: 280,
+                maxWidth: 280,
                 className: 'custom-store-popup'
             })
             .setLatLng([store.lat, store.lng])
@@ -934,6 +938,8 @@
         // --- DIRECTION BUTTON CLICK: ACTIVATE ROUTING ---
         function handleDirectionClick() {
             document.getElementById('routing-section').style.display = 'flex';
+            document.getElementById('dist-metric').style.display = 'flex';
+            
             let btn = document.getElementById('bs-nav-btn');
             btn.innerHTML = '🚗 Start Drive';
             btn.setAttribute('onclick', 'openNavModal()');
@@ -1106,7 +1112,7 @@
 
             // ALL DEFAULTS IMPLEMENTED
             buildSupervisorFilterList(); // Supervisors Unchecked
-            buildChainFilterList(true);  // Chains ALL Checked
+            buildChainFilterList(false);  // Chains Unchecked (Wait, let's keep all unchecked on start)
             updateChampionDropdownScope(false); // Champions Unchecked
         }
 
@@ -1182,6 +1188,11 @@
             const selectedChains = getCheckedValues('chain-list');
             let activeChamps = getCheckedValues('champion-list');
             
+            if (selectedSups.length === 0 && selectedChains.length === 0 && activeChamps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Please select a filter to view data.</td></tr>`;
+                return;
+            }
+
             if(activeChamps.length === 0) {
                 let tempSet = new Set();
                 parsedData.forEach(d => {
@@ -1398,7 +1409,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
                             </div>
                         `;
                     } else {
@@ -1418,7 +1429,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
                             </div>
                         `;
                     }
@@ -1489,6 +1500,11 @@
             const selectedChains = getCheckedValues('chain-list');
             const selectedChamps = getCheckedValues('champion-list'); 
             
+            // --- HIDE ALL STORES ON INITIAL LOAD ---
+            if (selectedSups.length === 0 && selectedChains.length === 0 && selectedChamps.length === 0) {
+                return; // Leaves map completely empty except for Talabat Pin
+            }
+
             let allBounds = []; 
             let champPoints = [];
             let champColor = '#FF5A00';
@@ -1516,7 +1532,6 @@
                             if (activeInput === 'from') routeData.from = point;
                             if (activeInput === 'to') routeData.to = point;
                             
-                            // Keep popup open, just update data
                             if(currentPopup) currentPopup.openOn(map);
                             updateRouteUI();
                         } else {
