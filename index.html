@@ -54,7 +54,6 @@
         }
 
         .header-left { display: flex; align-items: center; gap: 40px; }
-        .header-right { display: flex; align-items: center; gap: 20px; }
 
         .logo {
             color: var(--primary-orange);
@@ -83,54 +82,6 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
-        /* --- HEADER SEARCH BAR --- */
-        .header-search-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            width: 320px;
-        }
-
-        .header-search-bar {
-            display: flex; gap: 8px; background: #F8FAFC; padding: 6px 12px;
-            border-radius: 8px; align-items: center; width: 100%; box-sizing: border-box;
-            border: 1px solid var(--border-color);
-            transition: all 0.2s;
-        }
-        .header-search-bar:focus-within {
-            border-color: var(--primary-orange);
-            background: #FFFFFF;
-            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.1);
-        }
-
-        .header-search-input {
-            border: none; background: transparent; font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: none; color: var(--text-dark);
-        }
-
-        .map-action-btn {
-            background: white; border: 1px solid #E2E8F0; color: var(--text-dark); border-radius: 6px;
-            padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;
-        }
-        .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
-        
-        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
-        .pulse-loc-btn:hover { background: #EFF6FF !important; }
-
-        /* Search Dropdown Suggestions */
-        .suggestions-dropdown {
-            position: absolute; top: calc(100% + 8px); right: 0; width: 100%;
-            background: white; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            max-height: 250px; overflow-y: auto; display: none; border: 1px solid var(--border-color); box-sizing: border-box; z-index: 3000;
-        }
-        .suggestion-item {
-            padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-color);
-            cursor: pointer; color: var(--text-dark); transition: background 0.2s; line-height: 1.4;
-        }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #FFF5F0; }
-
-        /* Current Date/Time Display */
         .datetime-display {
             font-size: 13px;
             font-weight: 700;
@@ -143,7 +94,6 @@
             align-items: center;
             gap: 6px;
             letter-spacing: 0.3px;
-            white-space: nowrap;
         }
 
         /* --- MAIN APP LAYOUT --- */
@@ -205,22 +155,53 @@
             text-align: left; 
             flex-shrink: 0;
             margin-top: auto;
-            line-height: 1.4;
         }
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; position: relative;}
-        #map { height: 100%; width: 100%; cursor: grab;}
-
-        /* Instruction Toast */
-        #map-toast {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
-            font-size: 14px; font-weight: 700; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: none; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
+        #map { height: 100%; width: 100%; }
+        
+        /* --- MAP CONTROLS OVERLAY (MAIN MAP) --- */
+        .map-search-wrapper {
+            position: absolute; top: 15px; right: 15px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 6px; width: 380px;
         }
+
+        .map-search-bar {
+            display: flex; gap: 8px; background: white; padding: 8px;
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); align-items: center; width: 100%; box-sizing: border-box;
+        }
+
+        .map-search-input {
+            border: none; background: #F8FAFC; padding: 10px 12px; border-radius: 6px;
+            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0; width: 100%;
+        }
+        .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
+
+        .map-action-btn {
+            background: white; border: 1px solid #E2E8F0; color: var(--text-dark); border-radius: 6px;
+            padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;
+        }
+        .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
+        
+        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
+        .pulse-loc-btn:hover { background: #EFF6FF !important; }
+
+        /* Search Dropdown Suggestions */
+        .suggestions-dropdown {
+            background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
+        }
+        
+        .suggestion-item {
+            padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-color);
+            cursor: pointer; color: var(--text-dark); transition: background 0.2s; line-height: 1.4;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #FFF5F0; }
 
         /* --- TALABAT UI (BOTTOM SHEET OVERLAY) --- */
         .bottom-sheet {
@@ -233,51 +214,45 @@
         }
         .bottom-sheet.active { bottom: 0; }
         
-        /* Talabat X Close Button */
         .sheet-close-btn {
             position: absolute; top: 18px; right: 18px; width: 34px; height: 34px;
             background: #F1F5F9; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 16px; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 10;
         }
         .sheet-close-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
         
-        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 30px;}
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 5px auto; flex-shrink: 0; }
+        .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0; padding-right: 40px;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
-        /* Interactive Route Info Box (Native UI) */
-        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative;}
-        .route-info {
-            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; 
-            display: flex; flex-direction: column; flex-grow: 1;
+        /* --- NEW NATIVE ROUTING SELECTION UI --- */
+        .route-info-wrapper { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        
+        .routing-inputs-container {
+            background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; 
+            display: flex; flex-direction: column; gap: 8px; flex-grow: 1;
         }
-        
-        .route-field { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0;}
-        .route-field:hover .route-val { color: var(--primary-orange); }
-        .route-divider { height: 1px; background: #E2E8F0; margin: 4px 0; }
-        
-        .route-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; width: 40px; flex-shrink: 0;}
-        .route-val { font-size: 14px; font-weight: 700; color: var(--text-dark); flex-grow: 1; transition: color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .route-edit-icon { font-size: 12px; color: var(--text-muted); }
 
-        /* Custom Dropdown Menus */
-        .custom-dropdown {
-            display: none; position: absolute; left: 14px; width: calc(100% - 90px);
-            background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 3000; overflow: hidden;
+        .r-input-group {
+            display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #E2E8F0;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
         }
-        .custom-dropdown.active { display: block; animation: dropIn 0.2s ease; }
-        @keyframes dropIn { from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);} }
+        .r-input-group.active {
+            border-color: var(--primary-orange); box-shadow: 0 0 0 3px rgba(255,90,0,0.1);
+        }
+        .r-input-group input {
+            border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--text-dark);
+            width: 100%; outline: none; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
         
-        .dd-item { padding: 14px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #F1F5F9; transition: background 0.2s;}
-        .dd-item:last-child { border-bottom: none; }
-        .dd-item:hover { background: #FFF5F0; color: var(--primary-orange); }
+        .r-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;}
+        .r-dot.origin { border: 3px solid var(--status-blue); background: white; }
+        .r-dot.dest { background: var(--primary-orange); }
         
-        #dd-from { top: 40px; }
-        #dd-to { top: 80px; }
-        
-        /* Swap Button */
+        .icon-btn { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 12px; padding: 4px 6px; cursor: pointer; transition: 0.2s;}
+        .icon-btn:hover { background: #E2E8F0; transform: scale(1.05); }
+
         .swap-btn {
             background: #F8FAFC; color: var(--primary-orange); border: 1px solid var(--border-color);
             border-radius: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
@@ -429,25 +404,18 @@
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
 
-        /* --- File Upload Fallback UI --- */
-        .upload-btn-ui {
-            background: var(--primary-orange); color: white; padding: 8px 12px; border-radius: 6px; text-align: center;
-            font-weight: 700; cursor: pointer; display: block; margin-top: 10px; transition: 0.2s; border: none; width: 100%;
-        }
-        .upload-btn-ui:hover { background: var(--primary-orange-hover); }
-
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
             .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
             .header-left { flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; }
-            .header-right { width: 100%; flex-direction: column; align-items: stretch; gap: 12px;}
-            .header-search-wrapper { width: 100%; }
             .tabs { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-            .datetime-display { display: none; }
+            .datetime-display { align-self: flex-start; }
             .app-body { height: calc(100vh - 120px); }
             
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
+
+            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; max-width: calc(100% - 60px); }
 
             .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
 
@@ -487,16 +455,7 @@
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
-        <div class="header-right">
-            <div class="header-search-wrapper">
-                <div class="header-search-bar">
-                    <input type="text" id="mapSearchInput" class="header-search-input" placeholder="Search UAE location..." autocomplete="off">
-                    <button class="map-action-btn pulse-loc-btn" onclick="findMyLocation()" title="Find My Location" style="padding: 4px 8px;">📍 Me</button>
-                </div>
-                <div id="search-suggestions" class="suggestions-dropdown"></div>
-            </div>
-            <div id="live-datetime" class="datetime-display"></div>
-        </div>
+        <div id="live-datetime" class="datetime-display"></div>
     </div>
 
     <div class="app-body">
@@ -545,7 +504,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.41<br>
+                        LS Operations Optimizer v15.40<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -560,9 +519,14 @@
 
         <div class="main-content">
             
-            <div id="map-toast">👆 Tap map to select location</div>
-
             <div id="map-container">
+                <div class="map-search-wrapper">
+                    <div class="map-search-bar">
+                        <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search UAE location or paste coordinates..." autocomplete="off">
+                        <button class="map-action-btn pulse-loc-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
+                    </div>
+                    <div id="search-suggestions" class="suggestions-dropdown"></div>
+                </div>
                 
                 <div id="bottom-sheet" class="bottom-sheet">
                     <button class="sheet-close-btn" onclick="closeBottomSheet()">✕</button>
@@ -572,30 +536,19 @@
                     <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
                     
                     <div class="route-info-wrapper">
-                        <div class="route-info">
-                            <div class="route-field" onclick="toggleDropdown('from', event)">
-                                <span class="route-label">From:</span>
-                                <span class="route-val" id="route-from-text">📍 My Location</span>
-                                <span class="route-edit-icon">✎</span>
+                        <div class="routing-inputs-container">
+                            <div class="r-input-group" id="from-group" onclick="setActiveInput('from')">
+                                <span class="r-dot origin"></span>
+                                <input type="text" id="route-from-text" readonly value="📍 My Location">
+                                <button onclick="setMyLocation('from'); event.stopPropagation();" class="icon-btn" title="Use My Location">📍</button>
                             </div>
-                            <div class="route-divider"></div>
-                            <div class="route-field" onclick="toggleDropdown('to', event)">
-                                <span class="route-label">To:</span>
-                                <span class="route-val" id="route-to-text">Select Destination</span>
-                                <span class="route-edit-icon">✎</span>
+                            <div class="r-input-group active" id="to-group" onclick="setActiveInput('to')">
+                                <span class="r-dot dest"></span>
+                                <input type="text" id="route-to-text" readonly value="Select Destination...">
+                                <button onclick="setMyLocation('to'); event.stopPropagation();" class="icon-btn" title="Use My Location">📍</button>
                             </div>
                         </div>
                         <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
-
-                        <div id="dd-from" class="custom-dropdown">
-                            <div class="dd-item" onclick="selectRouteOption('from', 'my_location', event)">📍 My Location</div>
-                            <div class="dd-item" onclick="selectRouteOption('from', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
-                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('from', event)">📌 Select from map...</div>
-                        </div>
-                        <div id="dd-to" class="custom-dropdown">
-                            <div class="dd-item" onclick="selectRouteOption('to', 'talabat_office', event)">🏢 Talabat Dubai Office</div>
-                            <div class="dd-item" style="color: var(--primary-orange);" onclick="triggerMapSelect('to', event)">📌 Select from map...</div>
-                        </div>
                     </div>
                     
                     <div class="sheet-metrics">
@@ -682,102 +635,88 @@
 
         // --- ROUTING STATE ---
         let availablePoints = {
-            'my_location': { lat: null, lng: null, name: "📍 My Location" },
-            'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "🏢 Talabat Dubai Office" }
+            'my_location': { lat: null, lng: null, name: "📍 My Location" }
         };
 
         let routeData = {
             from: { lat: null, lng: null, name: "📍 My Location" },
-            to: { lat: null, lng: null, name: "Select Destination" }
+            to: { lat: null, lng: null, name: "Select Destination..." }
         };
-        let mapClickMode = null; 
 
-        // --- CUSTOM DROPDOWN LOGIC ---
-        function toggleDropdown(type, event) {
-            event.stopPropagation();
-            document.getElementById('dd-from').classList.remove('active');
-            document.getElementById('dd-to').classList.remove('active');
-            document.getElementById(`dd-${type}`).classList.add('active');
+        let activeInput = 'to'; // Tracks which field gets populated on map click
+
+        function setActiveInput(type) {
+            activeInput = type;
+            document.getElementById('from-group').classList.remove('active');
+            document.getElementById('to-group').classList.remove('active');
+            document.getElementById(type + '-group').classList.add('active');
         }
 
-        document.addEventListener('click', () => {
-            document.getElementById('dd-from').classList.remove('active');
-            document.getElementById('dd-to').classList.remove('active');
-        });
-
-        function selectRouteOption(type, option, event) {
-            event.stopPropagation();
-            document.getElementById(`dd-${type}`).classList.remove('active');
-
-            if (option === 'my_location' && availablePoints.my_location.lat) {
-                if (type === 'from') routeData.from = availablePoints.my_location;
-                if (type === 'to') routeData.to = availablePoints.my_location;
-            } else if (option === 'talabat_office') {
-                if (type === 'from') routeData.from = availablePoints.talabat_office;
-                if (type === 'to') routeData.to = availablePoints.talabat_office;
+        function setMyLocation(type) {
+            if (!availablePoints.my_location.lat) {
+                alert("GPS location not found. Please ensure location permissions are enabled.");
+                return;
             }
-            refreshRouteUI();
+            if (type === 'from') routeData.from = { ...availablePoints.my_location };
+            if (type === 'to') routeData.to = { ...availablePoints.my_location };
+            updateRouteUI();
         }
 
-        function triggerMapSelect(type, event) {
-            event.stopPropagation();
-            document.getElementById(`dd-${type}`).classList.remove('active');
-            mapClickMode = type;
-            
-            document.getElementById('bottom-sheet').classList.remove('active');
-            document.getElementById('map').style.cursor = 'crosshair';
-            
-            const toast = document.getElementById('map-toast');
-            toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
-            toast.style.display = 'flex';
-        }
-
-        function exitMapClickMode() {
-            mapClickMode = null;
-            document.getElementById('map').style.cursor = '';
-            document.getElementById('map-toast').style.display = 'none';
-            document.getElementById('bottom-sheet').classList.add('active');
-            refreshRouteUI();
+        // Background GPS fetch
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(p => {
+                availablePoints.my_location.lat = p.coords.latitude;
+                availablePoints.my_location.lng = p.coords.longitude;
+                if (routeData.from.name === "📍 My Location") {
+                    routeData.from = { ...availablePoints.my_location };
+                    updateRouteUI();
+                }
+            }, () => {});
         }
 
         // --- TALABAT OFFICE PIN ---
+        const talabatOfficeStore = {
+            locationName: "🏢 Talabat Dubai Office",
+            chainName: "Talabat HQ",
+            championName: "Corporate",
+            orders: 0,
+            lat: 25.2092164334059,
+            lng: 55.26127999999603
+        };
+
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
             iconSize: [64, 28], iconAnchor: [32, 14]
         });
-        const talabatMarker = L.marker([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], {icon: talabatOfficeIcon})
+        
+        const talabatMarker = L.marker([talabatOfficeStore.lat, talabatOfficeStore.lng], {icon: talabatOfficeIcon})
             .addTo(staticPinLayer)
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-            if (mapClickMode === 'from') {
-                routeData.from = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
-                exitMapClickMode();
-            } else if (mapClickMode === 'to') {
-                routeData.to = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
-                exitMapClickMode();
+            
+            let point = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
+            
+            if (activeInput === 'from') {
+                routeData.from = point;
             } else {
-                map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
-                openBottomSheet({
-                    locationName: "Talabat Dubai Office",
-                    chainName: "Talabat HQ",
-                    championName: "Corporate",
-                    orders: 0,
-                    lat: availablePoints.talabat_office.lat,
-                    lng: availablePoints.talabat_office.lng
-                });
+                routeData.to = point;
             }
+            
+            map.setView([point.lat, point.lng], 14);
+            
+            // Only populate details if they selected it as destination, or if sheet is already open
+            document.getElementById('bs-store-name').innerText = "Talabat Dubai Office";
+            document.getElementById('bs-chain-name').innerText = "Talabat HQ";
+            document.getElementById('bs-champ').innerText = "Corporate";
+            document.getElementById('bs-orders').innerText = "0";
+
+            updateRouteUI();
+            document.getElementById('bottom-sheet').classList.add('active');
         });
 
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(p => {
-                availablePoints.my_location.lat = p.coords.latitude;
-                availablePoints.my_location.lng = p.coords.longitude;
-                if(routeData.from.name === "📍 My Location") routeData.from = { ...availablePoints.my_location };
-            }, () => {});
-        }
 
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
@@ -804,12 +743,21 @@
 
         if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
 
-        // --- NATIVE ROUTING PREVIEW ---
-        function refreshRouteUI() {
-            document.getElementById('route-from-text').innerText = routeData.from.name;
-            document.getElementById('route-to-text').innerText = routeData.to.name;
+        // --- INTERACTIVE ROUTING LOGIC ---
+        function updateRouteUI() {
+            document.getElementById('route-from-text').value = routeData.from.name;
+            document.getElementById('route-to-text').value = routeData.to.name;
 
             previewRouteLayer.clearLayers();
+            clickedPinLayer.clearLayers();
+
+            // Draw custom pins if user clicked empty map space
+            if (routeData.from.name === "📌 Pinned Location") {
+                drawCustomPin(routeData.from.lat, routeData.from.lng, 'origin');
+            }
+            if (routeData.to.name === "📌 Pinned Location" || routeData.to.name.includes("🔍")) {
+                drawCustomPin(routeData.to.lat, routeData.to.lng, 'dest');
+            }
 
             if (routeData.from.lat && routeData.to.lat) {
                 let distKM = getDistanceKM(routeData.from.lat, routeData.from.lng, routeData.to.lat, routeData.to.lng);
@@ -833,19 +781,40 @@
             }
         }
 
+        function drawCustomPin(lat, lng, type) {
+            let color = type === 'origin' ? '#3B82F6' : '#FF5A00';
+            const icon = L.divIcon({
+                className: 'custom-blue-teardrop',
+                html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="${color}" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                iconSize: [30, 45], iconAnchor: [15, 45]
+            });
+            L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer);
+        }
+
         function swapRoute() {
-            if(mapClickMode) return;
             const temp = { ...routeData.from };
             routeData.from = { ...routeData.to };
             routeData.to = temp;
-            refreshRouteUI();
+            
+            // Swap active selection styling
+            if (activeInput === 'from') setActiveInput('to');
+            else if (activeInput === 'to') setActiveInput('from');
+
+            updateRouteUI();
         }
 
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
             previewRouteLayer.clearLayers();
             clickedPinLayer.clearLayers();
-            if(mapClickMode) exitMapClickMode();
+            
+            // Reset to defaults
+            routeData.to = { lat: null, lng: null, name: "Select Destination..." };
+            if(availablePoints.my_location.lat) {
+                routeData.from = { ...availablePoints.my_location };
+            }
+            setActiveInput('to');
+            updateRouteUI();
         }
 
         function openBottomSheet(store) {
@@ -854,46 +823,39 @@
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             
-            // Set To as selected store
             routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
 
-            // If GPS isn't locked, try one more time
             if (!routeData.from.lat && "geolocation" in navigator && routeData.from.name.includes("My Location")) {
                 navigator.geolocation.getCurrentPosition(p => {
-                    routeData.from.lat = p.coords.latitude;
-                    routeData.from.lng = p.coords.longitude;
-                    refreshRouteUI();
-                }, () => { refreshRouteUI(); });
+                    availablePoints.my_location.lat = p.coords.latitude;
+                    availablePoints.my_location.lng = p.coords.longitude;
+                    routeData.from = { ...availablePoints.my_location };
+                    updateRouteUI();
+                }, () => { updateRouteUI(); });
             } else {
-                refreshRouteUI();
+                updateRouteUI();
             }
 
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        // --- MAP CLICK HANDLER (EMPTY MAP TAPS) ---
+        // --- MAP CLICK HANDLER (EMPTY MAP) ---
         map.on('click', function(e) { 
-            if (mapClickMode) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-                
-                let newPoint = { lat: lat, lng: lng, name: "📌 Pinned Location" };
-                
-                if (mapClickMode === 'from') routeData.from = newPoint;
-                if (mapClickMode === 'to') routeData.to = newPoint;
-                
-                clickedPinLayer.clearLayers();
-                const icon = L.divIcon({
-                    className: 'custom-blue-teardrop',
-                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                    iconSize: [30, 45], iconAnchor: [15, 45]
-                });
-                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location");
+            if (!activeInput) return;
 
-                exitMapClickMode();
-            } else {
-                closeBottomSheet(); 
-            }
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            let newPoint = { lat: lat, lng: lng, name: "📌 Pinned Location" };
+            
+            if (activeInput === 'from') routeData.from = newPoint;
+            if (activeInput === 'to') routeData.to = newPoint;
+
+            // Optional: Auto-switch focus after tapping map to speed up flow
+            if (activeInput === 'from' && !routeData.to.lat) setActiveInput('to');
+            else if (activeInput === 'to' && !routeData.from.lat) setActiveInput('from');
+            
+            document.getElementById('bottom-sheet').classList.add('active');
+            updateRouteUI();
         });
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
@@ -917,7 +879,7 @@
             const destLng = routeData.to.lng;
 
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -930,31 +892,11 @@
         }
 
         // --- DATA PROCESSING & FILTERING ---
-        function handleLocalCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); },
-                error: function(err) { alert("Error reading file."); }
-            });
-        }
-
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { 
-                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
-                    document.querySelectorAll('.checkbox-list').forEach(el => {
-                        el.innerHTML = `
-                        <div class="empty-state" style="color:var(--status-red); font-size:11px;">
-                            <b>Blocked by Browser</b><br>
-                            Please manually upload your data.csv file below to view data.<br><br>
-                            <input type="file" accept=".csv" style="width:100%;" onchange="handleLocalCSV(event)">
-                        </div>`;
-                    });
-                }
+                error: function(err) { console.error("Error loading CSV"); }
             });
         }
 
@@ -1015,17 +957,10 @@
                     }
                     championUtilizationData[champ].stores.push(storeObj);
                     championUtilizationData[champ].totalOrders += dailyOrders;
-                } catch(e) {
-                    console.error("Safely caught row parse error:", e);
-                }
+                } catch(e) { }
             });
 
-            if(parsedData.length === 0) {
-                document.querySelectorAll('.checkbox-list').forEach(el => {
-                    el.innerHTML = `<div class="empty-state" style="color:var(--status-red);"><b>No valid GPS data found.</b><br>Check CSV columns.</div>`;
-                });
-                return;
-            }
+            if(parsedData.length === 0) return;
 
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
@@ -1041,6 +976,7 @@
                 }
             });
 
+            // ALL CHECKBOXES START UNCHECKED
             buildSupervisorFilterList(); 
             buildChainFilterList(false);
             updateChampionDropdownScope(false); 
@@ -1052,6 +988,7 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
+                // Unchecked by default
                 supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
@@ -1329,7 +1266,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     } else {
@@ -1349,7 +1286,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
                             </div>
                         `;
                     }
@@ -1408,15 +1345,24 @@
                         storeMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e); 
                             
-                            if (mapClickMode) {
-                                let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
-                                if (mapClickMode === 'from') routeData.from = point;
-                                if (mapClickMode === 'to') routeData.to = point;
-                                exitMapClickMode();
+                            let point = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
+                            if (activeInput === 'from') {
+                                routeData.from = point;
+                            } else if (activeInput === 'to') {
+                                routeData.to = point;
                             } else {
-                                map.setView([store.lat, store.lng], 14);
-                                openBottomSheet(store);
+                                routeData.to = point; // Fallback if user clicked store without activating a field
                             }
+
+                            map.setView([store.lat, store.lng], 14);
+                            
+                            document.getElementById('bs-store-name').innerText = store.locationName;
+                            document.getElementById('bs-chain-name').innerText = store.chainName;
+                            document.getElementById('bs-champ').innerText = store.championName;
+                            document.getElementById('bs-orders').innerText = Math.round(store.orders);
+                            
+                            updateRouteUI();
+                            document.getElementById('bottom-sheet').classList.add('active');
                         });
 
                         storeMarker.bindTooltip(store.championName, { permanent: true, direction: 'bottom', className: 'muted-champ-label', offset: [0, 16] });
@@ -1431,47 +1377,6 @@
         let searchTimeoutMap;
         const searchInputMap = document.getElementById('mapSearchInput');
         const suggestionsBoxMap = document.getElementById('search-suggestions');
-
-        function findMyLocation() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        availablePoints.my_location = { lat: lat, lng: lng, name: "📍 My Location" };
-                        
-                        if(routeData.from.name === "📍 My Location") {
-                            routeData.from = { ...availablePoints.my_location };
-                        }
-
-                        searchInputMap.value = ""; 
-                        searchPinLayer.clearLayers();
-                        
-                        const myLocIcon = L.divIcon({
-                            className: 'custom-teardrop',
-                            html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                            iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
-                        });
-
-                        L.marker([lat, lng], { icon: myLocIcon })
-                            .addTo(searchPinLayer)
-                            .bindPopup(`<b>Your Current Location</b>`);
-
-                        map.setView([lat, lng], 14);
-
-                        if (document.getElementById('bottom-sheet').classList.contains('active')) {
-                            refreshRouteUI();
-                        }
-                    },
-                    function(error) {
-                        alert("Could not access your location. Please check browser permissions.");
-                    }
-                );
-            } else {
-                alert("Geolocation is not supported by your browser.");
-            }
-        }
 
         searchInputMap.addEventListener('input', function() {
             clearTimeout(searchTimeoutMap);
@@ -1499,30 +1404,24 @@
                                 
                                 let searchPoint = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: `🔍 ${shortName}` };
                                 
-                                if (mapClickMode === 'to') {
-                                    routeData.to = searchPoint;
-                                    exitMapClickMode();
-                                } else if (mapClickMode === 'from') {
+                                if (activeInput === 'from') {
                                     routeData.from = searchPoint;
-                                    exitMapClickMode();
+                                } else {
+                                    routeData.to = searchPoint;
                                 }
                                 
                                 searchPinLayer.clearLayers();
-                                
                                 const searchIcon = L.divIcon({
                                     className: 'custom-teardrop',
                                     html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
                                     iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
                                 });
 
-                                L.marker([item.lat, item.lon], { icon: searchIcon })
-                                    .addTo(searchPinLayer)
-                                    .bindPopup(`<b>${shortName}</b>`);
-
+                                L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
                                 map.setView([item.lat, item.lon], 15);
 
                                 if (document.getElementById('bottom-sheet').classList.contains('active')) {
-                                    refreshRouteUI();
+                                    updateRouteUI();
                                 }
                             };
                             suggestionsBoxMap.appendChild(div);
