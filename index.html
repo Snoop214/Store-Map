@@ -148,6 +148,17 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
+        .app-footer { 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 10px; 
+            font-size: 10px; 
+            color: var(--text-muted); 
+            text-align: left; 
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+        .app-footer strong { color: var(--text-dark); font-weight: 700; }
+
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; position: relative;}
@@ -200,12 +211,14 @@
             box-shadow: 0 -10px 40px rgba(0,0,0,0.2); padding: 24px; z-index: 2000;
             transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
+            max-height: 85vh; /* Prevents overflow on mobile */
+            overflow-y: auto; /* Ensures button is reachable */
         }
         .bottom-sheet.active { bottom: 0; }
         
-        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 10px auto; }
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 10px auto; flex-shrink: 0; }
         .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
-        .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;}
+        .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px;}
         
         /* Interactive Route Info Box */
         .route-info-wrapper {
@@ -239,7 +252,7 @@
             background: var(--primary-orange); color: white; border: none; padding: 16px;
             border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3); transition: all 0.2s;
-            display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;
+            display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; flex-shrink: 0;
         }
         .btn-massive:hover { background: var(--primary-orange-hover); transform: translateY(-2px); }
 
@@ -280,9 +293,7 @@
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
-        /* Custom Teardrop Pin styling */
-        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
-        /* Preview Origin Pin */
+        .custom-search-pin { display: flex; align-items: center; justify-content: center; }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
@@ -373,18 +384,27 @@
 
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
-            .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
-            .header-left { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .logo { text-align: left; }
-            .tabs { width: 100%; justify-content: flex-start; }
-            .app-body { height: calc(100vh - 100px); }
+            .app-header {
+                height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px;
+            }
+            .header-left {
+                flex-direction: column; align-items: flex-start; gap: 12px; width: 100%;
+            }
+            .tabs { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+            .datetime-display { align-self: flex-start; }
+            .app-body { height: calc(100vh - 120px); }
             
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
-            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; }
 
-            .bottom-sheet { width: 100%; border-radius: 20px 20px 0 0; padding: 20px 20px max(40px, env(safe-area-inset-bottom)) 20px; }
-            
+            .map-search-wrapper { top: 15px; left: 50px; right: 10px; width: auto; max-width: calc(100% - 60px); }
+
+            /* Make Bottom Sheet full width & Scrollable */
+            .bottom-sheet {
+                width: 100%; border-radius: 20px 20px 0 0; padding: 20px;
+                padding-bottom: max(30px, env(safe-area-inset-bottom)); /* Safe Area */
+            }
+
             #data-container { padding: 12px; overflow-y: auto; }
             .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
             .profile-card, .suggestions-container { flex: none; width: 100%; }
@@ -470,7 +490,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.26<br>
+                        LS Operations Optimizer v15.30<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -583,13 +603,14 @@
         const markerLayer = L.layerGroup().addTo(map);
         const searchPinLayer = L.layerGroup().addTo(map);
         const staticPinLayer = L.layerGroup().addTo(map);
-        const previewRouteLayer = L.layerGroup().addTo(map); // New layer for drawing lines
+        const previewRouteLayer = L.layerGroup().addTo(map);
 
         // --- CLOCK SCRIPT ---
         function updateDateTime() {
             const now = new Date();
             const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            document.getElementById('live-datetime').innerText = now.toLocaleDateString('en-US', options);
+            const dtElement = document.getElementById('live-datetime');
+            if(dtElement) dtElement.innerText = now.toLocaleDateString('en-US', options);
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
@@ -621,7 +642,7 @@
 
         // --- ROUTING ORIGIN LOGIC ---
         let routeOrigin = { lat: null, lng: null, name: "My Location" };
-        let currentDestination = null; // Stores the full object of the selected destination
+        let currentDestination = null; 
         let targetNavLat = null;
         let targetNavLng = null;
 
@@ -664,10 +685,8 @@
                     [routeOrigin.lat, routeOrigin.lng],
                     [currentDestination.lat, currentDestination.lng]
                 ];
-                // Draw Dashed Orange Line
                 L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
 
-                // If origin is a searched location, drop a blue dot to mark the start
                 if (routeOrigin.name !== "My Location") {
                     const originIcon = L.divIcon({
                         className: 'preview-origin-pin',
@@ -685,32 +704,26 @@
         function swapRoute() {
             if (!routeOrigin || !routeOrigin.lat || !currentDestination) return;
 
-            // Store current destination to swap
             const tempDestName = currentDestination.locationName;
             const tempDestLat = currentDestination.lat;
             const tempDestLng = currentDestination.lng;
 
-            // Move Origin into Destination
             currentDestination.locationName = routeOrigin.name;
             currentDestination.lat = routeOrigin.lat;
             currentDestination.lng = routeOrigin.lng;
 
-            // Move old Destination into Origin
             routeOrigin = {
                 lat: tempDestLat,
                 lng: tempDestLng,
                 name: tempDestName
             };
 
-            // Update Global Nav Targets
             targetNavLat = currentDestination.lat;
             targetNavLng = currentDestination.lng;
 
-            // Update UI
             document.getElementById('bs-route-from').innerText = routeOrigin.name;
             document.getElementById('bs-route-to').innerText = currentDestination.locationName;
             
-            // Re-render
             let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
             document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
             drawRoutePreview();
@@ -723,7 +736,6 @@
         }
 
         function openBottomSheet(store) {
-            // Clone the store object so swapping doesn't break original parsedData
             currentDestination = { ...store };
             targetNavLat = currentDestination.lat;
             targetNavLng = currentDestination.lng;
@@ -785,7 +797,7 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=$?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -805,7 +817,8 @@
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); }
+                complete: function(results) { processSmartData(results.data); },
+                error: function(err) { console.error("Error loading CSV file"); }
             });
         }
 
@@ -814,6 +827,7 @@
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
         
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
@@ -1272,6 +1286,7 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
+                        // Update Route Origin
                         routeOrigin = { lat: lat, lng: lng, name: "My Location" };
                         searchInputMap.value = ""; // Clear search bar visually
                         
@@ -1319,15 +1334,6 @@
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(p => {
                         routeOrigin = { lat: p.coords.latitude, lng: p.coords.longitude, name: "My Location" };
-                        
-                        if (document.getElementById('bottom-sheet').classList.contains('active')) {
-                            document.getElementById('bs-route-from').innerText = routeOrigin.name;
-                            if (currentDestination) {
-                                let distKM = getDistanceKM(routeOrigin.lat, routeOrigin.lng, currentDestination.lat, currentDestination.lng);
-                                document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
-                                drawRoutePreview();
-                            }
-                        }
                     }, () => {});
                 }
                 return; 
