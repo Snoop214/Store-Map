@@ -148,6 +148,7 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
+        /* Restored small muted footer */
         .app-footer { 
             border-top: 1px solid var(--border-color); 
             padding-top: 10px; 
@@ -501,7 +502,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.32<br>
+                        LS Operations Optimizer v15.33<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -975,7 +976,7 @@
 
             buildSupervisorFilterList(); 
             buildChainFilterList(true);
-            updateChampionDropdownScope(true); // <--- ENSURES CHAMPIONS CHECKED BY DEFAULT ON LOAD
+            updateChampionDropdownScope(true); // Ensures checkboxes check and dashboard renders on load!
         }
 
         // --- FILTER BUILDING ---
@@ -985,7 +986,7 @@
             Object.keys(supervisorStats).sort().forEach(sup => {
                 if (sup === "Unknown") return;
                 const assignedColor = colorPalette[colorIndex % colorPalette.length]; supervisorColors[sup] = assignedColor; colorIndex++;
-                // Checkboxes are checked by default now so data displays automatically
+                // Checked by default
                 supList.innerHTML += `<label class="checkbox-item"><input type="checkbox" value="${sup}" checked onchange="handleFiltersChange()"><span class="color-dot" style="background-color: ${assignedColor};"></span><span style="flex-grow: 1;">${sup}</span></label>`;
             });
         }
@@ -1352,6 +1353,7 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
+                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
                             if(mapClickMode) return; 
                             L.DomEvent.stopPropagation(e); 
