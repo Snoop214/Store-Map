@@ -128,22 +128,6 @@
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #FFF5F0; }
 
-        /* Current Date/Time Display */
-        .datetime-display {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary-orange);
-            background: #FFF5F0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid #FFDDCB;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
 
@@ -278,19 +262,6 @@
 
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         
-        /* Glowing highlight ring for clicked stores */
-        .store-highlight-ring {
-            border-radius: 50%;
-            background: rgba(255, 90, 0, 0.2);
-            border: 2px solid var(--primary-orange);
-            animation: pulseRing 1.5s infinite ease-out;
-            pointer-events: none;
-        }
-        @keyframes pulseRing {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(1.2); opacity: 0; }
-        }
-
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container { display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden; }
         .data-panel-top { flex: 3; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
@@ -637,6 +608,7 @@
             const buildOptions = (point, isFrom) => {
                 let html = `<option value="" disabled hidden>Choose...</option>`;
                 
+                // If current point is custom, add it so the select can display it, but keep it hidden from menu
                 let isCustom = point && point.lat && point.name !== "📍 My Location" && point.name !== "🏢 Talabat Office";
                 if (isCustom) {
                     html += `<option value="custom_${isFrom ? 'from' : 'to'}" hidden>${point.name}</option>`;
@@ -748,6 +720,15 @@
         });
 
         // --- TALABAT OFFICE PIN ---
+        const talabatOfficeStore = {
+            locationName: "🏢 Talabat Office",
+            chainName: "Talabat HQ",
+            championName: "Corporate",
+            orders: 0,
+            lat: 25.2092164334059,
+            lng: 55.26127999999603
+        };
+
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -1167,10 +1148,8 @@
             }
 
             let allBounds = []; 
+            let supervisorGroups = {}; 
             let champGroups = {}; 
-
-            // Highlight dynamically whenever any collection of chains, champions or supervisors are active
-            const shouldDrawHeatmaps = selectedChamps.length >= 1 || selectedSups.length >= 1;
 
             parsedData.forEach(store => {
                 const supMatch = selectedSups.length === 0 || selectedSups.includes(store.supervisor);
@@ -1179,13 +1158,21 @@
 
                 if (supMatch && chainMatch && champMatch) {
                     const supColor = supervisorColors[store.supervisor] || '#FF5A00';
-                    const activeColor = selectedChamps.length >= 1 ? (championColors[store.championName] || '#3B82F6') : supColor;
+                    const champColor = championColors[store.championName] || '#3B82F6';
                     
-                    if (shouldDrawHeatmaps) {
-                        // Group by Champion when viewing specific champs or specific supervisors to maintain division clarity
-                        const groupKey = selectedChamps.length >= 1 ? store.championName : `${store.supervisor}_${store.championName}`;
+                    // --- STRATEGY 1: IF MULTIPLE SUPERVISORS ARE TURNED ON AND NO SPECIFIC CHAMPIONS ARE FILTERED ---
+                    if (selectedSups.length > 1 && selectedChamps.length === 0) {
+                        if (!supervisorGroups[store.supervisor]) {
+                            supervisorGroups[store.supervisor] = { points: [], color: supColor };
+                        }
+                        supervisorGroups[store.supervisor].points.push({lat: store.lat, lng: store.lng});
+                    }
+                    
+                    // --- STRATEGY 2: IF INDIVIDUAL CHAMPIONS OR A SINGLE SUPERVISOR (WITH SPECIFIC DIVISION HOVER) ARE ENGAGED ---
+                    if (selectedChamps.length >= 1 || selectedSups.length === 1) {
+                        const groupKey = store.championName;
                         if (!champGroups[groupKey]) {
-                            champGroups[groupKey] = { points: [], color: activeColor };
+                            champGroups[groupKey] = { points: [], color: champColor };
                         }
                         champGroups[groupKey].points.push({lat: store.lat, lng: store.lng});
                     }
@@ -1199,8 +1186,8 @@
 
                         if (mapClickMode) {
                             routeData[mapClickMode] = point;
-                            populateHeaderDropdowns();
                             
+                            populateHeaderDropdowns();
                             const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
                             document.getElementById(selectId).classList.remove('waiting');
 
@@ -1219,19 +1206,29 @@
                 }
             });
             
-            // --- DRAW LIGHT-TONED CONVEX HEATMAP HULLS PER TEAM ENTITY ---
-            if (shouldDrawHeatmaps) {
-                Object.keys(champGroups).forEach(gKey => {
-                    const group = champGroups[gKey];
-                    if (group.points.length >= 3) {
-                        const hull = getConvexHull(group.points);
-                        const latlngs = hull.map(p => [p.lat, p.lng]);
-                        L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.18, weight: 2}).addTo(territoryLayer);
-                    } else if (group.points.length === 2) {
-                        L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3, opacity: 0.5}).addTo(territoryLayer);
-                    }
-                });
-            }
+            // --- DRAW MACRO-LEVEL SUPERVISOR TOTAL CREW POLYGONS ---
+            Object.keys(supervisorGroups).forEach(supName => {
+                const group = supervisorGroups[supName];
+                if (group.points.length >= 3) {
+                    const hull = getConvexHull(group.points);
+                    const latlngs = hull.map(p => [p.lat, p.lng]);
+                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.15, weight: 2.5}).addTo(territoryLayer);
+                } else if (group.points.length === 2) {
+                    L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 4, opacity: 0.4}).addTo(territoryLayer);
+                }
+            });
+
+            // --- DRAW LOCALIZED CHAMPION SPECIFIC SUB-POLYGONS ---
+            Object.keys(champGroups).forEach(gKey => {
+                const group = champGroups[gKey];
+                if (group.points.length >= 3) {
+                    const hull = getConvexHull(group.points);
+                    const latlngs = hull.map(p => [p.lat, p.lng]);
+                    L.polygon(latlngs, {color: group.color, fillColor: group.color, fillOpacity: 0.18, weight: 2}).addTo(territoryLayer);
+                } else if (group.points.length === 2) {
+                    L.polyline(group.points.map(p => [p.lat, p.lng]), {color: group.color, weight: 3, opacity: 0.5}).addTo(territoryLayer);
+                }
+            });
 
             if (allBounds.length > 0) {
                 map.fitBounds(allBounds, { padding: [50, 50] });
@@ -1271,29 +1268,28 @@
                                 availablePoints.searched_loc = searchPoint;
                                 if (mapClickMode === 'to') {
                                     routeData.to = searchPoint;
+                                    
                                     mapClickMode = null;
                                     document.getElementById('map').style.cursor = '';
                                     document.getElementById('map-toast').style.display = 'none';
                                     document.getElementById('header-route-to').classList.remove('waiting');
+                                    
                                     populateHeaderDropdowns();
                                     updateRouteMap();
                                 } else if (mapClickMode === 'from') {
                                     routeData.from = searchPoint;
+                                    
                                     mapClickMode = null;
                                     document.getElementById('map').style.cursor = '';
                                     document.getElementById('map-toast').style.display = 'none';
                                     document.getElementById('header-route-from').classList.remove('waiting');
+                                    
                                     populateHeaderDropdowns();
                                     updateRouteMap();
                                 } else {
-                                    searchPinLayer.clearLayers();
-                                    const searchIcon = L.divIcon({
-                                        className: 'custom-teardrop',
-                                        html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                                        iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
-                                    });
-                                    L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
-                                    map.setView([item.lat, item.lon], 15);
+                                    routeData.to = searchPoint;
+                                    populateHeaderDropdowns();
+                                    updateRouteMap();
                                 }
                             };
                             suggestionsBoxMap.appendChild(div);
