@@ -204,14 +204,6 @@
         #map-container { height: 100%; width: 100%; position: relative;}
         #map { height: 100%; width: 100%; cursor: grab;}
 
-        /* Instruction Toast */
-        #map-toast {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
-            font-size: 14px; font-weight: 700; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: none; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
-        }
-
         /* --- TALABAT UI (BOTTOM SHEET OVERLAY) --- */
         .bottom-sheet {
             position: absolute; bottom: -150%; left: 50%; transform: translateX(-50%);
@@ -319,8 +311,6 @@
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
         .custom-search-pin { display: flex; align-items: center; justify-content: center; }
-        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
-        .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         .preview-origin-pin { filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
@@ -408,13 +398,6 @@
             font-size: 9px !important; font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
-
-        /* --- File Upload Fallback UI --- */
-        .upload-btn-ui {
-            background: var(--primary-orange); color: white; padding: 8px 12px; border-radius: 6px; text-align: center;
-            font-weight: 700; cursor: pointer; display: block; margin-top: 10px; transition: 0.2s; border: none; width: 100%;
-        }
-        .upload-btn-ui:hover { background: var(--primary-orange-hover); }
 
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
@@ -524,7 +507,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.42<br>
+                        LS Operations Optimizer v15.27<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -539,8 +522,6 @@
 
         <div class="main-content">
             
-            <div id="map-toast">👆 Tap map to select location</div>
-
             <div id="map-container">
                 
                 <div id="bottom-sheet" class="bottom-sheet">
@@ -550,15 +531,15 @@
                     <h2 class="sheet-title" id="bs-store-name">Store Name</h2>
                     <div class="sheet-subtitle" id="bs-chain-name">Chain Name</div>
                     
-                    <div class="route-info-wrapper">
+                    <div class="route-info-wrapper" id="routing-section" style="display: none;">
                         <div class="route-info">
                             <div class="route-row">
                                 <div class="route-label">From:</div>
-                                <select id="bs-route-from" class="route-select" onchange="handleRouteSelectChange('from')"></select>
+                                <select id="bs-route-from" class="route-select" onchange="updateRoutePreview()"></select>
                             </div>
                             <div class="route-row">
                                 <div class="route-label">To:</div>
-                                <select id="bs-route-to" class="route-select" onchange="handleRouteSelectChange('to')"></select>
+                                <select id="bs-route-to" class="route-select" onchange="updateRoutePreview()"></select>
                             </div>
                         </div>
                         <button class="swap-btn" onclick="swapRoute()" title="Swap Start & End">⇅</button>
@@ -570,7 +551,7 @@
                         <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">Calc...</strong></div>
                     </div>
                     
-                    <button id="bs-nav-btn" class="btn-massive" onclick="openNavModal()">🚗 Start Drive</button>
+                    <button id="bs-nav-btn" class="btn-massive" onclick="handleDirectionClick()">🚗 Direction</button>
                 </div>
 
                 <div id="map"></div>
@@ -646,8 +627,9 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-        // --- GLOBAL POINTS DICTIONARY (REMOVED MY LOCATION) ---
+        // --- GLOBAL POINTS DICTIONARY FOR ROUTING DROPDOWNS ---
         let availablePoints = {
+            'my_location': { lat: null, lng: null, name: "My Location" },
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
             'selected_store': null, 
             'searched_loc': null,
@@ -656,7 +638,7 @@
 
         let mapClickMode = null; 
 
-        // --- TALABAT OFFICE PIN ---
+        // --- TALABAT OFFICE PIN (Interactive) ---
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -667,7 +649,7 @@
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
         
         talabatMarker.on('click', (e) => {
-            if (mapClickMode) {
+            if(mapClickMode) {
                 const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
                 populateRouteDropdowns();
                 document.getElementById(selectId).value = 'talabat_office';
@@ -676,7 +658,6 @@
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('bottom-sheet').classList.add('active');
-                document.getElementById('map-toast').style.display = 'none';
                 updateRoutePreview();
             } else {
                 L.DomEvent.stopPropagation(e);
@@ -691,6 +672,14 @@
                 });
             }
         });
+
+        // Background GPS fetch
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(p => {
+                availablePoints.my_location.lat = p.coords.latitude;
+                availablePoints.my_location.lng = p.coords.longitude;
+            }, () => {});
+        }
 
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
@@ -723,8 +712,14 @@
             const toSelect = document.getElementById('bs-route-to');
             
             let html = '';
+            if(availablePoints.my_location.lat) {
+                html += `<option value="my_location">📍 My Location</option>`;
+            } else {
+                html += `<option value="my_location">📍 My Location (GPS Off)</option>`;
+            }
             
             html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
+            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
             
             if(availablePoints.selected_store) {
                 html += `<option value="selected_store">🏬 ${availablePoints.selected_store.name}</option>`;
@@ -735,8 +730,6 @@
             if(availablePoints.clicked_loc) {
                 html += `<option value="clicked_loc">📌 Pinned Location</option>`;
             }
-            
-            html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
 
             const currentFrom = fromSelect.value;
             const currentTo = toSelect.value;
@@ -760,19 +753,12 @@
                 
                 previewRouteLayer.clearLayers();
                 document.getElementById('bs-dist').innerText = "Waiting for tap...";
-                
-                const toast = document.getElementById('map-toast');
-                toast.innerText = `👆 Tap map to select ${type === 'from' ? 'Origin' : 'Destination'}`;
-                toast.style.display = 'flex';
-
-                // Hide bottom sheet to give user full view of map
                 document.getElementById('bottom-sheet').classList.remove('active');
             } else {
                 if (mapClickMode === type) {
                     mapClickMode = null;
                     document.getElementById('map').style.cursor = '';
                     selectEl.classList.remove('waiting');
-                    document.getElementById('map-toast').style.display = 'none';
                 }
                 updateRoutePreview();
             }
@@ -794,27 +780,18 @@
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
-                    
-                    const originIcon = L.divIcon({
-                        className: 'preview-origin-pin',
-                        html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                        iconSize: [24, 36], iconAnchor: [12, 36]
-                    });
-                    L.marker([fromPoint.lat, fromPoint.lng], {icon: originIcon}).addTo(previewRouteLayer).bindTooltip("Start: " + fromPoint.name);
-
                     map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
                 }
             } else {
-                if(!mapClickMode) document.getElementById('bs-dist').innerText = "Select Origin/Dest";
+                document.getElementById('bs-dist').innerText = "GPS Required";
             }
         }
 
         function swapRoute() {
+            if(mapClickMode) return;
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
-            if(mapClickMode) return;
-
             const temp = fromSelect.value;
             fromSelect.value = toSelect.value;
             toSelect.value = temp;
@@ -830,7 +807,6 @@
             document.getElementById('map').style.cursor = '';
             document.getElementById('bs-route-from').classList.remove('waiting');
             document.getElementById('bs-route-to').classList.remove('waiting');
-            document.getElementById('map-toast').style.display = 'none';
         }
 
         function openBottomSheet(store) {
@@ -841,6 +817,12 @@
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             
+            // --- NEW: Reset routing UI state when opening a new store ---
+            document.getElementById('routing-section').style.display = 'none';
+            let navBtn = document.getElementById('bs-nav-btn');
+            navBtn.innerHTML = '🚗 Direction';
+            navBtn.setAttribute('onclick', 'handleDirectionClick()');
+            
             populateRouteDropdowns();
             
             const fromSelect = document.getElementById('bs-route-from');
@@ -849,12 +831,32 @@
             if (availablePoints.searched_loc) {
                 fromSelect.value = "searched_loc";
             } else {
-                fromSelect.value = "talabat_office"; // Defaulted to Office instead of My Location
+                fromSelect.value = "my_location";
             }
             toSelect.value = "selected_store";
 
-            updateRoutePreview();
+            if (!availablePoints.my_location.lat && "geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    availablePoints.my_location.lat = p.coords.latitude;
+                    availablePoints.my_location.lng = p.coords.longitude;
+                    populateRouteDropdowns(); 
+                    fromSelect.value = "my_location";
+                    toSelect.value = "selected_store";
+                    updateRoutePreview();
+                }, () => { updateRoutePreview(); });
+            } else {
+                updateRoutePreview();
+            }
+
             document.getElementById('bottom-sheet').classList.add('active');
+        }
+
+        // --- NEW: Toggle Direction/Start Drive logic ---
+        function handleDirectionClick() {
+            document.getElementById('routing-section').style.display = 'flex';
+            let btn = document.getElementById('bs-nav-btn');
+            btn.innerHTML = '🚗 Start Drive';
+            btn.setAttribute('onclick', 'openNavModal()');
         }
 
         // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
@@ -866,11 +868,10 @@
                 availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
                 
                 const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
-                const selectEl = document.getElementById(selectId);
                 
                 populateRouteDropdowns();
-                selectEl.value = 'clicked_loc';
-                selectEl.classList.remove('waiting');
+                document.getElementById(selectId).value = 'clicked_loc';
+                document.getElementById(selectId).classList.remove('waiting');
                 
                 clickedPinLayer.clearLayers();
                 const icon = L.divIcon({
@@ -882,7 +883,6 @@
 
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
-                document.getElementById('map-toast').style.display = 'none';
                 
                 document.getElementById('bottom-sheet').classList.add('active');
                 updateRoutePreview();
@@ -975,8 +975,8 @@
                         return ""; 
                     };
 
-                    const latStr = clean(["Latitude", "Lat", "latitude", "lat"]);
-                    const lngStr = clean(["Longitude", "Lng", "longitude", "lng"]);
+                    const latStr = clean(["Latitude", "Lat"]);
+                    const lngStr = clean(["Longitude", "Lng"]);
                     const lat = parseFloat(latStr);
                     const lng = parseFloat(lngStr);
                     if (isNaN(lat) || isNaN(lng)) return; 
@@ -1036,7 +1036,6 @@
                 }
             });
 
-            // CHECKBOXES DEFAULT TO FALSE (UNCHECKED) ON LOAD
             buildSupervisorFilterList(); 
             buildChainFilterList(false);
             updateChampionDropdownScope(false); 
@@ -1427,6 +1426,47 @@
         const searchInputMap = document.getElementById('mapSearchInput');
         const suggestionsBoxMap = document.getElementById('search-suggestions');
 
+        function findMyLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        availablePoints.my_location = { lat: lat, lng: lng, name: "📍 My Location" };
+                        
+                        if(routeData.from.name === "📍 My Location") {
+                            routeData.from = { ...availablePoints.my_location };
+                        }
+
+                        searchInputMap.value = ""; 
+                        searchPinLayer.clearLayers();
+                        
+                        const myLocIcon = L.divIcon({
+                            className: 'custom-teardrop',
+                            html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                            iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
+                        });
+
+                        L.marker([lat, lng], { icon: myLocIcon })
+                            .addTo(searchPinLayer)
+                            .bindPopup(`<b>Your Current Location</b>`);
+
+                        map.setView([lat, lng], 14);
+
+                        if (document.getElementById('bottom-sheet').classList.contains('active')) {
+                            refreshRouteUI();
+                        }
+                    },
+                    function(error) {
+                        alert("Could not access your location. Please check browser permissions.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+
         searchInputMap.addEventListener('input', function() {
             clearTimeout(searchTimeoutMap);
             const query = this.value.trim();
@@ -1456,8 +1496,9 @@
                                 if (mapClickMode === 'to') {
                                     routeData.to = searchPoint;
                                     exitMapClickMode();
-                                } else {
+                                } else if (mapClickMode === 'from') {
                                     routeData.from = searchPoint;
+                                    exitMapClickMode();
                                 }
                                 
                                 searchPinLayer.clearLayers();
