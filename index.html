@@ -269,7 +269,7 @@
 
         .custom-search-pin { display: flex; align-items: center; justify-content: center; }
 
-        /* --- FULLY RESTORED DATA VIEW (TABLE & SUGGESTIONS) --- */
+        /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
             display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden;
         }
@@ -438,7 +438,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.26<br>
+                        LS Operations Optimizer v15.25<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -646,7 +646,7 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -705,7 +705,10 @@
                 if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
                 supervisorStats[sup].add(champ);
 
-                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: clean(["Location", "Branch Loc"]) || "Store", lat: lat, lng: lng, orders: dailyOrders };
+                let locStr = row[keys[10]]; 
+                let finalLocationName = (locStr && locStr.trim() !== "") ? locStr.trim() : (clean(["Location", "Branch Loc", "Store Name"]) || "Store");
+
+                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
                 parsedData.push(storeObj);
 
                 if(!championUtilizationData[champ]) {
