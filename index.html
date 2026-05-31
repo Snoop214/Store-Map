@@ -278,6 +278,19 @@
 
         .custom-blue-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
         
+        /* Glowing highlight ring for clicked stores */
+        .store-highlight-ring {
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.2);
+            border: 2px solid var(--primary-orange);
+            animation: pulseRing 1.5s infinite ease-out;
+            pointer-events: none;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container { display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden; }
         .data-panel-top { flex: 3; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
@@ -451,7 +464,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v2.15<br>
+                        LS Operations Optimizer v2.16<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -550,10 +563,12 @@
         const previewRouteLayer = L.layerGroup().addTo(map);
         
         const territoryLayer = L.layerGroup().addTo(map);
+        const highlightLayer = L.layerGroup().addTo(map);
 
         let currentPopup = null;
 
         map.on('popupclose', function() {
+            highlightLayer.clearLayers(); 
             mapClickMode = null;
             document.getElementById('map').style.cursor = '';
             document.getElementById('map-toast').style.display = 'none';
@@ -755,7 +770,7 @@
         
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-
+            
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
                 const selectId = mapClickMode === 'from' ? 'header-route-from' : 'header-route-to';
@@ -817,7 +832,15 @@
             .setLatLng([store.lat, store.lng])
             .setContent(popupContent)
             .openOn(map);
+            
+            highlightLayer.clearLayers();
+            const hIcon = L.divIcon({
+                className: 'store-highlight-ring',
+                iconSize: [60, 60], iconAnchor: [30, 30]
+            });
+            L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
         }
+
 
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
@@ -852,30 +875,11 @@
         }
 
         // --- DATA PROCESSING & FILTERING ---
-        function handleLocalCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); }
-            });
-        }
-
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
-                error: function(err) { 
-                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
-                    document.querySelectorAll('.checkbox-list').forEach(el => {
-                        el.innerHTML = `
-                        <div class="empty-state" style="color:var(--status-red); font-size:11px;">
-                            <b>Blocked by Browser</b><br>
-                            Please manually upload your data.csv file below to view data.<br><br>
-                            <input type="file" accept=".csv" style="width:100%;" onchange="handleLocalCSV(event)">
-                        </div>`;
-                    });
-                }
+                error: function(err) { console.error("Error loading CSV file"); }
             });
         }
 
@@ -883,13 +887,13 @@
         let supervisorStats = {}; 
         let supervisorColors = {}; 
         let championUtilizationData = {};
+        let championColors = {};
         
-        // NEW HIGH CONTRAST PALETTE
-        // Orange, Blue, Green, Purple, Pink, Cyan, Yellow, Teal
-        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4', '#EAB308', '#14B8A6'];
+        // Expanded High-Contrast Palette
+        const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4', '#EAB308', '#14B8A6', '#F43F5E', '#84CC16', '#6366F1', '#D946EF', '#F97316', '#0EA5E9'];
 
         function processSmartData(dataRows) {
-            parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
+            parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {}; championColors = {};
 
             dataRows.forEach(row => {
                 try {
@@ -958,7 +962,13 @@
                 }
             });
 
-            // Set up UI Options
+            // Assign unique colors to champions for territory heatmaps
+            let cIdx = 0;
+            Object.keys(championUtilizationData).sort().forEach(c => {
+                championColors[c] = colorPalette[cIdx % colorPalette.length];
+                cIdx++;
+            });
+
             populateHeaderDropdowns();
             
             buildSupervisorFilterList(); 
@@ -1038,8 +1048,14 @@
             const selectedChains = getCheckedValues('chain-list');
             let activeChamps = getCheckedValues('champion-list');
             
+            let pCard = document.getElementById('profile-card');
+
             if (selectedSups.length === 0 && selectedChains.length === 0 && activeChamps.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">Please select a filter to view data.</td></tr>`;
+                pCard.innerHTML = `
+                    <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                    <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
+                `;
                 return;
             }
 
@@ -1056,6 +1072,31 @@
             if(activeChamps.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
                 return;
+            }
+
+            // --- SUPERVISOR PROFILE DETAIL VIEW ---
+            if (selectedSups.length === 1 && getCheckedValues('champion-list').length === 0) {
+                let sup = selectedSups[0];
+                let champsCount = supervisorStats[sup] ? supervisorStats[sup].size : 0;
+                let storesCount = 0;
+                let totalOrders = 0;
+                parsedData.forEach(d => {
+                    if (d.supervisor === sup) {
+                        storesCount++;
+                        totalOrders += d.orders;
+                    }
+                });
+                pCard.innerHTML = `
+                    <h3><span id="p-icon">👔</span> Supervisor Profile: ${sup}</h3>
+                    <div class="metric-row"><span class="metric-label">Assigned Champions:</span><span class="metric-val" style="color:var(--primary-orange);">${champsCount}</span></div>
+                    <div class="metric-row"><span class="metric-label">Total Store Count:</span><span class="metric-val">${storesCount}</span></div>
+                    <div class="metric-row"><span class="metric-label">Total Daily Orders:</span><span class="metric-val">${Math.round(totalOrders)}</span></div>
+                `;
+            } else {
+                pCard.innerHTML = `
+                    <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                    <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
+                `;
             }
 
             activeChamps.forEach(champ => {
@@ -1316,7 +1357,6 @@
             });
         }
         
-        // Custom Math helper for mapping territory
         function getConvexHull(points) {
             if (points.length < 3) return points;
             points.sort((a, b) => a.lat === b.lat ? a.lng - b.lng : a.lat - b.lat);
@@ -1348,7 +1388,9 @@
             }
 
             let allBounds = []; 
-            let champGroups = {}; // Track territory per champion
+            let champGroups = {}; 
+
+            const drawChampHulls = selectedChamps.length >= 1 || (selectedSups.length === 1 && selectedChamps.length === 0);
 
             parsedData.forEach(store => {
                 const supMatch = selectedSups.length === 0 || selectedSups.includes(store.supervisor);
@@ -1357,11 +1399,10 @@
 
                 if (supMatch && chainMatch && champMatch) {
                     const supColor = supervisorColors[store.supervisor] || '#FF5A00';
+                    const champColor = championColors[store.championName] || '#3B82F6';
                     
-                    if (selectedChamps.length >= 1) {
-                        if (!champGroups[store.championName]) {
-                            champGroups[store.championName] = { points: [], color: supColor };
-                        }
+                    if (drawChampHulls) {
+                        if (!champGroups[store.championName]) champGroups[store.championName] = { points: [], color: champColor };
                         champGroups[store.championName].points.push({lat: store.lat, lng: store.lng});
                     }
                     
@@ -1394,8 +1435,8 @@
                 }
             });
             
-            // --- DRAW TERRITORY FOR ALL SELECTED CHAMPIONS ---
-            if (selectedChamps.length >= 1) {
+            // --- DRAW TERRITORY HEATMAPS ---
+            if (drawChampHulls) {
                 Object.keys(champGroups).forEach(champName => {
                     const group = champGroups[champName];
                     if (group.points.length >= 3) {
