@@ -42,19 +42,20 @@
 
         /* --- TOP NAVIGATION HEADER --- */
         .app-header {
-            height: 64px;
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
+            padding: 12px 24px;
             box-shadow: 0 1px 10px rgba(0,0,0,0.03);
             z-index: 2000;
+            min-height: 64px;
+            box-sizing: border-box;
         }
 
-        .header-left { display: flex; align-items: center; gap: 30px; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
+        .header-right { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
 
         .logo {
             color: var(--primary-orange);
@@ -89,7 +90,9 @@
             background: #F8FAFC; border: 1px solid var(--border-color);
             padding: 6px 12px; border-radius: 8px;
         }
+        .mobile-route-row { display: flex; align-items: center; gap: 6px; }
         .header-routing label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        
         .header-route-select {
             border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--text-dark);
             outline: none; cursor: pointer; max-width: 140px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
@@ -98,6 +101,8 @@
         .header-route-select:focus { color: var(--primary-orange); }
         .header-route-select.waiting { color: var(--status-blue); animation: pulseText 1.5s infinite; }
         @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
+        .route-divider { color: #CBD5E1; margin: 0 4px; }
 
         .go-btn {
             background: var(--primary-orange); color: white; border: none; border-radius: 6px;
@@ -124,7 +129,7 @@
         .suggestion-item:hover { background: #FFF5F0; }
 
         /* --- MAIN APP LAYOUT --- */
-        .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
+        .app-body { display: flex; flex-grow: 1; height: 100%; position: relative; overflow: hidden; }
 
         /* --- SIDEBAR --- */
         .sidebar-container {
@@ -191,6 +196,7 @@
         #map-container { height: 100%; width: 100%; position: relative;}
         #map { height: 100%; width: 100%; cursor: grab;}
 
+        /* Instruction Toast */
         #map-toast {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: #0F172A; color: white; padding: 12px 24px; border-radius: 30px;
@@ -204,17 +210,17 @@
             padding: 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
-        .custom-small-popup .leaflet-popup-content { margin: 0; width: 220px !important; }
+        .custom-small-popup .leaflet-popup-content { margin: 0; width: 240px !important; }
         .custom-small-popup .leaflet-popup-tip { background: white; }
         
         .store-popup-container {
-            background: white; border-radius: 16px; padding: 14px;
+            background: white; border-radius: 16px; padding: 16px;
             display: flex; flex-direction: column; box-sizing: border-box;
         }
-        .sp-title { font-size: 14px; font-weight: 800; color: var(--text-dark); margin: 0 0 2px 0; line-height: 1.2; padding-right: 15px;}
+        .sp-title { font-size: 14px; font-weight: 800; color: var(--text-dark); margin: 0 0 2px 0; line-height: 1.3;}
         .sp-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;}
         .sp-divider { height: 1px; background: #E2E8F0; margin: 6px 0; }
-        .sp-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; }
+        .sp-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 6px; }
         .sp-label { color: var(--text-muted); font-weight: 600; }
         .sp-val { color: var(--text-dark); font-weight: 800; }
 
@@ -318,16 +324,23 @@
 
         /* --- RESPONSIVE MOBILE VIEW FIXES --- */
         @media (max-width: 768px) {
-            .app-header { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+            .app-header { height: auto; padding: 15px; flex-direction: column; align-items: flex-start; gap: 15px; }
             .header-left { flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; }
             .header-right { width: 100%; flex-direction: column; align-items: stretch; gap: 12px;}
-            .header-routing { flex-wrap: wrap; justify-content: space-between; }
-            .header-route-select { max-width: 100%; }
+            
+            .header-routing { flex-direction: column; align-items: stretch; gap: 8px; border: none; background: transparent; padding: 0;}
+            .mobile-route-row { display: flex; align-items: center; gap: 8px; background: #F8FAFC; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 8px; }
+            .header-route-select { width: 100%; max-width: none; font-size: 14px;}
+            .route-divider { display: none; }
+            .go-btn { width: 100%; padding: 12px; font-size: 15px; margin-top: 5px; }
+            
             .header-search-wrapper { width: 100%; }
             .tabs { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-            .app-body { height: calc(100vh - 150px); }
+            .app-body { height: calc(100vh - 220px); }
+            
             .sidebar-container { position: absolute; z-index: 3000; height: 100%; box-shadow: 4px 0 25px rgba(0,0,0,0.15); }
             .sidebar-content { width: 280px; }
+
             #data-container { padding: 12px; overflow-y: auto; }
             .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
             .profile-card, .suggestions-container { flex: none; width: 100%; }
@@ -366,11 +379,15 @@
         </div>
         <div class="header-right">
             <div class="header-routing">
-                <label>From:</label>
-                <select id="header-route-from" class="header-route-select" onchange="handleHeaderRouteChange('from')"></select>
-                <span style="color: #CBD5E1; margin: 0 4px;">|</span>
-                <label>To:</label>
-                <select id="header-route-to" class="header-route-select" onchange="handleHeaderRouteChange('to')"></select>
+                <div class="mobile-route-row">
+                    <label>From:</label>
+                    <select id="header-route-from" class="header-route-select" onchange="handleHeaderRouteChange('from')"></select>
+                </div>
+                <span class="route-divider">|</span>
+                <div class="mobile-route-row">
+                    <label>To:</label>
+                    <select id="header-route-to" class="header-route-select" onchange="handleHeaderRouteChange('to')"></select>
+                </div>
                 <button class="go-btn" onclick="openNavModal()">GO</button>
             </div>
 
@@ -429,7 +446,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.47<br>
+                        LS Operations Optimizer v15.48<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -525,6 +542,7 @@
         const searchPinLayer = L.layerGroup().addTo(map);
         const staticPinLayer = L.layerGroup().addTo(map);
         const clickedPinLayer = L.layerGroup().addTo(map);
+        const previewRouteLayer = L.layerGroup().addTo(map);
         
         // Layers for Champion Territory Polygon and Clicked Store Glow
         const territoryLayer = L.layerGroup().addTo(map);
@@ -551,7 +569,7 @@
 
         let routeData = {
             from: availablePoints.talabat_office,
-            to: { lat: null, lng: null, name: "" }
+            to: null
         };
 
         let mapClickMode = null; 
@@ -632,7 +650,44 @@
                 document.getElementById('map-toast').style.display = 'none';
                 
                 routeData[type] = availablePoints[val];
+                updateRouteMap();
             }
+        }
+
+        // Draw Line and Pins when BOTH are selected
+        function updateRouteMap() {
+            previewRouteLayer.clearLayers();
+
+            const fromPoint = routeData.from;
+            const toPoint = routeData.to;
+
+            if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
+                const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
+                L.polyline(latlngs, {color: '#3B82F6', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
+                
+                // Add pins only if they are not existing store pins or office (which are already on map)
+                // Actually, let's just add nice markers for start and end to make it super clear
+                drawCustomPin(fromPoint.lat, fromPoint.lng, 'origin', fromPoint.name);
+                drawCustomPin(toPoint.lat, toPoint.lng, 'dest', toPoint.name);
+
+                map.fitBounds(L.latLngBounds(latlngs), {padding: [50, 50]});
+            } else if (fromPoint && fromPoint.lat) {
+                drawCustomPin(fromPoint.lat, fromPoint.lng, 'origin', fromPoint.name);
+                map.setView([fromPoint.lat, fromPoint.lng], 14);
+            } else if (toPoint && toPoint.lat) {
+                drawCustomPin(toPoint.lat, toPoint.lng, 'dest', toPoint.name);
+                map.setView([toPoint.lat, toPoint.lng], 14);
+            }
+        }
+
+        function drawCustomPin(lat, lng, type, name) {
+            let color = type === 'origin' ? '#3B82F6' : '#FF5A00';
+            const icon = L.divIcon({
+                className: 'custom-blue-teardrop',
+                html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="${color}" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                iconSize: [30, 45], iconAnchor: [15, 45]
+            });
+            L.marker([lat, lng], { icon: icon }).addTo(previewRouteLayer).bindTooltip(name || (type==='origin'?'Origin':'Destination'));
         }
 
         map.on('click', function(e) { 
@@ -649,21 +704,24 @@
                 document.getElementById(selectId).value = locKey;
                 document.getElementById(selectId).classList.remove('waiting');
                 
-                clickedPinLayer.clearLayers();
-                const icon = L.divIcon({
-                    className: 'custom-blue-teardrop',
-                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                    iconSize: [30, 45], iconAnchor: [15, 45]
-                });
-                L.marker([lat, lng], { icon: icon }).addTo(clickedPinLayer).bindTooltip("Pinned Location").openTooltip();
-
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('map-toast').style.display = 'none';
+
+                updateRouteMap();
             } 
         });
 
         // --- TALABAT OFFICE PIN ---
+        const talabatOfficeStore = {
+            locationName: "🏢 Talabat Dubai Office",
+            chainName: "Talabat HQ",
+            championName: "Corporate",
+            orders: 0,
+            lat: 25.2092164334059,
+            lng: 55.26127999999603
+        };
+
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -677,14 +735,7 @@
         talabatMarker.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
             
-            let mockStore = {
-                locationName: "Talabat Dubai Office",
-                chainName: "Talabat HQ",
-                championName: "Corporate",
-                orders: 0,
-                lat: availablePoints.talabat_office.lat,
-                lng: availablePoints.talabat_office.lng
-            };
+            let point = { lat: talabatOfficeStore.lat, lng: talabatOfficeStore.lng, name: talabatOfficeStore.locationName };
 
             if (mapClickMode) {
                 routeData[mapClickMode] = availablePoints.talabat_office;
@@ -695,10 +746,15 @@
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 document.getElementById('map-toast').style.display = 'none';
+                updateRouteMap();
             } else {
-                openStorePopup(mockStore);
+                openStorePopup(talabatOfficeStore);
+                routeData.to = point;
+                document.getElementById('header-route-to').value = 'talabat_office';
+                updateRouteMap();
             }
         });
+
 
         // --- TAB SWITCHER ---
         function switchTab(tabId) {
@@ -732,11 +788,8 @@
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
 
-            // Assign destination in background safely
-            availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
-            routeData.to = availablePoints.selected_store;
+            availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
             populateHeaderDropdowns();
-            document.getElementById('header-route-to').value = 'selected_store';
 
             const popupContent = document.getElementById('store-popup-template').innerHTML;
 
@@ -760,6 +813,7 @@
             L.marker([store.lat, store.lng], {icon: hIcon, interactive: false}).addTo(highlightLayer);
         }
 
+
         // --- NATIVE APP HANDOFF (THE MODAL) ---
         function openNavModal() {
             if (!routeData.from || !routeData.from.lat || !routeData.to || !routeData.to.lat) {
@@ -780,7 +834,7 @@
             const destLng = routeData.to.lng;
 
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${destLat},${destLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -807,7 +861,7 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) { processSmartData(results.data); },
                 error: function(err) { 
-                    console.error("Fetch failed");
+                    console.error("Fetch failed (Likely blocked by Browser local file CORS).");
                     document.querySelectorAll('.checkbox-list').forEach(el => {
                         el.innerHTML = `
                         <div class="empty-state" style="color:var(--status-red); font-size:11px;">
@@ -899,7 +953,7 @@
             // Set up UI Options
             populateHeaderDropdowns();
             
-            // EXACT REQUIREMENT: Supervisors UNCHECKED, Chains CHECKED, Champions UNCHECKED
+            // EXACT REQUIREMENT: ALL UNCHECKED
             buildSupervisorFilterList(); 
             buildChainFilterList(false);
             updateChampionDropdownScope(false); 
@@ -1077,176 +1131,6 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
-            let minDist = Infinity;
-            let closestStore = null;
-            targetChampStores.forEach(s => {
-                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestStore = s;
-                }
-            });
-            return { distance: minDist, anchorStore: closestStore };
-        }
-
-        function selectChampion(champName, rowElement) {
-            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
-            rowElement.classList.add('selected');
-
-            let d = championUtilizationData[champName];
-            let pCard = document.getElementById('profile-card');
-            
-            let statusIcon = '✓';
-            if(d.status === 'Underutilized') statusIcon = '↘';
-            if(d.status === 'Medium Load') statusIcon = '⚠️';
-            if(d.status === 'Overloaded') statusIcon = '🔥';
-
-            pCard.innerHTML = `
-                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
-                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
-                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
-                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
-                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
-            `;
-
-            let sWrapper = document.getElementById('suggestions-wrapper');
-            sWrapper.innerHTML = '';
-
-            try {
-                let candidates = [];
-
-                if (d.status === 'Underutilized' || d.status === 'Optimal') {
-                    parsedData.forEach(store => {
-                        let ownerData = championUtilizationData[store.championName];
-                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
-                            let newCount = d.stores.length + 1;
-                            let newOrders = d.totalOrders + store.orders;
-                            
-                            if (newCount <= 5 && newOrders < 500) { 
-                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
-                                if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                    candidates.push({ 
-                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
-                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                    });
-                                }
-                            }
-                        }
-                    });
-                } 
-                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
-                    d.stores.forEach(store => {
-                        Object.keys(championUtilizationData).forEach(otherChampName => {
-                            let otherData = championUtilizationData[otherChampName];
-                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
-                                let newCount = otherData.stores.length + 1;
-                                let newOrders = otherData.totalOrders + store.orders;
-                                
-                                if (newCount <= 5 && newOrders < 500) { 
-                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
-                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
-                                        candidates.push({ 
-                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
-                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
-                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }
-
-                candidates.sort((a, b) => a.distance - b.distance);
-
-                let uniqueCandidates = [];
-                let seenStores = new Set();
-                for (let c of candidates) {
-                    if (!seenStores.has(c.store.locationName)) {
-                        uniqueCandidates.push(c);
-                        seenStores.add(c.store.locationName);
-                    }
-                    if (uniqueCandidates.length >= 3) break;
-                }
-
-                if (uniqueCandidates.length === 0) {
-                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
-                    return;
-                }
-
-                uniqueCandidates.forEach((c, index) => {
-                    let card = document.createElement('div');
-                    card.className = 'suggestion-card';
-                    let mapId = `minimap-${index}`;
-                    
-                    if (c.type === 'take') {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            <div id="${mapId}" class="mini-map"></div>
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
-                            </div>
-                        `;
-                    } else {
-                        card.innerHTML = `
-                            <div class="sc-title">${c.store.locationName}</div>
-                            <div class="sc-sub">${c.store.chainName}</div>
-                            <div id="${mapId}" class="mini-map"></div>
-                            <div class="sc-detail" style="align-items:flex-start;">
-                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
-                            </div>
-                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
-                                </div>
-                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
-                                    (from their ${c.anchorStoreName} store)
-                                </div>
-                            </div>
-                            <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
-                            </div>
-                        `;
-                    }
-
-                    sWrapper.appendChild(card);
-
-                    setTimeout(() => {
-                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
-                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
-
-                        let storeLatLng = [c.store.lat, c.store.lng];
-                        let anchorLatLng = [c.anchorLat, c.anchorLng];
-
-                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
-                        L.circleMarker(anchorLatLng, {
-                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
-                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
-
-                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
-                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
-                    }, 50); 
-                });
-
-            } catch (err) {
-                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
-            }
-        }
-
         // --- MAP RENDERING ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
@@ -1328,8 +1212,14 @@
                             mapClickMode = null;
                             document.getElementById('map').style.cursor = '';
                             document.getElementById('map-toast').style.display = 'none';
+                            
+                            updateRouteMap();
                         } else {
                             openStorePopup(store);
+                            // Set as destination automatically when clicking popup
+                            routeData.to = { lat: store.lat, lng: store.lng, name: `🏬 ${store.locationName}` };
+                            document.getElementById('header-route-to').value = 'selected_store';
+                            updateRouteMap();
                         }
                     });
 
@@ -1392,17 +1282,12 @@
                                     routeData.from = searchPoint;
                                     document.getElementById('header-route-from').value = 'searched_loc';
                                     exitMapClickMode();
+                                } else {
+                                    routeData.to = searchPoint;
+                                    document.getElementById('header-route-to').value = 'searched_loc';
+                                    updateRouteMap();
                                 }
                                 
-                                searchPinLayer.clearLayers();
-                                const searchIcon = L.divIcon({
-                                    className: 'custom-teardrop',
-                                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
-                                    iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
-                                });
-
-                                L.marker([item.lat, item.lon], { icon: searchIcon }).addTo(searchPinLayer).bindPopup(`<b>${shortName}</b>`);
-                                map.setView([item.lat, item.lon], 15);
                             };
                             suggestionsBoxMap.appendChild(div);
                         });
