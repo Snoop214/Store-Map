@@ -158,29 +158,38 @@
         #map-container { height: 100%; width: 100%; position: relative;}
         #map { height: 100%; width: 100%; }
         
-        /* --- MAP SEARCH OVERLAY --- */
-        .map-search-bar {
+        /* --- MAP SEARCH OVERLAY (UPDATED FOR RIGHT SIDE & SUGGESTIONS) --- */
+        .map-search-wrapper {
             position: absolute;
             top: 15px;
-            left: 55px; /* Offset to not block Leaflet zoom controls */
+            right: 15px;
             z-index: 1000;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            gap: 6px;
+            width: 380px;
+        }
+
+        .map-search-bar {
+            display: flex;
+            gap: 8px;
             background: white;
-            padding: 8px 12px;
+            padding: 8px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             align-items: center;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .map-search-input {
             border: none;
             background: #F8FAFC;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 6px;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
-            width: 250px;
+            flex-grow: 1;
             outline: 1px solid #E2E8F0;
         }
         .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
@@ -190,18 +199,46 @@
             border: 1px solid #E2E8F0;
             color: var(--text-dark);
             border-radius: 6px;
-            padding: 7px 12px;
+            padding: 9px 12px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
         .map-action-btn.primary { background: #F1F5F9; color: var(--primary-orange); }
         .map-action-btn.primary:hover { background: #E2E8F0; }
+
+        /* Search Dropdown Suggestions */
+        .suggestions-dropdown {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+        
+        .suggestion-item {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: background 0.2s;
+            line-height: 1.4;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #FFF5F0; }
+        .suggestion-icon { font-size: 12px; margin-right: 8px; color: var(--text-muted); }
         
         .custom-popup-link {
             display: inline-block;
@@ -401,7 +438,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.10<br>
+                        LS Operations Optimizer v15.11<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -418,10 +455,13 @@
             
             <div id="map-container">
                 
-                <div class="map-search-bar">
-                    <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search location or paste coordinates..." onkeypress="handleSearchEnter(event)">
-                    <button class="map-action-btn primary" onclick="executeMapSearch()" title="Search">🔍 Search</button>
-                    <button class="map-action-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
+                <div class="map-search-wrapper">
+                    <div class="map-search-bar">
+                        <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search location or paste coordinates..." autocomplete="off">
+                        <button class="map-action-btn primary" onclick="executeMapSearch()" title="Search">🔍</button>
+                        <button class="map-action-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
+                    </div>
+                    <div id="search-suggestions" class="suggestions-dropdown"></div>
                 </div>
                 
                 <div id="map"></div>
@@ -490,7 +530,7 @@
 
         const markerLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
-        const searchPinLayer = L.layerGroup().addTo(map); // New layer for search pins
+        const searchPinLayer = L.layerGroup().addTo(map);
 
         // --- GLOBALS ---
         let parsedData = [];
@@ -521,16 +561,76 @@
             setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // --- SEARCH & GEOLOCATION FEATURES ---
-        function handleSearchEnter(e) {
-            if (e.key === 'Enter') executeMapSearch();
-        }
+        // --- SEARCH & GEOLOCATION WITH AUTOCOMPLETE ---
+        let searchTimeout;
+        const searchInput = document.getElementById('mapSearchInput');
+        const suggestionsBox = document.getElementById('search-suggestions');
+
+        // Autocomplete Logic
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (!query) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Don't auto-suggest if they are pasting raw GPS coordinates
+            if(query.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/)) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Wait 500ms before hitting API to prevent rate-limiting
+            searchTimeout = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            let div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            // Clean up display name (e.g., "City Walk, Al Safa Street, Dubai...")
+                            let shortName = item.display_name.split(',').slice(0,3).join(', ');
+                            div.innerHTML = `<span class="suggestion-icon">📍</span> ${shortName}`;
+                            
+                            // When they click the suggestion
+                            div.onclick = () => {
+                                searchInput.value = shortName;
+                                suggestionsBox.style.display = 'none';
+                                dropSearchPin(parseFloat(item.lat), parseFloat(item.lon), shortName);
+                            };
+                            suggestionsBox.appendChild(div);
+                        });
+                        suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.style.display = 'none';
+                    }
+                }).catch(e => console.error(e));
+            }, 500); 
+        });
+
+        // Hide suggestions if user clicks outside the search box
+        document.addEventListener('click', function(e) {
+            if(!e.target.closest('.map-search-wrapper')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Handle manual "Enter" key or direct Search button click
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                suggestionsBox.style.display = 'none';
+                executeMapSearch();
+            }
+        });
 
         function executeMapSearch() {
-            const query = document.getElementById('mapSearchInput').value.trim();
+            const query = searchInput.value.trim();
             if (!query) return;
 
-            // Check if input is GPS coordinates (e.g. 25.2048, 55.2708)
             const coordsMatch = query.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/);
             
             if (coordsMatch) {
@@ -538,16 +638,15 @@
                 const lng = parseFloat(coordsMatch[3]);
                 dropSearchPin(lat, lng, "Searched Coordinates");
             } else {
-                // Use OpenStreetMap Nominatim for text-based geocoding
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.length > 0) {
                         const lat = parseFloat(data[0].lat);
                         const lng = parseFloat(data[0].lon);
-                        dropSearchPin(lat, lng, data[0].display_name.split(',')[0]); // Use first part of name
+                        dropSearchPin(lat, lng, data[0].display_name.split(',')[0]);
                     } else {
-                        alert("Location not found. Try searching a broader area or check spelling.");
+                        alert("Location not found. Try selecting from the dropdown suggestions.");
                     }
                 })
                 .catch(err => {
@@ -575,10 +674,9 @@
         }
 
         function dropSearchPin(lat, lng, title, isUserLoc = false) {
-            searchPinLayer.clearLayers(); // Remove previous search pin
+            searchPinLayer.clearLayers(); 
             
-            // Create a specific icon style based on search type
-            let iconColor = isUserLoc ? '#3B82F6' : '#EF4444'; // Blue for GPS, Red for Search
+            let iconColor = isUserLoc ? '#3B82F6' : '#EF4444'; 
             
             const customIcon = L.divIcon({
                 className: 'custom-search-pin',
@@ -587,8 +685,7 @@
                 iconAnchor: [12, 12]
             });
 
-            // Google Maps Directions Link
-            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`;
 
             const popupHTML = `
                 <div style="font-family:'Inter', sans-serif;">
@@ -603,26 +700,10 @@
                 .bindPopup(popupHTML)
                 .openPopup();
 
-            map.setView([lat, lng], 14); // Zoom in on location
+            map.setView([lat, lng], 14); 
         }
 
         // --- INIT DATA FETCH & GITHUB SYNC ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData();
-            fetchGitHubUpdateStatus();
-        });
-
-        function timeSince(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            let interval = seconds / 86400;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " day ago" : " days ago");
-            interval = seconds / 3600;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " hour ago" : " hours ago");
-            interval = seconds / 60;
-            if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
-            return "Just now";
-        }
-
         function fetchGitHubUpdateStatus() {
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
             
@@ -707,7 +788,7 @@
                 championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // Threshold Engine 
+            // Threshold Engine
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
@@ -1154,7 +1235,6 @@
 
         function renderMap() {
             markerLayer.clearLayers(); routeLayer.clearLayers();
-            // Don't clear searchPinLayer here, let user toggle filters without losing their search pin
             
             const selectedSups = getCheckedValues('supervisor-list');
             const selectedChains = getCheckedValues('chain-list');
@@ -1170,7 +1250,7 @@
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
                         
-                        const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
+                        const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=$${store.lat},${store.lng}`;
                         const popupHTML = `
                             <div style="font-family:'Inter', sans-serif;">
                                 <b style="font-size:14px; display:block; margin-bottom:4px;">${store.locationName}</b>
