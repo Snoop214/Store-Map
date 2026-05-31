@@ -148,7 +148,7 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
-        /* --- FOOTER RESTORED TO MUTED GREY --- */
+        /* Restored small muted footer */
         .app-footer { 
             border-top: 1px solid var(--border-color); 
             padding-top: 10px; 
@@ -157,7 +157,6 @@
             text-align: left; 
             flex-shrink: 0;
             margin-top: auto;
-            line-height: 1.4;
         }
         .app-footer strong { color: var(--text-dark); font-weight: 700; }
 
@@ -244,6 +243,9 @@
             text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding-right: 15px;
         }
         .route-select:focus { color: var(--primary-orange); }
+        .route-select.waiting { color: var(--status-blue); animation: pulseText 1.5s infinite; }
+        @keyframes pulseText { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
         .route-row::after {
             content: '▼'; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
             font-size: 10px; color: var(--text-muted); pointer-events: none;
@@ -500,7 +502,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.35<br>
+                        LS Operations Optimizer v15.38<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -615,7 +617,7 @@
         const searchPinLayer = L.layerGroup().addTo(map);
         const staticPinLayer = L.layerGroup().addTo(map);
         const previewRouteLayer = L.layerGroup().addTo(map);
-        const clickedPinLayer = L.layerGroup().addTo(map); // Layer for "Click from map"
+        const clickedPinLayer = L.layerGroup().addTo(map);
 
         // --- CLOCK SCRIPT ---
         function updateDateTime() {
@@ -627,7 +629,7 @@
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-        // --- GLOBAL POINTS DICTIONARY FOR ROUTING DROPDOWNS ---
+        // --- GLOBAL POINTS DICTIONARY ---
         let availablePoints = {
             'my_location': { lat: null, lng: null, name: "My Location" },
             'talabat_office': { lat: 25.2092164334059, lng: 55.26127999999603, name: "Talabat Dubai Office" },
@@ -636,9 +638,9 @@
             'clicked_loc': null
         };
 
-        let mapClickMode = null; // 'from' or 'to' tracking for "Click from map"
+        let mapClickMode = null; 
 
-        // --- TALABAT OFFICE PIN (Interactive) ---
+        // --- TALABAT OFFICE PIN ---
         const talabatOfficeIcon = L.divIcon({
             className: 'brand-solid-marker',
             html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
@@ -649,10 +651,9 @@
             .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
         
         talabatMarker.on('click', (e) => {
-            if(mapClickMode) return; // Ignore if in click-select mode
+            if(mapClickMode) return; 
             L.DomEvent.stopPropagation(e);
             map.setView([availablePoints.talabat_office.lat, availablePoints.talabat_office.lng], 14);
-            // Treat Office like a store click for routing
             openBottomSheet({
                 locationName: availablePoints.talabat_office.name,
                 chainName: "Talabat HQ",
@@ -663,7 +664,6 @@
             });
         });
 
-        // Background GPS fetch
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(p => {
                 availablePoints.my_location.lat = p.coords.latitude;
@@ -693,10 +693,9 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
-
         if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('collapsed'); }
 
-        // --- INTERACTIVE BOTTOM SHEET ROUTING ---
+        // --- BOTTOM SHEET ROUTING ---
         function populateRouteDropdowns() {
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
@@ -709,8 +708,6 @@
             }
             
             html += `<option value="talabat_office">🏢 Talabat Dubai Office</option>`;
-            
-            // "Click from map" locked in perfectly as the 3rd option
             html += `<option value="click_map" style="font-style: italic; color: var(--primary-orange);">📌 Click from map...</option>`;
             
             if(availablePoints.selected_store) {
@@ -740,14 +737,16 @@
             if (selectEl.value === 'click_map') {
                 mapClickMode = type;
                 document.getElementById('map').style.cursor = 'crosshair';
-                document.getElementById('bs-dist').innerText = "Waiting for tap...";
-                previewRouteLayer.clearLayers();
+                selectEl.options[selectEl.selectedIndex].text = "Tap on map to select...";
+                selectEl.classList.add('waiting');
                 
-                // Hide the bottom sheet so the user has full view of the map to tap!
+                previewRouteLayer.clearLayers();
+                document.getElementById('bs-dist').innerText = "Waiting for tap...";
                 document.getElementById('bottom-sheet').classList.remove('active');
             } else {
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
+                selectEl.classList.remove('waiting');
                 updateRoutePreview();
             }
         }
@@ -762,16 +761,13 @@
             previewRouteLayer.clearLayers();
 
             if (fromPoint && fromPoint.lat && toPoint && toPoint.lat) {
-                // Calculate distance
                 let distKM = getDistanceKM(fromPoint.lat, fromPoint.lng, toPoint.lat, toPoint.lng);
                 document.getElementById('bs-dist').innerText = distKM.toFixed(1) + " km";
 
-                // Draw Preview Line
                 if(distKM > 0) {
                     const latlngs = [ [fromPoint.lat, fromPoint.lng], [toPoint.lat, toPoint.lng] ];
                     L.polyline(latlngs, {color: '#FF5A00', weight: 4, dashArray: '5, 8', opacity: 0.8}).addTo(previewRouteLayer);
                     
-                    // Put a pin at origin to make it visual
                     const originIcon = L.divIcon({
                         className: 'preview-origin-pin',
                         html: `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
@@ -790,7 +786,6 @@
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
-            // Ignore if currently in tap mode
             if(mapClickMode) return;
 
             const temp = fromSelect.value;
@@ -806,10 +801,11 @@
             clickedPinLayer.clearLayers();
             mapClickMode = null;
             document.getElementById('map').style.cursor = '';
+            document.getElementById('bs-route-from').classList.remove('waiting');
+            document.getElementById('bs-route-to').classList.remove('waiting');
         }
 
         function openBottomSheet(store) {
-            // Register this store globally so dropdowns can use it
             availablePoints.selected_store = { lat: store.lat, lng: store.lng, name: store.locationName };
 
             document.getElementById('bs-store-name').innerText = store.locationName;
@@ -819,7 +815,6 @@
             
             populateRouteDropdowns();
             
-            // Set defaults: From = My Location (or searched), To = Selected Store
             const fromSelect = document.getElementById('bs-route-from');
             const toSelect = document.getElementById('bs-route-to');
             
@@ -830,12 +825,11 @@
             }
             toSelect.value = "selected_store";
 
-            // If GPS isn't locked yet, try to grab it
             if (!availablePoints.my_location.lat && "geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(p => {
                     availablePoints.my_location.lat = p.coords.latitude;
                     availablePoints.my_location.lng = p.coords.longitude;
-                    populateRouteDropdowns(); // Re-populate to remove "(GPS Off)" text
+                    populateRouteDropdowns(); 
                     fromSelect.value = "my_location";
                     toSelect.value = "selected_store";
                     updateRoutePreview();
@@ -847,7 +841,6 @@
             document.getElementById('bottom-sheet').classList.add('active');
         }
 
-        // --- MAP CLICK HANDLER ("CLICK FROM MAP" FEATURE) ---
         map.on('click', function(e) { 
             if (mapClickMode) {
                 const lat = e.latlng.lat;
@@ -856,11 +849,12 @@
                 availablePoints.clicked_loc = { lat: lat, lng: lng, name: "Pinned Location" };
                 
                 const selectId = mapClickMode === 'from' ? 'bs-route-from' : 'bs-route-to';
+                const selectEl = document.getElementById(selectId);
                 
                 populateRouteDropdowns();
-                document.getElementById(selectId).value = 'clicked_loc';
+                selectEl.value = 'clicked_loc';
+                selectEl.classList.remove('waiting');
                 
-                // Draw custom pin for clicked location
                 clickedPinLayer.clearLayers();
                 const icon = L.divIcon({
                     className: 'custom-blue-teardrop',
@@ -872,10 +866,10 @@
                 mapClickMode = null;
                 document.getElementById('map').style.cursor = '';
                 
-                // Re-open the bottom sheet now that they tapped!
                 document.getElementById('bottom-sheet').classList.add('active');
-                
                 updateRoutePreview();
+            } else {
+                closeBottomSheet(); 
             }
         });
 
@@ -913,7 +907,7 @@
             closeBottomSheet();
         }
 
-        // --- DATA PROCESSING & FILTERING ---
+        // --- SAFE DATA PROCESSING ---
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
@@ -932,41 +926,63 @@
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
             dataRows.forEach(row => {
-                const keys = Object.keys(row);
-                const clean = (ko) => { for (let k of ko) { let f = keys.find(x => x.trim()===k); if(f && row[f]) return row[f].trim(); } return ""; };
+                try {
+                    const keys = Object.keys(row);
+                    const clean = (ko) => { 
+                        for (let k of ko) { 
+                            let f = keys.find(x => x && String(x).trim() === k); 
+                            if(f && row[f] !== undefined && row[f] !== null) return String(row[f]).trim(); 
+                        } 
+                        return ""; 
+                    };
 
-                const lat = parseFloat(clean(["Latitude", "Lat"]));
-                const lng = parseFloat(clean(["Longitude", "Lng"]));
-                if (isNaN(lat) || isNaN(lng)) return;
+                    const latStr = clean(["Latitude", "Lat"]);
+                    const lngStr = clean(["Longitude", "Lng"]);
+                    const lat = parseFloat(latStr);
+                    const lng = parseFloat(lngStr);
+                    if (isNaN(lat) || isNaN(lng)) return;
 
-                const sup = clean(["Supervisor"]) || "Unknown";
-                const champ = clean(["Name", "Champion Name"]) || "Unknown";
-                const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
-                let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]) || row[keys[11]];
-                let dailyOrders = parseFloat(ordersStr); if(isNaN(dailyOrders)) dailyOrders = 100;
+                    const sup = clean(["Supervisor"]) || "Unknown";
+                    const champ = clean(["Name", "Champion Name"]) || "Unknown";
+                    const chain = clean(["Chain Nam", "Chain Name"]) || "Unknown";
+                    
+                    let ordersStr = clean(["Daily Average Order", "Daily Orders", "Orders", "Avg Orders"]);
+                    if (!ordersStr && keys.length > 11) ordersStr = String(row[keys[11]]);
+                    let dailyOrders = parseFloat(ordersStr); 
+                    if(isNaN(dailyOrders)) dailyOrders = 100;
 
-                if (!supervisorStats[sup]) supervisorStats[sup] = new Set();
-                supervisorStats[sup].add(champ);
+                    // Safely grab Column K (Index 10)
+                    let finalLocationName = clean(["Location", "Branch Loc", "Store Name", "Store"]);
+                    if (keys.length > 10 && row[keys[10]]) {
+                        let kVal = String(row[keys[10]]).trim();
+                        if (kVal !== "") finalLocationName = kVal;
+                    }
+                    if (!finalLocationName) finalLocationName = "Store";
 
-                let locStr = row[keys[10]]; 
-                let finalLocationName = (locStr && locStr.trim() !== "") ? locStr.trim() : (clean(["Location", "Branch Loc", "Store Name"]) || "Store");
+                    let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
+                    parsedData.push(storeObj);
 
-                let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: finalLocationName, lat: lat, lng: lng, orders: dailyOrders };
-                parsedData.push(storeObj);
-
-                if(!championUtilizationData[champ]) {
-                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                    if(!championUtilizationData[champ]) {
+                        championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                    }
+                    championUtilizationData[champ].stores.push(storeObj);
+                    championUtilizationData[champ].totalOrders += dailyOrders;
+                } catch(e) {
+                    console.error("Safely skipped unreadable row.", e);
                 }
-                championUtilizationData[champ].stores.push(storeObj);
-                championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // Restore the AI Threshold Engine
+            if(parsedData.length === 0) {
+                document.querySelectorAll('.checkbox-list').forEach(el => {
+                    el.innerHTML = `<div class="empty-state" style="color:var(--status-red);"><b>No valid mapping data found.</b></div>`;
+                });
+                return;
+            }
+
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
                 let o = d.totalOrders;
-                
                 if (count === 1) { d.status = (o < 200) ? 'Underutilized' : 'Optimal'; } 
                 else if (count > 5 || o >= 500) { d.status = 'Overloaded'; } 
                 else if (count === 5 || (o >= 400 && o < 500)) { d.status = 'Medium Load'; } 
@@ -978,7 +994,7 @@
 
             buildSupervisorFilterList(); 
             buildChainFilterList(true);
-            updateChampionDropdownScope(true); // Ensures checkboxes check and dashboard renders on load!
+            updateChampionDropdownScope(true); // <--- Triggers map render safely!
         }
 
         // --- FILTER BUILDING ---
@@ -1043,7 +1059,7 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
-        // --- FULLY RESTORED TABLE RENDERING ---
+        // --- TABLE RENDERING ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
             tbody.innerHTML = '';
@@ -1119,25 +1135,14 @@
                 subTableHTML += `</tbody></table></div>`;
                 subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
 
-                mainRow.onclick = () => {
-                    selectChampion(champ, mainRow);
-                };
+                mainRow.onclick = () => { selectChampion(champ, mainRow); };
 
                 let chevronBtn = mainRow.querySelector('.chevron-btn');
                 chevronBtn.onclick = (e) => {
-                    e.stopPropagation(); 
-                    selectChampion(champ, mainRow); 
-                    
+                    e.stopPropagation(); selectChampion(champ, mainRow); 
                     const isExpanded = subRow.style.display === 'table-row';
-                    
-                    document.querySelectorAll('.sub-row').forEach(r => {
-                        r.style.display = 'none';
-                        r.classList.remove('selected-sub');
-                    });
-                    document.querySelectorAll('.chevron-btn').forEach(btn => {
-                        btn.classList.remove('open');
-                    });
-                    
+                    document.querySelectorAll('.sub-row').forEach(r => { r.style.display = 'none'; r.classList.remove('selected-sub'); });
+                    document.querySelectorAll('.chevron-btn').forEach(btn => { btn.classList.remove('open'); });
                     if (!isExpanded) {
                         subRow.style.display = 'table-row';
                         subRow.classList.add('selected-sub');
@@ -1150,26 +1155,7 @@
             });
         }
 
-        function getDistanceKM(lat1, lon1, lat2, lon2) {
-            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        // --- FULLY RESTORED AI SUGGESTION ENGINE ---
-        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
-            let minDist = Infinity;
-            let closestStore = null;
-            targetChampStores.forEach(s => {
-                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestStore = s;
-                }
-            });
-            return { distance: minDist, anchorStore: closestStore };
-        }
-
+        // --- AI SUGGESTION ENGINE ---
         function selectChampion(champName, rowElement) {
             document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
             rowElement.classList.add('selected');
@@ -1240,7 +1226,6 @@
                 }
 
                 candidates.sort((a, b) => a.distance - b.distance);
-
                 let uniqueCandidates = [];
                 let seenStores = new Set();
                 for (let c of candidates) {
@@ -1278,7 +1263,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
                             </div>
                         `;
                     } else {
@@ -1298,7 +1283,7 @@
                                 </div>
                             </div>
                             <div class="ai-review">
-                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload.
                             </div>
                         `;
                     }
@@ -1354,7 +1339,6 @@
                         
                         const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
                         
-                        // Clicking a store pin opens the Bottom Sheet directly
                         storeMarker.on('click', (e) => {
                             if(mapClickMode) return; 
                             L.DomEvent.stopPropagation(e); 
