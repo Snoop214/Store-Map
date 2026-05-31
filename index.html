@@ -159,8 +159,8 @@
         #map-container, #tb-map-container { height: 100%; width: 100%; position: relative;}
         #map, #tb-map { height: 100%; width: 100%; }
         
-        /* --- MAP SEARCH OVERLAY --- */
-        .map-search-wrapper {
+        /* --- MAP CONTROLS OVERLAY --- */
+        .map-search-wrapper, .tb-control-panel {
             position: absolute;
             top: 15px;
             right: 15px;
@@ -168,7 +168,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            width: 380px;
+            width: 400px;
         }
 
         .map-search-bar {
@@ -212,8 +212,10 @@
             white-space: nowrap;
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
-        .map-action-btn.primary { background: #F1F5F9; color: var(--primary-orange); }
-        .map-action-btn.primary:hover { background: #E2E8F0; }
+        .map-action-btn.primary { background: #10B981; color: white; border-color: #059669;}
+        .map-action-btn.primary:hover { background: #059669; }
+        .map-action-btn.danger { color: white; background: #EF4444; border-color: #DC2626;}
+        .map-action-btn.danger:hover { background: #DC2626; }
 
         /* Search Dropdown Suggestions */
         .suggestions-dropdown {
@@ -239,9 +241,8 @@
         }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #FFF5F0; }
-        .suggestion-icon { font-size: 12px; margin-right: 8px; color: var(--text-muted); }
         
-        /* Navigation Button Style */
+        /* Navigation Button Style (Map Popup) */
         .drive-btn {
             display: flex;
             align-items: center;
@@ -273,9 +274,48 @@
             padding: 10px !important;
             color: var(--text-dark) !important;
             border: 1px solid var(--border-color) !important;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin-top: 60px !important; /* Push down below custom select */
         }
         .leaflet-routing-alt h2 { font-size: 14px !important; font-weight: 800 !important; color: var(--primary-orange) !important;}
         .leaflet-routing-alt h3 { font-size: 12px !important; font-weight: 600 !important;}
+
+        /* Live Navigation Dashboard (Bottom Panel) */
+        .nav-dashboard {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            display: flex;
+            gap: 30px;
+            padding: 15px 40px;
+            z-index: 1000;
+            display: none; /* Hidden until routing starts */
+            border: 2px solid #E2E8F0;
+        }
+        .nav-metric { display: flex; flex-direction: column; align-items: center; }
+        .nav-val { font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px;}
+        .nav-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;}
+
+        /* Live GPS Custom Arrow Marker */
+        .nav-arrow-container {
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-arrow {
+            width: 0; 
+            height: 0; 
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 32px solid #3B82F6; /* Blue Arrow */
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.4));
+            transform-origin: 50% 60%;
+            transition: transform 0.2s ease-out; /* Smooth rotation */
+        }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -365,31 +405,6 @@
         .sc-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;}
         .sc-detail { font-size: 12px; color: var(--text-dark); margin-bottom: 6px; display:flex; justify-content: space-between; align-items: center;}
         
-        /* Mini-Map specific styling */
-        .mini-map {
-            height: 120px;
-            width: 100%;
-            border-radius: 6px;
-            margin-top: 10px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border-color);
-            z-index: 1; 
-        }
-
-        /* AI Review Section styling */
-        .ai-review {
-            margin-top: auto;
-            background: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: #1E3A8A;
-            line-height: 1.5;
-        }
-
-        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
-        
         /* Map Labels */
         .muted-champ-label {
             background: #FFFFFF !important; border: 1px solid #E2E8F0 !important;
@@ -407,7 +422,8 @@
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('map')">MAP VIEW</button>
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
-                <button class="tab-btn" onclick="switchTab('tb-map')">TB-MAP</button> </div>
+                <button class="tab-btn" onclick="switchTab('tb-map')">TB-MAP (Live Routing)</button>
+            </div>
         </div>
         <div class="database-status">
             <div class="db-icon" id="db-icon"></div>
@@ -461,7 +477,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.15<br>
+                        LS Operations Optimizer v15.17<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -477,16 +493,14 @@
         <div class="main-content">
             
             <div id="map-container">
-                
                 <div class="map-search-wrapper">
                     <div class="map-search-bar">
                         <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search UAE location or paste coordinates..." autocomplete="off">
-                        <button class="map-action-btn primary" onclick="executeMapSearch()" title="Search">🔍</button>
+                        <button class="map-action-btn" onclick="executeMapSearch()" title="Search">🔍</button>
                         <button class="map-action-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
                     </div>
                     <div id="search-suggestions" class="suggestions-dropdown"></div>
                 </div>
-                
                 <div id="map"></div>
             </div>
 
@@ -531,6 +545,27 @@
             </div>
 
             <div id="tb-map-container" style="display:none;">
+                <div class="tb-control-panel">
+                    <div class="map-search-bar">
+                        <select id="tb-store-select" class="map-search-input">
+                            <option value="">-- Select Destination Store --</option>
+                        </select>
+                        <button class="map-action-btn primary" onclick="initLiveNavigationFromDropdown()">🚗 Route</button>
+                        <button class="map-action-btn danger" onclick="stopLiveNavigation()">🛑 Stop</button>
+                    </div>
+                </div>
+                
+                <div id="nav-dashboard" class="nav-dashboard">
+                    <div class="nav-metric">
+                        <div id="nav-time" class="nav-val">--</div>
+                        <div class="nav-lbl">Minutes</div>
+                    </div>
+                    <div class="nav-metric">
+                        <div id="nav-dist" class="nav-val">--</div>
+                        <div class="nav-lbl">Distance</div>
+                    </div>
+                </div>
+
                 <div id="tb-map"></div>
             </div>
 
@@ -565,7 +600,10 @@
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en', {
             attribution: '© Google Maps', maxZoom: 20
         }).addTo(tbMap);
-        let currentRoutingControl = null; // Holds the active route
+        
+        let currentRoutingControl = null; 
+        let liveWatchId = null;
+        let liveUserMarker = null;
 
         // --- GLOBALS ---
         let parsedData = [];
@@ -604,53 +642,135 @@
             setTimeout(() => { map.invalidateSize(); tbMap.invalidateSize(); }, 300);
         }
 
-        // --- IN-APP NAVIGATION ENGINE (2GIS Style) ---
-        function startTbNavigation(destLat, destLng, storeName) {
-            // Immediately switch to the TB-MAP tab so the user sees action
-            switchTab('tb-map');
+        // --- IN-APP LIVE NAVIGATION ENGINE (TB-MAP TAB) ---
+        function populateTbStoreDropdown() {
+            const select = document.getElementById('tb-store-select');
+            select.innerHTML = '<option value="">-- Select Destination Store --</option>';
             
-            // Clean up any old route
+            let allStores = [...parsedData].sort((a,b) => a.locationName.localeCompare(b.locationName));
+            allStores.forEach(s => {
+                select.innerHTML += `<option value="${s.lat},${s.lng}">${s.locationName} (${s.chainName})</option>`;
+            });
+        }
+
+        function initLiveNavigationFromDropdown() {
+            const select = document.getElementById('tb-store-select');
+            if(!select.value) {
+                alert("Please select a destination store from the dropdown first.");
+                return;
+            }
+            const [lat, lng] = select.value.split(',');
+            const storeName = select.options[select.selectedIndex].text;
+            startTbNavigation(parseFloat(lat), parseFloat(lng), storeName);
+        }
+
+        function stopLiveNavigation() {
             if (currentRoutingControl) {
                 tbMap.removeControl(currentRoutingControl);
                 currentRoutingControl = null;
             }
+            if (liveWatchId) {
+                navigator.geolocation.clearWatch(liveWatchId);
+                liveWatchId = null;
+            }
+            if (liveUserMarker) {
+                tbMap.removeLayer(liveUserMarker);
+                liveUserMarker = null;
+            }
+            document.getElementById('tb-store-select').selectedIndex = 0;
+            document.getElementById('nav-dashboard').style.display = 'none'; // Hide bottom bar
+            tbMap.setView([25.2048, 55.2708], 9); // Reset view to UAE
+        }
+
+        function startTbNavigation(destLat, destLng, storeName) {
+            switchTab('tb-map');
+            
+            // Auto-update dropdown
+            const select = document.getElementById('tb-store-select');
+            for(let i=0; i<select.options.length; i++) {
+                if(select.options[i].value === `${destLat},${destLng}`) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+
+            // Cleanup
+            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
+            if (liveWatchId) navigator.geolocation.clearWatch(liveWatchId);
+            if (liveUserMarker) { tbMap.removeLayer(liveUserMarker); liveUserMarker = null; }
+            document.getElementById('nav-dashboard').style.display = 'none';
 
             if ("geolocation" in navigator) {
-                // Request live location from the browser
-                navigator.geolocation.getCurrentPosition(
+                let isFirstRoute = true;
+                
+                // Track location continuously
+                liveWatchId = navigator.geolocation.watchPosition(
                     function(position) {
                         const startLat = position.coords.latitude;
                         const startLng = position.coords.longitude;
+                        const heading = position.coords.heading; // Device compass direction
+                        
+                        const startLatLng = L.latLng(startLat, startLng);
+                        const destLatLng = L.latLng(destLat, destLng);
 
-                        // Create the 2GIS style turn-by-turn route
-                        currentRoutingControl = L.Routing.control({
-                            waypoints: [
-                                L.latLng(startLat, startLng), // Start (My Location)
-                                L.latLng(destLat, destLng)    // Destination (Store)
-                            ],
-                            routeWhileDragging: true,
-                            showAlternatives: true,
-                            fitSelectedRoutes: true,
-                            lineOptions: {
-                                styles: [{color: '#3B82F6', opacity: 0.8, weight: 6}]
-                            },
-                            createMarker: function(i, wp, nWps) {
-                                // Custom Markers for Start/End
-                                if (i === 0) {
-                                    return L.marker(wp.latLng).bindTooltip("Your Location", {permanent:true});
-                                } else if (i === nWps - 1) {
-                                    return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label'});
+                        // 1. Create or Update Custom 3D Arrow Marker
+                        if (!liveUserMarker) {
+                            const arrowIcon = L.divIcon({ 
+                                className: 'nav-arrow-container', 
+                                html: `<div class="nav-arrow" id="live-arrow"></div>`,
+                                iconSize: [40,40], iconAnchor: [20,20] 
+                            });
+                            liveUserMarker = L.marker(startLatLng, {icon: arrowIcon}).addTo(tbMap);
+                        } else {
+                            liveUserMarker.setLatLng(startLatLng);
+                        }
+
+                        // Rotate the arrow if heading data is available
+                        if (heading !== null && !isNaN(heading)) {
+                            const arrowDom = document.getElementById('live-arrow');
+                            if(arrowDom) arrowDom.style.transform = `rotate(${heading}deg)`;
+                        }
+
+                        // 2. Lock Map Camera to User Location (Zoom 18)
+                        tbMap.setView(startLatLng, 18);
+
+                        // 3. Calculate Route (only once unless they deviate heavily)
+                        if (isFirstRoute) {
+                            currentRoutingControl = L.Routing.control({
+                                waypoints: [startLatLng, destLatLng],
+                                routeWhileDragging: false,
+                                showAlternatives: false,
+                                fitSelectedRoutes: false, // Prevent it from zooming out
+                                lineOptions: { styles: [{color: '#2ECC71', opacity: 0.9, weight: 8, border: '2px solid #27AE60'}] },
+                                createMarker: function(i, wp, nWps) {
+                                    if (i === nWps - 1) { // Only draw destination pin
+                                        return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label'});
+                                    }
+                                    return null;
                                 }
-                            }
-                        }).addTo(tbMap);
+                            }).addTo(tbMap);
+
+                            // Capture routing data for the Bottom Dashboard
+                            currentRoutingControl.on('routesfound', function(e) {
+                                var routes = e.routes;
+                                var summary = routes[0].summary;
+                                // Convert distance to km and time to minutes
+                                document.getElementById('nav-dist').innerText = (summary.totalDistance / 1000).toFixed(1) + ' km';
+                                document.getElementById('nav-time').innerText = Math.round(summary.totalTime / 60);
+                                document.getElementById('nav-dashboard').style.display = 'flex'; // Show Dashboard
+                            });
+
+                            isFirstRoute = false;
+                        }
                     },
                     function(error) {
-                        alert("Please allow location permissions in your browser to calculate the route.");
+                        console.error("GPS Error", error);
+                        alert("Could not lock onto your live GPS location. Please check browser permissions.");
                     },
-                    { enableHighAccuracy: true }
+                    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
                 );
             } else {
-                alert("Your browser does not support geolocation.");
+                alert("Your browser does not support live geolocation.");
             }
         }
 
@@ -660,7 +780,7 @@
             fetchGitHubUpdateStatus();
         });
 
-        // --- SEARCH & GEOLOCATION WITH UAE AUTOCOMPLETE ---
+        // --- SEARCH & GEOLOCATION (MAIN MAP TAB) ---
         let searchTimeout;
         const searchInput = document.getElementById('mapSearchInput');
         const suggestionsBox = document.getElementById('search-suggestions');
@@ -777,13 +897,12 @@
                 iconAnchor: [12, 12]
             });
 
-            // Replaced raw google maps link with internal TB-MAP function
             const safeTitle = title.replace(/'/g, "\\'");
             const popupHTML = `
                 <div style="font-family:'Inter', sans-serif;">
                     <b style="font-size:14px;">${title}</b><br>
                     <span style="font-size:11px; color:#64748B;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</span><br>
-                    <button onclick="startTbNavigation(${lat}, ${lng}, '${safeTitle}')" class="drive-btn">🚗 Start Navigation</button>
+                    <button onclick="startTbNavigation(${lat}, ${lng}, '${safeTitle}')" class="drive-btn">🚗 Route (TB-MAP)</button>
                 </div>
             `;
 
@@ -891,7 +1010,6 @@
                 championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
-            // Threshold Engine 
             Object.keys(championUtilizationData).forEach(champ => {
                 let d = championUtilizationData[champ];
                 let count = d.stores.length;
@@ -914,6 +1032,7 @@
 
             buildSupervisorFilterList();
             buildChainFilterList(true);
+            populateTbStoreDropdown();
         }
 
         // --- FILTER BUILDING ---
@@ -1360,7 +1479,7 @@
                                 <span style="font-size:12px; color:#64748B;">Chain:</span> <strong style="font-size:12px; color:var(--text-dark);">${store.chainName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Champ:</span> <strong style="font-size:12px; color:var(--primary-orange);">${store.championName}</strong><br>
                                 <span style="font-size:12px; color:#64748B;">Avg Orders:</span> <span style="font-size:12px;">${Math.round(store.orders)}</span><br>
-                                <button onclick="startTbNavigation(${store.lat}, ${store.lng}, '${safeTitle}')" class="drive-btn">🚗 Start Navigation</button>
+                                <button onclick="startTbNavigation(${store.lat}, ${store.lng}, '${safeTitle}')" class="drive-btn">🚗 Route (TB-MAP)</button>
                             </div>
                         `;
 
