@@ -26,6 +26,11 @@
             --status-yellow: #F59E0B;
             --status-red: #EF4444;
             --status-blue: #3B82F6;
+            
+            --status-green-bg: #D1FAE5;
+            --status-yellow-bg: #FEF3C7;
+            --status-red-bg: #FEE2E2;
+            --status-blue-bg: #DBEAFE;
         }
 
         body {
@@ -181,6 +186,7 @@
             background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
         }
+        
         .suggestion-item {
             padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-color);
             cursor: pointer; color: var(--text-dark); transition: background 0.2s; line-height: 1.4;
@@ -200,7 +206,6 @@
         
         .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 10px auto; }
         
-        /* Routing Information Box */
         .route-info {
             background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; 
             display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px;
@@ -262,25 +267,88 @@
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
-        /* Current Location Custom Pin */
         .custom-search-pin { display: flex; align-items: center; justify-content: center; }
 
-        /* --- DATA VIEW (TABLE) --- */
+        /* --- FULLY RESTORED DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
             display: none; flex-direction: column; height: 100%; padding: 24px; box-sizing: border-box; gap: 24px; overflow: hidden;
         }
         .data-panel-top {
             flex: 3; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; 
-            display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; height: 100%;
+            display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden;
         }
         .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; }
         .panel-header h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--text-dark); }
         .table-wrapper { flex-grow: 1; overflow-y: auto; }
+        
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { position: sticky; top: 0; background: var(--bg-card); padding: 12px 20px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid var(--border-color); z-index: 10;}
         td { padding: 14px 20px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-color); color: var(--text-dark); }
+        
+        tbody tr:not(.sub-row) { cursor: pointer; transition: background 0.2s; }
+        tbody tr:not(.sub-row):hover { background-color: #F1F5F9; }
+        tbody tr.selected:not(.sub-row) { background-color: #FFF5F0; border-left: 4px solid var(--primary-orange); }
+
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .status-optimal { background: var(--status-green-bg); color: var(--status-green); }
+        .status-medium { background: var(--status-yellow-bg); color: var(--status-yellow); }
+        .status-over { background: var(--status-red-bg); color: var(--status-red); }
+        .status-under { background: var(--status-blue-bg); color: var(--status-blue); }
+
+        /* Expandable Row Styles */
+        .chevron-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 6px;
+            background: #F1F5F9; color: var(--primary-orange);
+            cursor: pointer; transition: all 0.2s ease;
+            font-size: 12px; font-weight: bold; user-select: none;
+        }
+        .chevron-btn:hover { background: #E2E8F0; }
+        .chevron-btn.open { transform: rotate(180deg); background: var(--primary-orange); color: white;}
+        
+        .sub-row { background-color: #FAFAFA; border-left: 4px solid var(--border-color); }
+        .sub-row.selected-sub { border-left: 4px solid var(--primary-orange); }
+        .sub-row td { padding: 0 !important; border-bottom: none; }
+        .sub-table-wrapper { padding: 10px 40px 20px 40px; }
+        .sub-table { width: 100%; border-collapse: collapse; border: 1px solid #E2E8F0; background: #FFFFFF; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .sub-table th, .sub-table td { padding: 10px 16px; font-size: 12px; border-bottom: 1px solid #E2E8F0; color: var(--text-dark);}
+        .sub-table th { background: #F1F5F9; color: var(--text-muted); font-weight: 700; border-bottom: 2px solid #E2E8F0;}
+        .sub-table tr:last-child td { border-bottom: none; }
+
+        /* Bottom Profile Panels */
+        .data-panel-bottom { flex: 2.5; display: flex; gap: 24px; min-height: 320px; }
+        .profile-card {
+            flex: 1; background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            border-top: 4px solid var(--primary-orange); display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .profile-card h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px;}
+        .metric-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px;}
+        .metric-label { color: var(--text-muted); font-weight: 600;}
+        .metric-val { font-weight: 800; color: var(--text-dark);}
+
+        .suggestions-container {
+            flex: 2.5; background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .suggestions-container h3 { margin: 0 0 16px 0; font-size: 15px; font-weight: 800; color: var(--text-dark);}
+        
+        .cards-wrapper { display: flex; gap: 16px; overflow-x: auto; flex-grow: 1; padding-bottom: 10px;}
+        .suggestion-card {
+            min-width: 340px; border: 1px solid var(--border-color); border-radius: 10px;
+            padding: 16px; display: flex; flex-direction: column; background: #F8FAFC;
+        }
+        .sc-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; color: var(--text-dark);}
+        .sc-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;}
+        .sc-detail { font-size: 12px; color: var(--text-dark); margin-bottom: 6px; display:flex; justify-content: space-between; align-items: center;}
+        
+        .mini-map { height: 120px; width: 100%; border-radius: 6px; margin-top: 10px; margin-bottom: 12px; border: 1px solid var(--border-color); z-index: 1; }
+        .ai-review { margin-top: auto; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 10px; border-radius: 6px; font-size: 11px; color: #1E3A8A; line-height: 1.5;}
+
         .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
         
+        /* Map Labels */
         .muted-champ-label {
             background: #FFFFFF !important; border: 1px solid #E2E8F0 !important; border-radius: 12px !important; padding: 2px 6px !important; 
             font-size: 9px !important; font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
@@ -315,7 +383,7 @@
             <div class="logo">LS_Store Optimizer</div>
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('map')">MAP VIEW</button>
-                <button class="tab-btn" onclick="switchTab('data')">UTILIZATION DATA</button>
+                <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
         <div class="database-status">
@@ -370,7 +438,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.25<br>
+                        LS Operations Optimizer v15.26<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -433,10 +501,27 @@
                                     <th>Supervisor</th>
                                     <th>Store Count</th>
                                     <th>Daily Avg Orders</th>
+                                    <th>Utilization Status</th>
+                                    <th style="width: 50px; text-align: center;">Stores</th>
                                 </tr>
                             </thead>
-                            <tbody id="utilization-tbody"></tbody>
+                            <tbody id="utilization-tbody">
+                                </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="data-panel-bottom">
+                    <div class="profile-card" id="profile-card">
+                        <h3><span id="p-icon">👤</span> Champion Profile</h3>
+                        <div class="empty-state" style="padding-top:20px;">Select a Champion from the table to view AI reallocation suggestions and routing.</div>
+                    </div>
+                    
+                    <div class="suggestions-container" id="suggestions-card">
+                        <h3>Smart Reallocation Suggestions</h3>
+                        <div class="cards-wrapper" id="suggestions-wrapper">
+                            <div class="empty-state" style="width:100%;">Awaiting selection...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -465,12 +550,10 @@
         const searchPinLayer = L.layerGroup().addTo(map);
 
         // --- ROUTING ORIGIN LOGIC ---
-        // By default, assume we want to route from the user's Live Location
         let routeOrigin = { lat: null, lng: null, name: "My Location" };
         let targetNavLat = null;
         let targetNavLng = null;
 
-        // Try to get GPS silently on load
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(p => {
                 routeOrigin = { lat: p.coords.latitude, lng: p.coords.longitude, name: "My Location" };
@@ -500,7 +583,7 @@
             setTimeout(() => { map.invalidateSize(); }, 300);
         }
 
-        // --- BOTTOM SHEET UI ---
+        // --- BOTTOM SHEET UI (MAP TAB) ---
         function closeBottomSheet() {
             document.getElementById('bottom-sheet').classList.remove('active');
         }
@@ -521,7 +604,6 @@
                 }
             };
 
-            // If origin is missing and search bar is empty, try one more time to get GPS
             if (!routeOrigin.lat && document.getElementById('mapSearchInput').value.trim() === '') {
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(p => {
@@ -533,7 +615,6 @@
                 renderDistance();
             }
 
-            // Hook up the Start Drive button
             const navBtn = document.getElementById('bs-nav-btn');
             navBtn.onclick = () => { openNavModal(store.lat, store.lng); };
 
@@ -565,12 +646,10 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                // Official Google Maps Deep Link
                 const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
-                // Official 2GIS Deep Link
                 const twogisLink = `https://2gis.ae/dubai/directions/points/${startLng},${startLat}|${targetNavLng},${targetNavLat}?traffic`;
                 window.open(twogisLink, '_blank');
             }
@@ -628,6 +707,33 @@
 
                 let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: clean(["Location", "Branch Loc"]) || "Store", lat: lat, lng: lng, orders: dailyOrders };
                 parsedData.push(storeObj);
+
+                if(!championUtilizationData[champ]) {
+                    championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
+                }
+                championUtilizationData[champ].stores.push(storeObj);
+                championUtilizationData[champ].totalOrders += dailyOrders;
+            });
+
+            // Restore the AI Threshold Engine
+            Object.keys(championUtilizationData).forEach(champ => {
+                let d = championUtilizationData[champ];
+                let count = d.stores.length;
+                let o = d.totalOrders;
+                
+                if (count === 1) {
+                    d.status = (o < 200) ? 'Underutilized' : 'Optimal';
+                } 
+                else if (count > 5 || o >= 500) {
+                    d.status = 'Overloaded';
+                } 
+                else if (count === 5 || (o >= 400 && o < 500)) {
+                    d.status = 'Medium Load';
+                } 
+                else if (count < 5 && o < 400) {
+                    if (count < 3 && o < 200) d.status = 'Underutilized';
+                    else d.status = 'Optimal';
+                }
             });
 
             buildSupervisorFilterList(); buildChainFilterList(true);
@@ -695,25 +801,110 @@
 
         function renderDashboard() { renderMap(); renderTable(); }
 
+        // --- FULLY RESTORED TABLE RENDERING ---
         function renderTable() {
             const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
             tbody.innerHTML = '';
             
             let activeChamps = getCheckedValues('champion-list');
+            
             if(activeChamps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
+                let tempSet = new Set();
+                const selectedSups = getCheckedValues('supervisor-list');
+                const selectedChains = getCheckedValues('chain-list');
+                parsedData.forEach(d => {
+                    if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName);
+                });
+                activeChamps = Array.from(tempSet);
+            }
+
+            if(activeChamps.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
                 return;
             }
 
             activeChamps.forEach(champ => {
-                let dCount = 0; let dOrders = 0; let dSup = "Multiple";
-                parsedData.forEach(s => {
-                    if(s.championName === champ) { dCount++; dOrders += s.orders; dSup = s.supervisor;}
+                let d = championUtilizationData[champ];
+                if(!d) return;
+                
+                let badgeHTML = '';
+                if(d.status === 'Optimal') badgeHTML = `<span class="status-badge status-optimal">✓ Optimal</span>`;
+                else if(d.status === 'Underutilized') badgeHTML = `<span class="status-badge status-under">↘ Underutilized</span>`;
+                else if(d.status === 'Medium Load') badgeHTML = `<span class="status-badge status-medium">⚠️ Medium Load</span>`;
+                else badgeHTML = `<span class="status-badge status-over">🔥 Overloaded</span>`;
+
+                let mainRow = document.createElement('tr');
+                mainRow.innerHTML = `
+                    <td style="font-weight:700;">${champ}</td>
+                    <td>${d.supervisor}</td>
+                    <td>${d.stores.length}</td>
+                    <td>${Math.round(d.totalOrders)}</td>
+                    <td>${badgeHTML}</td>
+                    <td style="text-align: center;">
+                        <span class="chevron-btn">▼</span>
+                    </td>
+                `;
+
+                let subRow = document.createElement('tr');
+                subRow.className = 'sub-row';
+                subRow.style.display = 'none';
+
+                let subTableHTML = `
+                    <div class="sub-table-wrapper">
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">Store Name</th>
+                                    <th>Chain</th>
+                                    <th>Daily Avg Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                let sortedStores = [...d.stores].sort((a,b) => a.locationName.localeCompare(b.locationName));
+                
+                sortedStores.forEach(store => {
+                    subTableHTML += `
+                        <tr>
+                            <td><strong>${store.locationName}</strong></td>
+                            <td>${store.chainName}</td>
+                            <td style="color:var(--primary-orange); font-weight:700;">${Math.round(store.orders)}</td>
+                        </tr>
+                    `;
                 });
                 
-                let mainRow = document.createElement('tr');
-                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>${dSup}</td><td>${dCount}</td><td>${Math.round(dOrders)}</td>`;
+                subTableHTML += `</tbody></table></div>`;
+                subRow.innerHTML = `<td colspan="6">${subTableHTML}</td>`;
+
+                mainRow.onclick = () => {
+                    selectChampion(champ, mainRow);
+                };
+
+                let chevronBtn = mainRow.querySelector('.chevron-btn');
+                chevronBtn.onclick = (e) => {
+                    e.stopPropagation(); 
+                    selectChampion(champ, mainRow); 
+                    
+                    const isExpanded = subRow.style.display === 'table-row';
+                    
+                    document.querySelectorAll('.sub-row').forEach(r => {
+                        r.style.display = 'none';
+                        r.classList.remove('selected-sub');
+                    });
+                    document.querySelectorAll('.chevron-btn').forEach(btn => {
+                        btn.classList.remove('open');
+                    });
+                    
+                    if (!isExpanded) {
+                        subRow.style.display = 'table-row';
+                        subRow.classList.add('selected-sub');
+                        chevronBtn.classList.add('open');
+                    }
+                };
+
                 tbody.appendChild(mainRow);
+                tbody.appendChild(subRow);
             });
         }
 
@@ -723,6 +914,178 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
+        // --- FULLY RESTORED AI SUGGESTION ENGINE ---
+        function getNearestStoreData(targetLat, targetLng, targetChampStores) {
+            let minDist = Infinity;
+            let closestStore = null;
+            targetChampStores.forEach(s => {
+                let dist = getDistanceKM(targetLat, targetLng, s.lat, s.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestStore = s;
+                }
+            });
+            return { distance: minDist, anchorStore: closestStore };
+        }
+
+        function selectChampion(champName, rowElement) {
+            document.querySelectorAll('#utilization-tbody tr:not(.sub-row)').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
+
+            let d = championUtilizationData[champName];
+            let pCard = document.getElementById('profile-card');
+            
+            let statusIcon = '✓';
+            if(d.status === 'Underutilized') statusIcon = '↘';
+            if(d.status === 'Medium Load') statusIcon = '⚠️';
+            if(d.status === 'Overloaded') statusIcon = '🔥';
+
+            pCard.innerHTML = `
+                <h3><span>${statusIcon}</span> Profile: ${champName}</h3>
+                <div class="metric-row"><span class="metric-label">Assigned Supervisor:</span><span class="metric-val" style="color:var(--primary-orange);">${d.supervisor}</span></div>
+                <div class="metric-row"><span class="metric-label">Current Store Count:</span><span class="metric-val">${d.stores.length}</span></div>
+                <div class="metric-row"><span class="metric-label">Daily Avg Orders:</span><span class="metric-val">${Math.round(d.totalOrders)}</span></div>
+                <div class="metric-row"><span class="metric-label">System Target:</span><span class="metric-val">1-4 Stores / <400 Orders</span></div>
+            `;
+
+            let sWrapper = document.getElementById('suggestions-wrapper');
+            sWrapper.innerHTML = '';
+
+            try {
+                let candidates = [];
+
+                if (d.status === 'Underutilized' || d.status === 'Optimal') {
+                    parsedData.forEach(store => {
+                        let ownerData = championUtilizationData[store.championName];
+                        if (store.supervisor === d.supervisor && ownerData && (ownerData.status === 'Overloaded' || ownerData.status === 'Medium Load') && store.championName !== champName) {
+                            let newCount = d.stores.length + 1;
+                            let newOrders = d.totalOrders + store.orders;
+                            
+                            if (newCount <= 5 && newOrders < 500) { 
+                                let nearestData = getNearestStoreData(store.lat, store.lng, d.stores);
+                                if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                    candidates.push({ 
+                                        type: 'take', store: store, targetChampName: champName, sourceChampName: store.championName, 
+                                        distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                        anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } 
+                else if (d.status === 'Overloaded' || d.status === 'Medium Load') {
+                    d.stores.forEach(store => {
+                        Object.keys(championUtilizationData).forEach(otherChampName => {
+                            let otherData = championUtilizationData[otherChampName];
+                            if (otherData.supervisor === d.supervisor && otherChampName !== champName) {
+                                let newCount = otherData.stores.length + 1;
+                                let newOrders = otherData.totalOrders + store.orders;
+                                
+                                if (newCount <= 5 && newOrders < 500) { 
+                                    let nearestData = getNearestStoreData(store.lat, store.lng, otherData.stores);
+                                    if (nearestData.distance < 15 && nearestData.anchorStore) {
+                                        candidates.push({ 
+                                            type: 'give', store: store, targetChampName: otherChampName, sourceChampName: champName, 
+                                            distance: nearestData.distance, anchorStoreName: nearestData.anchorStore.locationName,
+                                            anchorLat: nearestData.anchorStore.lat, anchorLng: nearestData.anchorStore.lng
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+
+                candidates.sort((a, b) => a.distance - b.distance);
+
+                let uniqueCandidates = [];
+                let seenStores = new Set();
+                for (let c of candidates) {
+                    if (!seenStores.has(c.store.locationName)) {
+                        uniqueCandidates.push(c);
+                        seenStores.add(c.store.locationName);
+                    }
+                    if (uniqueCandidates.length >= 3) break;
+                }
+
+                if (uniqueCandidates.length === 0) {
+                    sWrapper.innerHTML = `<div class="empty-state" style="width:100%;">No valid reallocation options found nearby that wouldn't overload another team member.</div>`;
+                    return;
+                }
+
+                uniqueCandidates.forEach((c, index) => {
+                    let card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    let mapId = `minimap-${index}`;
+                    
+                    if (c.type === 'take') {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Take From:</span> <strong style="color:var(--status-red)">${c.sourceChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <div class="sc-title">${c.store.locationName}</div>
+                            <div class="sc-sub">${c.store.chainName}</div>
+                            <div id="${mapId}" class="mini-map"></div>
+                            <div class="sc-detail" style="align-items:flex-start;">
+                                <span>Give To:</span> <strong style="color:var(--status-green)">${c.targetChampName}</strong>
+                            </div>
+                            <div class="sc-detail" style="flex-direction:column; gap:2px; margin-bottom:10px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Distance:</span> <strong>${c.distance.toFixed(1)} km</strong>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); text-align:right;">
+                                    (from their ${c.anchorStoreName} store)
+                                </div>
+                            </div>
+                            <div class="ai-review">
+                                <strong>🤖 AI Review:</strong> Reassigning this store to <strong>${c.targetChampName}</strong> relieves <strong>${c.sourceChampName}</strong>'s workload. It is a geographic match, located just ${c.distance.toFixed(1)} km from their existing <strong>${c.anchorStoreName}</strong> location.
+                            </div>
+                        `;
+                    }
+
+                    sWrapper.appendChild(card);
+
+                    setTimeout(() => {
+                        let mmap = L.map(mapId, { zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false });
+                        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en').addTo(mmap);
+
+                        let storeLatLng = [c.store.lat, c.store.lng];
+                        let anchorLatLng = [c.anchorLat, c.anchorLng];
+
+                        L.marker(storeLatLng).bindTooltip("Suggested: " + c.store.locationName).addTo(mmap);
+                        L.circleMarker(anchorLatLng, {
+                            radius: 6, fillColor: '#FF5A00', color: '#FFFFFF', weight: 2, fillOpacity: 1
+                        }).bindTooltip("Nearest store: " + c.anchorStoreName).addTo(mmap);
+
+                        L.polyline([storeLatLng, anchorLatLng], {color: '#FF5A00', dashArray: '5, 5', weight: 2}).addTo(mmap);
+                        mmap.fitBounds(L.latLngBounds([storeLatLng, anchorLatLng]), {padding: [15, 15]});
+                    }, 50); 
+                });
+
+            } catch (err) {
+                sWrapper.innerHTML = `<div class="empty-state" style="width:100%; color:red;">System Error: ${err.message}</div>`;
+            }
+        }
+
+        // --- MAP RENDERING ---
         function getCustomIcon(chainName, supervisorColor) {
             const lowerChain = chainName.toLowerCase();
             let brandBgColor = "#E2E8F0"; let brandTextColor = "#475569";
@@ -775,9 +1138,8 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        // Update Route Origin
                         routeOrigin = { lat: lat, lng: lng, name: "My Location" };
-                        searchInputMap.value = ""; // Clear search bar visually
+                        searchInputMap.value = ""; 
                         
                         searchPinLayer.clearLayers();
                         const myLocIcon = L.divIcon({
@@ -806,7 +1168,6 @@
             clearTimeout(searchTimeoutMap);
             const query = this.value.trim();
             
-            // If user deletes search, reset origin to My Location
             if (!query) { 
                 suggestionsBoxMap.style.display = 'none'; 
                 if ("geolocation" in navigator) {
@@ -832,7 +1193,6 @@
                                 searchInputMap.value = shortName;
                                 suggestionsBoxMap.style.display = 'none';
                                 
-                                // Update Route Origin to Searched Location
                                 routeOrigin = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: shortName };
                                 
                                 searchPinLayer.clearLayers();
