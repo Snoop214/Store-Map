@@ -27,11 +27,6 @@
             --status-yellow: #F59E0B;
             --status-red: #EF4444;
             --status-blue: #3B82F6;
-            
-            --status-green-bg: #D1FAE5;
-            --status-yellow-bg: #FEF3C7;
-            --status-red-bg: #FEE2E2;
-            --status-blue-bg: #DBEAFE;
         }
 
         body {
@@ -86,7 +81,7 @@
         }
 
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
-        .tab-btn.active { background: var(--primary-orange); color: var(--white); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
+        .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
         .database-status {
             display: flex; align-items: center; gap: 12px;
@@ -94,8 +89,8 @@
             padding: 6px 14px; border-radius: 20px;
         }
 
-        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px var(--status-yellow-bg); transition: background-color 0.3s;}
-        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px var(--status-green-bg); }
+        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
+        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
         
         .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
         .db-text strong { color: var(--text-dark); }
@@ -158,229 +153,124 @@
         
         /* --- MAP CONTROLS OVERLAY (MAIN MAP) --- */
         .map-search-wrapper {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 380px;
+            position: absolute; top: 15px; right: 15px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 6px; width: 380px;
         }
 
         .map-search-bar {
-            display: flex;
-            gap: 8px;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            align-items: center;
-            width: 100%;
-            box-sizing: border-box;
+            display: flex; gap: 8px; background: white; padding: 8px;
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); align-items: center; width: 100%; box-sizing: border-box;
         }
 
         .map-search-input {
-            border: none;
-            background: #F8FAFC;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-family: 'Inter', sans-serif;
-            flex-grow: 1;
-            outline: 1px solid #E2E8F0;
+            border: none; background: #F8FAFC; padding: 10px 12px; border-radius: 6px;
+            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0;
         }
         .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
 
         .map-action-btn {
-            background: white;
-            border: 1px solid #E2E8F0;
-            color: var(--text-dark);
-            border-radius: 6px;
-            padding: 9px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
+            background: white; border: 1px solid #E2E8F0; color: var(--text-dark); border-radius: 6px;
+            padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
-        .map-action-btn.primary { background: #F1F5F9; color: var(--primary-orange); }
-        .map-action-btn.primary:hover { background: #E2E8F0; }
 
         /* Search Dropdown Suggestions */
         .suggestions-dropdown {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            max-height: 250px;
-            overflow-y: auto;
-            display: none;
-            width: 100%;
-            border: 1px solid var(--border-color);
-            box-sizing: border-box;
+            background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
         }
         
         .suggestion-item {
-            padding: 12px 14px;
-            font-size: 13px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            color: var(--text-dark);
-            transition: background 0.2s;
-            line-height: 1.4;
+            padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border-color);
+            cursor: pointer; color: var(--text-dark); transition: background 0.2s; line-height: 1.4;
         }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #FFF5F0; }
 
         /* --- TALAMAP UI (TB-MAP OVERLAYS) --- */
         .talamap-top-bar {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 500px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;
         }
 
         .category-pills {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            scrollbar-width: none; /* Firefox */
-            padding-bottom: 4px;
+            display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
         }
-        .category-pills::-webkit-scrollbar { display: none; } /* Chrome */
+        .category-pills::-webkit-scrollbar { display: none; }
         
         .pill {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-dark);
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: white; border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 8px 16px; font-size: 12px; font-weight: 700; color: var(--text-dark);
+            cursor: pointer; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: all 0.2s; display: flex; align-items: center; gap: 6px;
         }
         .pill:hover { background: #F8FAFC; }
         .pill.active { background: var(--primary-orange); color: white; border-color: var(--primary-orange); }
 
-        /* Bottom Slide-Up Sheet */
+        /* Bottom Slide-Up Sheet (Store Preview) */
         .bottom-sheet {
-            position: absolute;
-            bottom: -150%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            background: white;
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-            padding: 24px;
-            z-index: 2000;
+            position: absolute; bottom: -150%; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px; background: white; border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2); padding: 24px; z-index: 2000;
             transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
         }
         .bottom-sheet.active { bottom: 0; }
         
-        .sheet-handle {
-            width: 40px;
-            height: 4px;
-            background: #CBD5E1;
-            border-radius: 2px;
-            margin: 0 auto 10px auto;
-        }
+        .sheet-handle { width: 40px; height: 4px; background: #CBD5E1; border-radius: 2px; margin: 0 auto 10px auto; }
         .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
         .sheet-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;}
         
         .sheet-metrics {
-            display: flex; justify-content: space-between;
-            background: #F8FAFC; padding: 12px 16px; border-radius: 12px;
-            border: 1px solid var(--border-color); margin-bottom: 10px;
+            display: flex; justify-content: space-between; background: #F8FAFC; padding: 12px 16px; 
+            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 10px;
         }
         .s-metric { display: flex; flex-direction: column; }
         .s-metric span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
         .s-metric strong { font-size: 15px; color: var(--text-dark); font-weight: 800; margin-top: 2px;}
 
         .btn-massive {
-            background: var(--primary-orange);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3);
-            transition: all 0.2s;
+            background: var(--primary-orange); color: white; border: none; padding: 16px;
+            border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3); transition: all 0.2s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         .btn-massive:hover { background: var(--primary-orange-hover); transform: translateY(-2px); }
-        .btn-massive.danger { background: #EF4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);}
-        .btn-massive.danger:hover { background: #DC2626; }
 
-        /* Live Navigation Dashboard (Bottom Panel during routing) */
+        /* LIVE NAVIGATION DASHBOARD (TALABAT STYLE) */
         .nav-dashboard {
-            position: absolute;
-            bottom: -150%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            z-index: 2000;
-            width: 90%;
-            max-width: 450px;
-            border: 2px solid #E2E8F0;
-            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-sizing: border-box;
+            position: absolute; bottom: -150%; left: 50%; transform: translateX(-50%);
+            background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px; z-index: 2000; width: 90%; max-width: 450px;
+            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box;
         }
         .nav-dashboard.active { bottom: 20px; }
-        .nav-stats { display: flex; gap: 24px; }
+        
+        .nav-stats { display: flex; gap: 30px; align-items: center;}
         .nav-metric { display: flex; flex-direction: column; }
-        .nav-val { font-size: 22px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; line-height: 1;}
+        .nav-val { font-size: 24px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; line-height: 1;}
         .nav-val.green { color: var(--status-green); }
-        .nav-lbl { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;}
+        .nav-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;}
         
         .stop-btn {
-            background: #FEE2E2; color: #EF4444; border: none; padding: 10px 16px;
-            border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer;
+            background: #FEE2E2; color: #EF4444; border: none; padding: 12px 20px;
+            border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s;
         }
         .stop-btn:hover { background: #FCA5A5; color: white;}
 
-        /* Live GPS Custom Arrow Marker */
-        .nav-arrow-container {
-            width: 40px; height: 40px;
+        /* --- TALABAT CAR SVG ICON --- */
+        .car-icon-container {
+            width: 50px; height: 50px;
             display: flex; align-items: center; justify-content: center;
         }
-        .nav-arrow {
-            width: 0; height: 0; 
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 32px solid #3B82F6; /* Blue Arrow */
+        .car-svg {
+            width: 100%; height: 100%;
+            /* Orange top-down car SVG */
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="20" width="40" height="60" rx="10" fill="%23FF5A00" stroke="white" stroke-width="4"/><rect x="35" y="30" width="30" height="15" rx="3" fill="%231E293B"/><rect x="35" y="60" width="30" height="10" rx="2" fill="%231E293B"/></svg>') no-repeat center center;
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.4));
-            transform-origin: 50% 60%;
+            transform-origin: center;
             transition: transform 0.2s ease-out;
         }
 
@@ -408,6 +298,8 @@
         }
         td { padding: 14px 20px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-color); color: var(--text-dark); }
         
+        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
+        
         /* Map Labels */
         .muted-champ-label {
             background: #FFFFFF !important; border: 1px solid #E2E8F0 !important;
@@ -415,7 +307,6 @@
             font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
-        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 500;}
     </style>
 </head>
 <body>
@@ -481,7 +372,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.18<br>
+                        LS Operations Optimizer v15.19<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -520,7 +411,6 @@
                                     <th>Supervisor</th>
                                     <th>Store Count</th>
                                     <th>Daily Avg Orders</th>
-                                    <th>Utilization Status</th>
                                 </tr>
                             </thead>
                             <tbody id="utilization-tbody"></tbody>
@@ -534,7 +424,7 @@
                 <div class="talamap-top-bar" id="talamap-ui-top">
                     <div class="map-search-bar" style="box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                         <input type="text" id="tbSearch" class="map-search-input" placeholder="Search stores..." onkeyup="filterTbMapStores()">
-                        <button class="map-action-btn primary" onclick="centerOnUser()">📍</button>
+                        <button class="map-action-btn" style="color:var(--primary-orange);" onclick="centerOnUser()">📍</button>
                     </div>
                     <div class="category-pills" id="tb-pills"></div>
                 </div>
@@ -550,7 +440,7 @@
                         <div class="s-metric"><span>Distance</span><strong id="bs-dist" style="color:var(--primary-orange);">Calculating...</strong></div>
                     </div>
                     
-                    <button id="bs-nav-btn" class="btn-massive">🚗 Start Navigation</button>
+                    <button id="bs-nav-btn" class="btn-massive">🚗 Start Drive</button>
                 </div>
                 
                 <div id="nav-dashboard" class="nav-dashboard">
@@ -596,7 +486,8 @@
         
         const markerLayer = L.layerGroup().addTo(map);
         const routeLayer = L.layerGroup().addTo(map);
-        const tbMarkerLayer = L.layerGroup().addTo(tbMap); // Stores on TB-Map
+        const searchPinLayer = L.layerGroup().addTo(map);
+        const tbMarkerLayer = L.layerGroup().addTo(tbMap);
 
         let currentRoutingControl = null; 
         let liveWatchId = null;
@@ -633,7 +524,6 @@
                 document.getElementById('tb-map-container').style.display = 'block';
                 setTimeout(() => { tbMap.invalidateSize(); renderTbMap(); }, 100);
                 
-                // Try to get user location silently for distance calculations
                 if ("geolocation" in navigator && !userCurrentLatLng) {
                     navigator.geolocation.getCurrentPosition(p => {
                         userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
@@ -680,20 +570,24 @@
             document.getElementById('tb-bottom-sheet').classList.remove('active');
         }
 
+        // Phase 1: Open Store Details
         function openBottomSheet(store) {
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
             document.getElementById('bs-champ').innerText = store.championName;
             document.getElementById('bs-orders').innerText = Math.round(store.orders);
             
-            let distText = "N/A";
+            let distText = "Calculating...";
             if (userCurrentLatLng) {
                 let distKM = getDistanceKM(userCurrentLatLng.lat, userCurrentLatLng.lng, store.lat, store.lng);
                 distText = distKM.toFixed(1) + " km";
             }
             document.getElementById('bs-dist').innerText = distText;
 
-            // Wire up the button
+            // Draw Route in background to preview
+            previewRoute(store.lat, store.lng, store.locationName);
+
+            // Wire up the Drive button
             const navBtn = document.getElementById('bs-nav-btn');
             navBtn.onclick = () => { startTbNavigation(store.lat, store.lng, store.locationName); };
 
@@ -705,7 +599,6 @@
             const searchQuery = document.getElementById('tbSearch').value.toLowerCase();
             
             parsedData.forEach(store => {
-                // Apply Filters
                 if (activeTbChain !== "All" && store.chainName !== activeTbChain) return;
                 if (searchQuery && !store.locationName.toLowerCase().includes(searchQuery)) return;
 
@@ -713,7 +606,6 @@
                 const storeMarker = L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) })
                     .addTo(tbMarkerLayer);
                 
-                // Instead of a popup, clicking opens the Bottom Sheet
                 storeMarker.on('click', () => {
                     tbMap.setView([store.lat, store.lng], 15);
                     openBottomSheet(store);
@@ -726,41 +618,45 @@
                 navigator.geolocation.getCurrentPosition(p => {
                     userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
                     tbMap.setView(userCurrentLatLng, 15);
-                    
-                    if(!liveUserMarker) {
-                        const pulseIcon = L.divIcon({ className: 'gps-pulse-marker', iconSize: [16,16], iconAnchor: [8,8] });
-                        liveUserMarker = L.marker(userCurrentLatLng, {icon: pulseIcon}).addTo(tbMap);
-                    } else {
-                        liveUserMarker.setLatLng(userCurrentLatLng);
-                    }
                 });
             }
         }
 
-        // --- LIVE NAVIGATION ENGINE ---
+        // Preview Route (Before Driving)
+        function previewRoute(destLat, destLng, storeName) {
+            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
+            
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
+                    const destLatLng = L.latLng(destLat, destLng);
+
+                    currentRoutingControl = L.Routing.control({
+                        waypoints: [userCurrentLatLng, destLatLng],
+                        routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: true,
+                        lineOptions: { styles: [{color: '#FF5A00', opacity: 0.9, weight: 8, border: '2px solid #E04E00'}] },
+                        createMarker: function(i, wp, nWps) { return null; } // Hide default markers
+                    }).addTo(tbMap);
+                });
+            }
+        }
+
+        // --- LIVE NAVIGATION ENGINE (DRIVING MODE) ---
         function stopLiveNavigation() {
-            if (currentRoutingControl) {
-                tbMap.removeControl(currentRoutingControl);
-                currentRoutingControl = null;
-            }
-            if (liveWatchId) {
-                navigator.geolocation.clearWatch(liveWatchId);
-                liveWatchId = null;
-            }
-            if (liveUserMarker) {
-                tbMap.removeLayer(liveUserMarker);
-                liveUserMarker = null;
-            }
+            if (currentRoutingControl) { tbMap.removeControl(currentRoutingControl); currentRoutingControl = null; }
+            if (liveWatchId) { navigator.geolocation.clearWatch(liveWatchId); liveWatchId = null; }
+            if (liveUserMarker) { tbMap.removeLayer(liveUserMarker); liveUserMarker = null; }
+            
             document.getElementById('nav-dashboard').classList.remove('active');
-            document.getElementById('talamap-ui-top').style.display = 'flex'; // Show top bar again
+            document.getElementById('talamap-ui-top').style.display = 'flex'; 
             tbMap.setView([25.2048, 55.2708], 11); 
-            renderTbMap(); // Bring pins back
+            renderTbMap(); 
         }
 
         function startTbNavigation(destLat, destLng, storeName) {
             closeBottomSheet();
-            document.getElementById('talamap-ui-top').style.display = 'none'; // Hide top bar for clean view
-            tbMarkerLayer.clearLayers(); // Clear other pins
+            document.getElementById('talamap-ui-top').style.display = 'none'; 
+            tbMarkerLayer.clearLayers(); 
 
             if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
             if (liveWatchId) navigator.geolocation.clearWatch(liveWatchId);
@@ -773,39 +669,35 @@
                     function(position) {
                         const startLat = position.coords.latitude;
                         const startLng = position.coords.longitude;
-                        const heading = position.coords.heading; 
+                        const heading = position.coords.heading || 0; 
                         
                         const startLatLng = L.latLng(startLat, startLng);
                         const destLatLng = L.latLng(destLat, destLng);
 
-                        // 3D Arrow Marker
+                        // TALABAT CAR ICON MARKER
                         if (!liveUserMarker) {
-                            const arrowIcon = L.divIcon({ 
-                                className: 'nav-arrow-container', 
-                                html: `<div class="nav-arrow" id="live-arrow"></div>`,
-                                iconSize: [40,40], iconAnchor: [20,20] 
+                            const carIcon = L.divIcon({ 
+                                className: 'car-icon-container', 
+                                html: `<div class="car-svg" id="live-car"></div>`,
+                                iconSize: [50,50], iconAnchor: [25,25] 
                             });
-                            liveUserMarker = L.marker(startLatLng, {icon: arrowIcon}).addTo(tbMap);
+                            liveUserMarker = L.marker(startLatLng, {icon: carIcon}).addTo(tbMap);
                         } else {
                             liveUserMarker.setLatLng(startLatLng);
                         }
 
-                        if (heading !== null && !isNaN(heading)) {
-                            const arrowDom = document.getElementById('live-arrow');
-                            if(arrowDom) arrowDom.style.transform = `rotate(${heading}deg)`;
-                        }
+                        // Rotate Car
+                        const carDom = document.getElementById('live-car');
+                        if(carDom) carDom.style.transform = `rotate(${heading}deg)`;
 
-                        // Lock Camera
-                        tbMap.setView(startLatLng, 17);
+                        // Lock Camera closely for top-down feel
+                        tbMap.setView(startLatLng, 18);
 
-                        // Calculate Route
                         if (isFirstRoute) {
                             currentRoutingControl = L.Routing.control({
                                 waypoints: [startLatLng, destLatLng],
-                                routeWhileDragging: false,
-                                showAlternatives: false,
-                                fitSelectedRoutes: false, 
-                                lineOptions: { styles: [{color: '#10B981', opacity: 1, weight: 8, border: '2px solid #059669'}] },
+                                routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: false, 
+                                lineOptions: { styles: [{color: '#FF5A00', opacity: 1, weight: 8, border: '2px solid #E04E00'}] },
                                 createMarker: function(i, wp, nWps) {
                                     if (i === nWps - 1) { 
                                         return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label', direction: 'top'});
@@ -820,42 +712,27 @@
                                 document.getElementById('nav-time').innerText = Math.round(summary.totalTime / 60);
                                 document.getElementById('nav-dashboard').classList.add('active');
                             });
-
                             isFirstRoute = false;
                         }
                     },
-                    function(error) {
-                        alert("Could not lock onto your live GPS location.");
-                    },
-                    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+                    function(error) { alert("Could not lock onto your live GPS location."); },
+                    { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
                 );
             } else {
                 alert("Your browser does not support live geolocation.");
             }
         }
 
-        // --- INITIALIZATION ---
+        // --- INITIALIZATION & DATA FETCH ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData();
-            fetchGitHubUpdateStatus();
+            fetchHostedData(); fetchGitHubUpdateStatus();
         });
-
-        function timeSince(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            let interval = seconds / 86400;
-            if (interval >= 1) return Math.floor(interval) + " days ago";
-            interval = seconds / 3600;
-            if (interval >= 1) return Math.floor(interval) + " hours ago";
-            interval = seconds / 60;
-            if (interval >= 1) return Math.floor(interval) + " mins ago";
-            return "Just now";
-        }
 
         function fetchGitHubUpdateStatus() {
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
             fetch(apiUrl).then(r => r.json()).then(data => {
                 if (data && data.length > 0) {
-                    document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>${timeSince(new Date(data[0].commit.committer.date))}</strong>`;
+                    document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>Live</strong>`;
                     document.getElementById('db-icon').classList.add('live');
                 }
             }).catch(e => {
@@ -902,7 +779,7 @@
             buildSupervisorFilterList(); buildChainFilterList(true); initTbPills();
         }
 
-        // --- FILTER BUILDING ---
+        // --- FILTER BUILDING (MAIN MAP) ---
         function buildSupervisorFilterList() {
             const supList = document.getElementById('supervisor-list'); supList.innerHTML = '';
             let colorIndex = 0;
@@ -968,18 +845,16 @@
             const tbody = document.getElementById('utilization-tbody'); if(!tbody) return;
             tbody.innerHTML = '';
             
-            const selectedSups = getCheckedValues('supervisor-list'); const selectedChains = getCheckedValues('chain-list');
             let activeChamps = getCheckedValues('champion-list');
             if(activeChamps.length === 0) {
-                let tempSet = new Set();
-                parsedData.forEach(d => { if (selectedSups.includes(d.supervisor) && selectedChains.includes(d.chainName)) tempSet.add(d.championName); });
-                activeChamps = Array.from(tempSet);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94A3B8;">No data matches your filters.</td></tr>`;
+                return;
             }
 
             activeChamps.forEach(champ => {
                 let d = championUtilizationData[champ]; if(!d) return;
                 let mainRow = document.createElement('tr');
-                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>${d.supervisor}</td><td>${d.stores.length}</td><td>${Math.round(d.totalOrders)}</td><td><span class="status-badge status-optimal">View</span></td>`;
+                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>${d.supervisor}</td><td>${d.stores.length}</td><td>${Math.round(d.totalOrders)}</td>`;
                 tbody.appendChild(mainRow);
             });
         }
@@ -1020,6 +895,39 @@
             });
             if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
         }
+        
+        // --- SEARCH SCRIPT FOR MAIN MAP ---
+        let searchTimeoutMap;
+        const searchInputMap = document.getElementById('mapSearchInput');
+        const suggestionsBoxMap = document.getElementById('search-suggestions');
+
+        searchInputMap.addEventListener('input', function() {
+            clearTimeout(searchTimeoutMap);
+            const query = this.value.trim();
+            if (!query) { suggestionsBoxMap.style.display = 'none'; return; }
+            searchTimeoutMap = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ae`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBoxMap.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            let div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            let shortName = item.display_name.split(',').slice(0,3).join(', ');
+                            div.innerHTML = `<span class="suggestion-icon">📍</span> ${shortName}`;
+                            div.onclick = () => {
+                                searchInputMap.value = shortName;
+                                suggestionsBoxMap.style.display = 'none';
+                                map.setView([item.lat, item.lon], 15);
+                            };
+                            suggestionsBoxMap.appendChild(div);
+                        });
+                        suggestionsBoxMap.style.display = 'block';
+                    }
+                });
+            }, 500); 
+        });
     </script>
 </body>
 </html>
