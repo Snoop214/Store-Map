@@ -173,6 +173,10 @@
             display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
+        
+        /* Pulse Animation for Current Location Pin */
+        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE;}
+        .pulse-loc-btn:hover { background: #EFF6FF !important; }
 
         /* Search Dropdown Suggestions */
         .suggestions-dropdown {
@@ -254,6 +258,11 @@
             width: 100%;
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
+
+        /* Current Location Custom Pin */
+        .custom-search-pin {
+            display: flex; align-items: center; justify-content: center;
+        }
 
         /* --- DATA VIEW (TABLE) --- */
         #data-container {
@@ -370,7 +379,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.23<br>
+                        LS Operations Optimizer v15.24<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -390,6 +399,7 @@
                     <div class="map-search-bar">
                         <input type="text" id="mapSearchInput" class="map-search-input" placeholder="Search UAE location or paste coordinates..." autocomplete="off">
                         <button class="map-action-btn" onclick="executeMapSearch()" title="Search">🔍</button>
+                        <button class="map-action-btn pulse-loc-btn" onclick="findMyLocation()" title="Find My Location">📍 Me</button>
                     </div>
                     <div id="search-suggestions" class="suggestions-dropdown"></div>
                 </div>
@@ -536,12 +546,11 @@
         function launchApp(appType, event) {
             if (!targetNavLat || !targetNavLng) return;
             
-            // Show loading state on the button
             const btn = event.currentTarget;
             const originalHTML = btn.innerHTML;
             btn.innerHTML = `<span style="font-size: 14px; font-weight: 700; color: var(--primary-orange);">📍 Locating GPS...</span>`;
             
-            // Try to grab live location, then inject it into the URLs
+            // Grabbing live coordinates before firing Deep Link
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
@@ -549,25 +558,26 @@
                         const startLng = position.coords.longitude;
                         
                         if (appType === 'gmaps') {
-                            const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                            const gmapsLink = `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=$?api=1&origin=${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                             window.open(gmapsLink, '_blank');
                         } 
                         else if (appType === 'twogis') {
-                            const twogisLink = `https://2gis.ae/dubai/directions/profile/car/points/${startLng},${startLat}|${targetNavLng},${targetNavLat}?traffic`;
+                            // Official URL Structure for 2GIS Routing
+                            const twogisLink = `https://2gis.ae/dubai/directions/points/${startLng},${startLat}|${targetNavLng},${targetNavLat}?traffic`;
                             window.open(twogisLink, '_blank');
                         }
                         
-                        btn.innerHTML = originalHTML; // Restore button
+                        btn.innerHTML = originalHTML; 
                         closeNavModal();
                         closeBottomSheet();
                     },
                     function(error) {
-                        // Fallback: If user denied GPS, open the apps without starting coordinates
+                        // Fallback: If user denied GPS, launch without starting coords
                         if (appType === 'gmaps') {
-                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=$?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
                         } 
                         else if (appType === 'twogis') {
-                            window.open(`https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
+                            window.open(`https://2gis.ae/dubai/directions/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
                         }
                         btn.innerHTML = originalHTML;
                         closeNavModal();
@@ -576,11 +586,10 @@
                     { enableHighAccuracy: true, timeout: 5000 }
                 );
             } else {
-                // Total fallback if browser completely lacks geolocation
                 if (appType === 'gmaps') {
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=$?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`, '_blank');
                 } else if (appType === 'twogis') {
-                    window.open(`https://2gis.ae/dubai/directions/profile/car/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
+                    window.open(`https://2gis.ae/dubai/directions/points/|${targetNavLng},${targetNavLat}?traffic`, '_blank');
                 }
                 btn.innerHTML = originalHTML;
                 closeNavModal();
@@ -773,10 +782,41 @@
             if (allBounds.length > 0) map.fitBounds(allBounds, { padding: [50, 50] });
         }
         
-        // --- SEARCH SCRIPT FOR MAIN MAP ---
+        // --- SEARCH SCRIPT & "MY LOCATION" FOR MAIN MAP ---
         let searchTimeoutMap;
         const searchInputMap = document.getElementById('mapSearchInput');
         const suggestionsBoxMap = document.getElementById('search-suggestions');
+
+        function findMyLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        userCurrentLatLng = L.latLng(lat, lng);
+                        
+                        searchPinLayer.clearLayers();
+                        const myLocIcon = L.divIcon({
+                            className: 'custom-search-pin',
+                            html: `<div style="background-color: #3B82F6; border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
+                            iconSize: [24, 24], iconAnchor: [12, 12]
+                        });
+
+                        L.marker([lat, lng], { icon: myLocIcon })
+                            .addTo(searchPinLayer)
+                            .bindPopup(`<b>Your Current Location</b><br>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}`)
+                            .openPopup();
+
+                        map.setView([lat, lng], 14);
+                    },
+                    function(error) {
+                        alert("Could not access your location. Please check browser permissions.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
 
         searchInputMap.addEventListener('input', function() {
             clearTimeout(searchTimeoutMap);
@@ -796,6 +836,19 @@
                             div.onclick = () => {
                                 searchInputMap.value = shortName;
                                 suggestionsBoxMap.style.display = 'none';
+                                
+                                searchPinLayer.clearLayers();
+                                const searchIcon = L.divIcon({
+                                    className: 'custom-search-pin',
+                                    html: `<div style="background-color: #EF4444; border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
+                                    iconSize: [24, 24], iconAnchor: [12, 12]
+                                });
+
+                                L.marker([item.lat, item.lon], { icon: searchIcon })
+                                    .addTo(searchPinLayer)
+                                    .bindPopup(`<b>${shortName}</b>`)
+                                    .openPopup();
+
                                 map.setView([item.lat, item.lon], 15);
                             };
                             suggestionsBoxMap.appendChild(div);
