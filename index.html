@@ -53,7 +53,7 @@
             z-index: 2000;
         }
 
-        .header-left { display: flex; align-items: center; gap: 40px; width: 100%; justify-content: space-between; }
+        .header-left { display: flex; align-items: center; gap: 40px; }
 
         .logo {
             color: var(--primary-orange);
@@ -82,6 +82,18 @@
         .tab-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .tab-btn.active { background: var(--primary-orange); color: #FFF; box-shadow: 0 2px 8px rgba(255, 90, 0, 0.25); }
 
+        .database-status {
+            display: flex; align-items: center; gap: 12px;
+            background: #F8FAFC; border: 1px solid var(--border-color);
+            padding: 6px 14px; border-radius: 20px;
+        }
+
+        .db-icon { width: 10px; height: 10px; border-radius: 50%; background-color: var(--status-yellow); box-shadow: 0 0 0 3px #FEF3C7; transition: background-color 0.3s;}
+        .db-icon.live { background-color: var(--status-green); box-shadow: 0 0 0 3px #D1FAE5; }
+        
+        .db-text { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .db-text strong { color: var(--text-dark); }
+
         /* --- MAIN APP LAYOUT --- */
         .app-body { display: flex; flex-grow: 1; height: calc(100vh - 64px); position: relative; overflow: hidden; }
 
@@ -93,7 +105,7 @@
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex;
         }
 
-        .sidebar-container.collapsed { width: 0px; }
+        .sidebar-container.collapsed { width: 35px; }
         .sidebar-content-wrapper { width: 100%; height: 100%; overflow: hidden; }
 
         .sidebar-content {
@@ -133,20 +145,6 @@
         .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); flex-shrink: 0;}
         .count-badge { color: var(--text-muted); font-size: 10px; margin-left: auto; background: #E2E8F0; padding: 2px 7px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
 
-        /* FOOTER (Restored to subtle styling) */
-        .app-footer { 
-            border-top: 1px solid var(--border-color); 
-            padding-top: 12px; 
-            margin-top: 10px;
-            font-size: 10px !important; 
-            color: var(--text-muted) !important; 
-            text-align: center; 
-            flex-shrink: 0;
-            font-weight: 500;
-            line-height: 1.5;
-        }
-        .app-footer strong { color: var(--text-dark) !important; font-weight: 700 !important; }
-
         /* --- CONTENT CONTAINERS --- */
         .main-content { flex-grow: 1; height: 100%; position: relative; }
         #map-container { height: 100%; width: 100%; position: relative;}
@@ -165,7 +163,7 @@
 
         .map-search-input {
             border: none; background: #F8FAFC; padding: 10px 12px; border-radius: 6px;
-            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0; width: 100%;
+            font-size: 13px; font-family: 'Inter', sans-serif; flex-grow: 1; outline: 1px solid #E2E8F0;
         }
         .map-search-input:focus { outline: 2px solid var(--primary-orange); background: white;}
 
@@ -176,7 +174,7 @@
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
         
-        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE; white-space: nowrap;}
+        .pulse-loc-btn { color: var(--status-blue) !important; font-weight: 800; border-color: #BFDBFE;}
         .pulse-loc-btn:hover { background: #EFF6FF !important; }
 
         /* Search Dropdown Suggestions */
@@ -267,7 +265,8 @@
         }
         .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
-        .custom-search-pin { display: flex; align-items: center; justify-content: center; }
+        /* Custom Teardrop Pin styling */
+        .custom-teardrop { filter: drop-shadow(0px 6px 8px rgba(0,0,0,0.3)); }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
         #data-container {
@@ -354,50 +353,6 @@
             font-size: 9px !important; font-family: 'Inter', sans-serif !important; font-weight: 700 !important;
             color: #475569 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important; white-space: nowrap;
         }
-
-        /* --- RESPONSIVE MOBILE VIEW FIXES --- */
-        @media (max-width: 768px) {
-            .app-header {
-                height: auto;
-                padding: 12px 16px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .header-left {
-                flex-direction: column;
-                align-items: flex-start; /* Aligns Top Tabs & Logo to Left */
-                gap: 12px;
-            }
-            .logo { text-align: left; }
-            .tabs { width: 100%; justify-content: flex-start; }
-            .app-body { height: calc(100vh - 100px); }
-            
-            /* Sidebar Overlays on Map for Mobile */
-            .sidebar-container {
-                position: absolute;
-                z-index: 3000;
-                height: 100%;
-                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
-            }
-            .sidebar-content { width: 280px; }
-
-            .map-search-wrapper {
-                top: 15px; left: 50px; right: 10px; width: auto;
-            }
-
-            /* Make Bottom Sheet full width & Push button UP on mobile */
-            .bottom-sheet {
-                width: 100%;
-                border-radius: 20px 20px 0 0;
-                padding: 20px 20px max(40px, env(safe-area-inset-bottom)) 20px; /* Safe Area ensures button isn't cut off */
-            }
-
-            /* Stack Data View elements */
-            #data-container { padding: 12px; overflow-y: auto; }
-            .data-panel-bottom { flex-direction: column; height: auto; min-height: auto; }
-            .profile-card, .suggestions-container { flex: none; width: 100%; }
-        }
     </style>
 </head>
 <body>
@@ -430,11 +385,15 @@
                 <button class="tab-btn" onclick="switchTab('data')">UTILIZATION & SUGGESTIONS</button>
             </div>
         </div>
+        <div class="database-status">
+            <div class="db-icon" id="db-icon"></div>
+            <div class="db-text" id="db-status-text">Database: <strong>Checking updates...</strong></div>
+        </div>
     </div>
 
     <div class="app-body">
         
-        <div class="sidebar-container collapsed" id="sidebar">
+        <div class="sidebar-container" id="sidebar">
             <div class="sidebar-content-wrapper">
                 <div class="sidebar-content">
                     
@@ -478,7 +437,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.29<br>
+                        LS Operations Optimizer v15.26<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -575,6 +534,10 @@
     <script>
         // ====== ADMIN CONFIGURATION ======
         const CSV_FILE_PATH = "data.csv"; 
+        
+        // GITHUB API CONNECTION
+        const GITHUB_USERNAME = "Snoop214"; 
+        const GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"; // <--- UPDATE WITH YOUR GITHUB REPO NAME
         // ==================================
 
         // --- MAP INIT ---
@@ -584,6 +547,21 @@
         
         const markerLayer = L.layerGroup().addTo(map);
         const searchPinLayer = L.layerGroup().addTo(map);
+        
+        // Added permanent static layer for Talabat Office
+        const staticPinLayer = L.layerGroup().addTo(map);
+
+        // Render Permanent Talabat Office Pin
+        const talabatOfficeLatLng = [25.2092164334059, 55.26127999999603];
+        const talabatOfficeIcon = L.divIcon({
+            className: 'brand-solid-marker',
+            html: `<div style="background-color: #FF5A00; color: #FFFFFF; border: 2.5px solid #FFFFFF; border-radius: 20px; width: 64px; height: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">talabat</div>`,
+            iconSize: [64, 28], iconAnchor: [32, 14]
+        });
+        L.marker(talabatOfficeLatLng, {icon: talabatOfficeIcon})
+            .addTo(staticPinLayer)
+            .bindTooltip("Talabat Dubai Office", {direction: 'top', className: 'muted-champ-label', offset: [0, -10]});
+
 
         // --- ROUTING ORIGIN LOGIC ---
         let routeOrigin = { lat: null, lng: null, name: "My Location" };
@@ -617,11 +595,6 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
             setTimeout(() => { map.invalidateSize(); }, 300);
-        }
-
-        // Show sidebar by default on desktop, hide on mobile
-        if (window.innerWidth > 768) {
-            document.getElementById('sidebar').classList.remove('collapsed');
         }
 
         // --- BOTTOM SHEET UI (MAP TAB) ---
@@ -687,7 +660,7 @@
             const startLng = routeOrigin.lng;
             
             if (appType === 'gmaps') {
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1...{startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1...${startLat},${startLng}&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
                 window.open(gmapsLink, '_blank');
             } 
             else if (appType === 'twogis') {
@@ -701,26 +674,31 @@
 
         // --- INITIALIZATION & DATA FETCH ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchHostedData(); 
+            fetchHostedData(); fetchGitHubUpdateStatus();
         });
+
+        function fetchGitHubUpdateStatus() {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
+            fetch(apiUrl).then(r => r.json()).then(data => {
+                if (data && data.length > 0) {
+                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
+                    document.getElementById('db-icon').classList.add('live');
+                }
+            }).catch(e => {
+                document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
+                document.getElementById('db-icon').classList.add('live');
+            });
+        }
 
         function fetchHostedData() {
             Papa.parse(CSV_FILE_PATH, {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(results) { processSmartData(results.data); },
-                error: function(err) {
-                    alert("Error loading CSV file. Please check the file path.");
-                }
+                complete: function(results) { processSmartData(results.data); }
             });
         }
 
         // --- GLOBALS & DATA PROCESSING ---
-        let parsedData = [];
-        let supervisorStats = {}; 
-        let supervisorColors = {}; 
-        let championUtilizationData = {};
         const colorPalette = ['#FF5A00', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444', '#06B6D4', '#F59E0B', '#F43F5E'];
-        
         function processSmartData(dataRows) {
             parsedData = []; supervisorStats = {}; supervisorColors = {}; championUtilizationData = {};
 
@@ -1183,16 +1161,17 @@
                         searchInputMap.value = ""; // Clear search bar visually
                         
                         searchPinLayer.clearLayers();
+                        
+                        // Custom Talabat Orange Teardrop SVG Pin
                         const myLocIcon = L.divIcon({
-                            className: 'custom-search-pin',
-                            html: `<div style="background-color: #3B82F6; border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
-                            iconSize: [24, 24], iconAnchor: [12, 12]
+                            className: 'custom-teardrop',
+                            html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                            iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
                         });
 
                         L.marker([lat, lng], { icon: myLocIcon })
                             .addTo(searchPinLayer)
-                            .bindPopup(`<b>Your Current Location</b>`)
-                            .openPopup();
+                            .bindPopup(`<b>Your Current Location</b>`);
 
                         map.setView([lat, lng], 14);
                     },
@@ -1239,16 +1218,17 @@
                                 routeOrigin = { lat: parseFloat(item.lat), lng: parseFloat(item.lon), name: shortName };
                                 
                                 searchPinLayer.clearLayers();
+                                
+                                // Custom Talabat Orange Teardrop SVG Pin
                                 const searchIcon = L.divIcon({
-                                    className: 'custom-search-pin',
-                                    html: `<div style="background-color: #EF4444; border: 3px solid white; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
-                                    iconSize: [24, 24], iconAnchor: [12, 12]
+                                    className: 'custom-teardrop',
+                                    html: `<svg viewBox="0 0 24 36" width="30" height="45" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12C0 21 12 36 12 36C12 36 24 21 24 12C24 5.373 18.627 0 12 0Z" fill="#FF5A00" stroke="#FFFFFF" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#FFFFFF"/></svg>`,
+                                    iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -45]
                                 });
 
                                 L.marker([item.lat, item.lon], { icon: searchIcon })
                                     .addTo(searchPinLayer)
-                                    .bindPopup(`<b>${shortName}</b>`)
-                                    .openPopup();
+                                    .bindPopup(`<b>${shortName}</b>`);
 
                                 map.setView([item.lat, item.lon], 15);
                             };
