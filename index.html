@@ -175,7 +175,6 @@
         }
         .map-action-btn:hover { background: #F1F5F9; border-color: #CBD5E1; }
 
-        /* Search Dropdown Suggestions */
         .suggestions-dropdown {
             background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             max-height: 250px; overflow-y: auto; display: none; width: 100%; border: 1px solid var(--border-color); box-sizing: border-box;
@@ -234,47 +233,48 @@
             background: var(--primary-orange); color: white; border: none; padding: 16px;
             border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3); transition: all 0.2s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
+            display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;
         }
         .btn-massive:hover { background: var(--primary-orange-hover); transform: translateY(-2px); }
 
-        /* LIVE NAVIGATION DASHBOARD (TALABAT STYLE) */
-        .nav-dashboard {
-            position: absolute; bottom: -150%; left: 50%; transform: translateX(-50%);
-            background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 24px; z-index: 2000; width: 90%; max-width: 450px;
-            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box;
+        /* --- APP CHOICE MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
         }
-        .nav-dashboard.active { bottom: 20px; }
+        .modal-overlay.active { display: flex; opacity: 1; }
         
-        .nav-stats { display: flex; gap: 30px; align-items: center;}
-        .nav-metric { display: flex; flex-direction: column; }
-        .nav-val { font-size: 24px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; line-height: 1;}
-        .nav-val.green { color: var(--status-green); }
-        .nav-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;}
+        .modal-card {
+            background: white; border-radius: 20px; width: 90%; max-width: 360px;
+            padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; gap: 20px; transform: scale(0.95); transition: transform 0.2s;
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
         
-        .stop-btn {
-            background: #FEE2E2; color: #EF4444; border: none; padding: 12px 20px;
-            border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s;
-        }
-        .stop-btn:hover { background: #FCA5A5; color: white;}
+        .modal-header { text-align: center; }
+        .modal-header h3 { margin: 0 0 8px 0; font-size: 18px; color: var(--text-dark); font-weight: 800;}
+        .modal-header p { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4;}
 
-        /* --- TALABAT CAR SVG ICON --- */
-        .car-icon-container {
-            width: 50px; height: 50px;
-            display: flex; align-items: center; justify-content: center;
+        .app-grid { display: flex; flex-direction: column; gap: 12px; }
+        
+        .app-btn {
+            display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+            border-radius: 12px; border: 2px solid var(--border-color); background: white;
+            cursor: pointer; transition: all 0.2s; text-align: left;
         }
-        .car-svg {
-            width: 100%; height: 100%;
-            /* Orange top-down car SVG */
-            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="20" width="40" height="60" rx="10" fill="%23FF5A00" stroke="white" stroke-width="4"/><rect x="35" y="30" width="30" height="15" rx="3" fill="%231E293B"/><rect x="35" y="60" width="30" height="10" rx="2" fill="%231E293B"/></svg>') no-repeat center center;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.4));
-            transform-origin: center;
-            transition: transform 0.2s ease-out;
+        .app-btn:hover { border-color: var(--primary-orange); background: #FFF5F0; }
+        .app-btn img { width: 32px; height: 32px; border-radius: 8px;}
+        .app-btn span { font-size: 16px; font-weight: 700; color: var(--text-dark); }
+        
+        .modal-close {
+            background: #F1F5F9; color: var(--text-muted); border: none; padding: 12px;
+            border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
+        .modal-close:hover { background: #E2E8F0; color: var(--text-dark); }
 
-        /* Hide Leaflet Routing UI */
+        /* Hide Leaflet Routing UI completely */
         .leaflet-routing-container { display: none !important; }
 
         /* --- DATA VIEW (TABLE & SUGGESTIONS) --- */
@@ -310,6 +310,26 @@
     </style>
 </head>
 <body>
+
+    <div id="navAppModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Start Driving</h3>
+                <p>Choose your preferred navigation app to get live traffic and voice directions.</p>
+            </div>
+            <div class="app-grid">
+                <button onclick="launchApp('gmaps')" class="app-btn">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#34A853"/></svg>
+                    <span>Google Maps</span>
+                </button>
+                <button onclick="launchApp('twogis')" class="app-btn">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#A4D826"/><path d="M8.5 15.5L12 8L15.5 15.5H8.5Z" fill="#FFFFFF"/></svg>
+                    <span>2GIS Navigation</span>
+                </button>
+            </div>
+            <button onclick="closeNavModal()" class="modal-close">Cancel</button>
+        </div>
+    </div>
 
     <div class="app-header">
         <div class="header-left">
@@ -372,7 +392,7 @@
                     </div>
 
                     <div class="app-footer">
-                        LS Operations Optimizer v15.19<br>
+                        LS Operations Optimizer v15.20<br>
                         Developed by <strong>Soe Naing</strong>
                     </div>
                 </div>
@@ -443,20 +463,6 @@
                     <button id="bs-nav-btn" class="btn-massive">🚗 Start Drive</button>
                 </div>
                 
-                <div id="nav-dashboard" class="nav-dashboard">
-                    <div class="nav-stats">
-                        <div class="nav-metric">
-                            <div id="nav-time" class="nav-val green">--</div>
-                            <div class="nav-lbl">Min ETA</div>
-                        </div>
-                        <div class="nav-metric">
-                            <div id="nav-dist" class="nav-val">--</div>
-                            <div class="nav-lbl">KM Left</div>
-                        </div>
-                    </div>
-                    <button class="stop-btn" onclick="stopLiveNavigation()">🛑 Stop</button>
-                </div>
-
                 <div id="tb-map"></div>
             </div>
 
@@ -490,10 +496,12 @@
         const tbMarkerLayer = L.layerGroup().addTo(tbMap);
 
         let currentRoutingControl = null; 
-        let liveWatchId = null;
-        let liveUserMarker = null;
         let activeTbChain = "All";
         let userCurrentLatLng = null;
+
+        // Variables for Native App Handoff
+        let targetNavLat = null;
+        let targetNavLng = null;
 
         // --- GLOBALS ---
         let parsedData = [];
@@ -537,7 +545,7 @@
             setTimeout(() => { map.invalidateSize(); tbMap.invalidateSize(); }, 300);
         }
 
-        // --- TALAMAP UI (TB-MAP TAB) ---
+        // --- TALAMAP UI & ROUTE PREVIEW ---
         function initTbPills() {
             const pillContainer = document.getElementById('tb-pills');
             pillContainer.innerHTML = `<div class="pill active" onclick="setTbChain('All')">🛒 All Chains</div>`;
@@ -562,15 +570,20 @@
                 else p.classList.remove('active');
             });
             renderTbMap();
+            closeBottomSheet();
+            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
         }
 
-        function filterTbMapStores() { renderTbMap(); }
+        function filterTbMapStores() { 
+            renderTbMap(); 
+            closeBottomSheet();
+            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
+        }
 
         function closeBottomSheet() {
             document.getElementById('tb-bottom-sheet').classList.remove('active');
         }
 
-        // Phase 1: Open Store Details
         function openBottomSheet(store) {
             document.getElementById('bs-store-name').innerText = store.locationName;
             document.getElementById('bs-chain-name').innerText = store.chainName;
@@ -581,17 +594,38 @@
             if (userCurrentLatLng) {
                 let distKM = getDistanceKM(userCurrentLatLng.lat, userCurrentLatLng.lng, store.lat, store.lng);
                 distText = distKM.toFixed(1) + " km";
+            } else {
+                distText = "GPS Required";
             }
             document.getElementById('bs-dist').innerText = distText;
 
-            // Draw Route in background to preview
-            previewRoute(store.lat, store.lng, store.locationName);
+            // Preview the route on the map
+            previewRoute(store.lat, store.lng);
 
-            // Wire up the Drive button
+            // Hook up the Start Drive button to launch the Modal
             const navBtn = document.getElementById('bs-nav-btn');
-            navBtn.onclick = () => { startTbNavigation(store.lat, store.lng, store.locationName); };
+            navBtn.onclick = () => { openNavModal(store.lat, store.lng); };
 
             document.getElementById('tb-bottom-sheet').classList.add('active');
+        }
+
+        function previewRoute(destLat, destLng) {
+            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
+            
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
+                    const destLatLng = L.latLng(destLat, destLng);
+
+                    // Draws the route preview but hides instructions
+                    currentRoutingControl = L.Routing.control({
+                        waypoints: [userCurrentLatLng, destLatLng],
+                        routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: true,
+                        lineOptions: { styles: [{color: '#FF5A00', opacity: 0.9, weight: 6, border: '1px solid #E04E00'}] },
+                        createMarker: function(i, wp, nWps) { return null; } 
+                    }).addTo(tbMap);
+                });
+            }
         }
 
         function renderTbMap() {
@@ -607,7 +641,7 @@
                     .addTo(tbMarkerLayer);
                 
                 storeMarker.on('click', () => {
-                    tbMap.setView([store.lat, store.lng], 15);
+                    tbMap.setView([store.lat, store.lng], 14);
                     openBottomSheet(store);
                 });
             });
@@ -622,105 +656,32 @@
             }
         }
 
-        // Preview Route (Before Driving)
-        function previewRoute(destLat, destLng, storeName) {
-            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
-            
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(p => {
-                    userCurrentLatLng = L.latLng(p.coords.latitude, p.coords.longitude);
-                    const destLatLng = L.latLng(destLat, destLng);
-
-                    currentRoutingControl = L.Routing.control({
-                        waypoints: [userCurrentLatLng, destLatLng],
-                        routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: true,
-                        lineOptions: { styles: [{color: '#FF5A00', opacity: 0.9, weight: 8, border: '2px solid #E04E00'}] },
-                        createMarker: function(i, wp, nWps) { return null; } // Hide default markers
-                    }).addTo(tbMap);
-                });
-            }
+        // --- NATIVE APP HANDOFF (THE MODAL) ---
+        function openNavModal(lat, lng) {
+            targetNavLat = lat;
+            targetNavLng = lng;
+            document.getElementById('navAppModal').classList.add('active');
         }
 
-        // --- LIVE NAVIGATION ENGINE (DRIVING MODE) ---
-        function stopLiveNavigation() {
-            if (currentRoutingControl) { tbMap.removeControl(currentRoutingControl); currentRoutingControl = null; }
-            if (liveWatchId) { navigator.geolocation.clearWatch(liveWatchId); liveWatchId = null; }
-            if (liveUserMarker) { tbMap.removeLayer(liveUserMarker); liveUserMarker = null; }
-            
-            document.getElementById('nav-dashboard').classList.remove('active');
-            document.getElementById('talamap-ui-top').style.display = 'flex'; 
-            tbMap.setView([25.2048, 55.2708], 11); 
-            renderTbMap(); 
+        function closeNavModal() {
+            document.getElementById('navAppModal').classList.remove('active');
         }
 
-        function startTbNavigation(destLat, destLng, storeName) {
-            closeBottomSheet();
-            document.getElementById('talamap-ui-top').style.display = 'none'; 
-            tbMarkerLayer.clearLayers(); 
-
-            if (currentRoutingControl) tbMap.removeControl(currentRoutingControl);
-            if (liveWatchId) navigator.geolocation.clearWatch(liveWatchId);
-            if (liveUserMarker) { tbMap.removeLayer(liveUserMarker); liveUserMarker = null; }
-
-            if ("geolocation" in navigator) {
-                let isFirstRoute = true;
-                
-                liveWatchId = navigator.geolocation.watchPosition(
-                    function(position) {
-                        const startLat = position.coords.latitude;
-                        const startLng = position.coords.longitude;
-                        const heading = position.coords.heading || 0; 
-                        
-                        const startLatLng = L.latLng(startLat, startLng);
-                        const destLatLng = L.latLng(destLat, destLng);
-
-                        // TALABAT CAR ICON MARKER
-                        if (!liveUserMarker) {
-                            const carIcon = L.divIcon({ 
-                                className: 'car-icon-container', 
-                                html: `<div class="car-svg" id="live-car"></div>`,
-                                iconSize: [50,50], iconAnchor: [25,25] 
-                            });
-                            liveUserMarker = L.marker(startLatLng, {icon: carIcon}).addTo(tbMap);
-                        } else {
-                            liveUserMarker.setLatLng(startLatLng);
-                        }
-
-                        // Rotate Car
-                        const carDom = document.getElementById('live-car');
-                        if(carDom) carDom.style.transform = `rotate(${heading}deg)`;
-
-                        // Lock Camera closely for top-down feel
-                        tbMap.setView(startLatLng, 18);
-
-                        if (isFirstRoute) {
-                            currentRoutingControl = L.Routing.control({
-                                waypoints: [startLatLng, destLatLng],
-                                routeWhileDragging: false, showAlternatives: false, fitSelectedRoutes: false, 
-                                lineOptions: { styles: [{color: '#FF5A00', opacity: 1, weight: 8, border: '2px solid #E04E00'}] },
-                                createMarker: function(i, wp, nWps) {
-                                    if (i === nWps - 1) { 
-                                        return L.marker(wp.latLng).bindTooltip(storeName, {permanent:true, className: 'muted-champ-label', direction: 'top'});
-                                    }
-                                    return null;
-                                }
-                            }).addTo(tbMap);
-
-                            currentRoutingControl.on('routesfound', function(e) {
-                                var summary = e.routes[0].summary;
-                                document.getElementById('nav-dist').innerText = (summary.totalDistance / 1000).toFixed(1);
-                                document.getElementById('nav-time').innerText = Math.round(summary.totalTime / 60);
-                                document.getElementById('nav-dashboard').classList.add('active');
-                            });
-                            isFirstRoute = false;
-                        }
-                    },
-                    function(error) { alert("Could not lock onto your live GPS location."); },
-                    { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
-                );
-            } else {
-                alert("Your browser does not support live geolocation.");
+        function launchApp(appType) {
+            if (!targetNavLat || !targetNavLng) return;
+            
+            if (appType === 'gmaps') {
+                // Opens Google Maps directly into Driving Navigation from Current Location
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${targetNavLat},${targetNavLng}&travelmode=driving`;
+                window.open(gmapsLink, '_blank');
+            } 
+            else if (appType === 'twogis') {
+                // 2GIS uses Longitude, Latitude order. This universal link prompts the app to open.
+                const twogisLink = `https://2gis.ae/routeSearch/rsType/car/to/${targetNavLng},${targetNavLat}`;
+                window.open(twogisLink, '_blank');
             }
+            
+            closeNavModal();
         }
 
         // --- INITIALIZATION & DATA FETCH ---
@@ -732,7 +693,7 @@
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}/commits?path=${CSV_FILE_PATH}&page=1&per_page=1`;
             fetch(apiUrl).then(r => r.json()).then(data => {
                 if (data && data.length > 0) {
-                    document.getElementById('db-status-text').innerHTML = `Last Updated: <strong>Live</strong>`;
+                    document.getElementById('db-status-text').innerHTML = `Database: <strong>Live</strong>`;
                     document.getElementById('db-icon').classList.add('live');
                 }
             }).catch(e => {
@@ -770,10 +731,6 @@
 
                 let storeObj = { championName: champ, supervisor: sup, chainName: chain, locationName: clean(["Location", "Branch Loc"]) || "Store", lat: lat, lng: lng, orders: dailyOrders };
                 parsedData.push(storeObj);
-
-                if(!championUtilizationData[champ]) championUtilizationData[champ] = { stores: [], totalOrders: 0, supervisor: sup };
-                championUtilizationData[champ].stores.push(storeObj);
-                championUtilizationData[champ].totalOrders += dailyOrders;
             });
 
             buildSupervisorFilterList(); buildChainFilterList(true); initTbPills();
@@ -852,9 +809,8 @@
             }
 
             activeChamps.forEach(champ => {
-                let d = championUtilizationData[champ]; if(!d) return;
                 let mainRow = document.createElement('tr');
-                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>${d.supervisor}</td><td>${d.stores.length}</td><td>${Math.round(d.totalOrders)}</td>`;
+                mainRow.innerHTML = `<td style="font-weight:700;">${champ}</td><td>Loaded</td><td>-</td><td>-</td>`;
                 tbody.appendChild(mainRow);
             });
         }
@@ -888,7 +844,18 @@
                 if (selectedSups.includes(store.supervisor) && selectedChains.includes(store.chainName)) {
                     if (noChampsSelected || selectedChamps.includes(store.championName)) {
                         const supColor = supervisorColors[store.supervisor] || '#FF5A00';
-                        L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).addTo(markerLayer);
+                        
+                        const safeTitle = store.locationName.replace(/'/g, "\\'");
+                        const popupHTML = `
+                            <div style="font-family:'Inter', sans-serif;">
+                                <b style="font-size:14px; display:block; margin-bottom:4px;">${store.locationName}</b>
+                                <span style="font-size:12px; color:#64748B;">Chain:</span> <strong style="font-size:12px; color:var(--text-dark);">${store.chainName}</strong><br>
+                                <span style="font-size:12px; color:#64748B;">Champ:</span> <strong style="font-size:12px; color:var(--primary-orange);">${store.championName}</strong><br>
+                                <button onclick="openNavModal(${store.lat}, ${store.lng})" class="btn-massive" style="margin-top:10px; padding:10px; font-size:12px;">🚗 Drive</button>
+                            </div>
+                        `;
+
+                        L.marker([store.lat, store.lng], { icon: getCustomIcon(store.chainName, supColor) }).bindPopup(popupHTML).addTo(markerLayer);
                         allBounds.push([store.lat, store.lng]);
                     }
                 }
